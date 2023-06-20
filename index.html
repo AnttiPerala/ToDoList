@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1 id="mainTitle">To Do List</h1>
+        
+
+    </header>
+
+    <div id="menuRow">
+
+        <form id="todoForm">
+            <input type="text" id="todoInput" placeholder="Add a new task">
+            <input type="date" id="deadlineInput">
+            <button class="submitTodo" type="submit">Add</button>
+        </form>
+        <div id="notificationWrap">
+            <label for="notificationToggle"> Enable notifications</label>
+            <input type="checkbox" id="notificationToggle" name="notificationToggle">
+            <button id="testNotification">Test Notification</button>
+
+        </div>
+        
+
+        <div id="backUpAndRestoreButtonsContainer">
+
+            
+
+
+
+            <button id="backupBtn">Backup</button>
+            <input type="file" id="uploadInput"  style="display: none">
+            <button id="restoreBtn">Restore</button>
+        </div>
+    
+    </div>
+
+   
+    
+    
+
+    <ul id="todoList">
+    </ul>
+    <script src="todo.js"></script>
+</body>
+
+</html>
