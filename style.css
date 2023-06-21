@@ -92,6 +92,10 @@ ul#todoList {
     padding: 0;
 }
 
+#backUpAndRestoreButtonsContainer{
+  text-align: right;
+}
+
 li {
     /* No background color when not hovered */
     background-color: transparent;
@@ -159,6 +163,10 @@ li {
 
     body{
         padding: 1rem;
+    }
+
+    #menuRow{
+      grid-template-columns: 1fr;
     }
     .listItem{
          
