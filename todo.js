@@ -53,20 +53,26 @@ function drawTodos() {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
 
-   // Sort todos by done status, then votes and deadlines
-   todos.sort((a, b) => {
-    // If a is done and b is not, a comes last
-    if (a.done && !b.done) return 1;
-    // If b is done and a is not, b comes last
-    if (b.done && !a.done) return -1;
-    // If a's deadline is today and b's is not, a comes first
-    if (a.deadline && isToday(a.deadline) && (!b.deadline || !isToday(b.deadline))) return -1;
-    // If b's deadline is today and a's is not, b comes first
-    if (b.deadline && isToday(b.deadline) && (!a.deadline || !isToday(a.deadline))) return 1;
-    // If both deadlines are today or neither are, sort by votes
-    return b.votes - a.votes;
-});
-
+    todos.sort((a, b) => {
+        // If a is done and b is not, a comes last
+        if (a.done && !b.done) return 1;
+        // If b is done and a is not, b comes last
+        if (b.done && !a.done) return -1;
+    
+        // If a's deadline is past and it's not done, and b's is not, a comes first
+        if (isPast(a.deadline) && !a.done && (!isPast(b.deadline) || b.done)) return -1;
+        // If b's deadline is past and it's not done, and a's is not, b comes first
+        if (isPast(b.deadline) && !b.done && (!isPast(a.deadline) || a.done)) return 1;
+    
+        // If a's deadline is today and b's is not, a comes first
+        if (isToday(a.deadline) && !isToday(b.deadline)) return -1;
+        // If b's deadline is today and a's is not, b comes first
+        if (isToday(b.deadline) && !isToday(a.deadline)) return 1;
+    
+        // If both deadlines are today or neither are, sort by votes
+        return b.votes - a.votes;
+    });
+    
     todos.forEach(todo => {
         let listItem = document.createElement('li');
 
@@ -362,4 +368,13 @@ window.onload = function() {
     } else {
         notificationCheckbox.style.display = "none";
     }
+}
+
+// Helper function to check if a date is in the past
+function isPast(date) {
+    if (!date) return false;
+    const now = new Date();
+    // Set to midnight for accurate comparison
+    now.setHours(0, 0, 0, 0);
+    return date < now;
 }
