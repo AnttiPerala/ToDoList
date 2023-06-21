@@ -86,6 +86,12 @@ function drawTodos() {
         let voteDisplay = document.createElement('span');
         voteDisplay.classList.add('votes');
         voteDisplay.textContent = `Votes: ${todo.votes}`;
+        voteDisplay.dataset.id = todo.id;  // Add this line
+        voteDisplay.addEventListener('dblclick', function() {  // Add this block
+            console.log('click');
+            editVotes(todo.id);
+        });
+
 
         // Add buttons for upvote, downvote and delete
         let upvoteBtn = document.createElement('button');
@@ -130,7 +136,7 @@ function drawTodos() {
             e.dataTransfer.setData('text/plain', todo.id);
         });
 
-        listItem.addEventListener('dblclick', function(e) {
+        todoText.addEventListener('dblclick', function(e) {
             e.preventDefault();
             editTodo(todo.id);
         });
@@ -294,6 +300,8 @@ function editTodo(id) {
     const todo = todos.find(todo => todo.id === id);
     const listItem = document.getElementById(id); // Gets the list item by id
 
+    console.log("hello from editTodo");
+
     // Create a new input field and set its value to the todo text
     const input = document.createElement('input');
     input.value = todo.text;
@@ -320,6 +328,43 @@ function editTodo(id) {
     // Focus the input field
     input.focus();
 }
+
+/* DOUBLE CLICK TO EDIT VOTES */
+
+function editVotes(id) {
+    const todo = todos.find(todo => todo.id === id);
+    const voteDisplay = document.querySelector(`.votes[data-id='${id}']`);
+
+    console.log("hello from editVotes");
+
+    // Create a new input field and set its value to the todo text
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.value = todo.votes;
+
+    // When the input loses focus or the enter key is pressed, update the todo text and redraw the list
+    input.addEventListener('blur', updateTodoVotes);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            updateTodoVotes(e);
+        }
+    });
+
+    function updateTodoVotes(e) {
+        todo.votes = parseInt(e.target.value);
+        updateLocalStorage();
+        drawTodos();
+    }
+
+    // Replace the todo text with the input field
+    voteDisplay.textContent = '';
+    voteDisplay.appendChild(input);
+
+    // Focus the input field
+    input.focus();
+}
+
 
 /* BROWSER NOTIFICATIONS */
 
