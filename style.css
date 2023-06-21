@@ -61,7 +61,7 @@ body {
 }
 
 #todoForm input{
-  width:100%;
+  width:99%;
 }
 
 #todoList input{
@@ -200,5 +200,22 @@ li {
       #todoList input{
         grid-column: span 7;
       };
+
+      #deadlineInput{
+        opacity: 1;
+        width: 90vw;
+        -webkit-min-logical-width: 90vw;
+
+
+    }
+
+    #deadlineInput::before {
+      content: "Deadline (optional): ";
+      display: block;
+    }
+
+    .button-30{
+      font-size: 14px;
+    }
 
 }

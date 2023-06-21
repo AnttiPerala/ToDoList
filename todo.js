@@ -408,12 +408,14 @@ document.querySelector("#testNotification").addEventListener('click', () => {
 window.onload = function() {
     const protocol = window.location.protocol;
     const notificationCheckbox = document.getElementById('notificationWrap');
-    if (protocol === 'http:' || protocol === 'https:') {
+
+    if ((protocol === 'http:' || protocol === 'https:') && window.innerWidth >= 800) {
         notificationCheckbox.style.display = "block";
     } else {
         notificationCheckbox.style.display = "none";
     }
 }
+
 
 // Helper function to check if a date is in the past
 function isPast(date) {
