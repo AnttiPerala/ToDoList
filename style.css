@@ -48,18 +48,25 @@ body {
 }
 
 #todoForm {
-    display: flex;
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr;
     align-items: center;
+    justify-items: start;
     padding: 1rem;
+    gap: 1rem;
 }
 
 #todoInput, #deadlineInput, .submitTodo {
     font-size: 1.3rem;
 }
 
+#todoForm input{
+  width:100%;
+}
+
 #todoList input{
     font-size: 1.3rem;
-    width: 35rem;
+    width: 100%;
 }
 
 #deadlineInput{
@@ -147,7 +154,7 @@ li {
 
 
 
-@media only screen and (max-width: 800px) {
+@media only screen and (max-width: 900px) {
     /* CSS rules for screens less than 1000px wide go here */
 
     body{
@@ -169,5 +176,17 @@ li {
         .button-30{
             margin-bottom: 2rem;
         }
+
+        #todoForm {
+          grid-template-columns: 1fr;
+          align-items: center;
+          justify-items: start;
+          padding: 0.5rem;
+          gap: 0.5rem;
+      }
+
+      .toDoText{
+        grid-column: span 7;
+      }
 
 }
