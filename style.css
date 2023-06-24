@@ -103,12 +103,12 @@ ul#todoList {
 
 li {
     /* No background color when not hovered */
-    background-color: transparent;
+    border: none;
   }
   
   li:hover {
     /* Background color when hovered */
-    background-color: #e8e4ee; /* This is just an example color, you can replace it with your preferred color */
+   border: 1px rgba(0, 0, 0, 0.1) solid; /* This is just an example color, you can replace it with your preferred color */
   }
 
 /* BUTTONS */
@@ -171,6 +171,49 @@ li {
 #priorityCheckWrap label {
   white-space: nowrap;
   margin: 0.5rem;
+}
+
+
+/* CUSTOM COLOR DROPDOWN */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  z-index: 1;
+}
+
+.dropdown-content div {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content div:hover {
+  background-color: #f1f1f1;
+}
+
+.color-option {
+  height: 20px;
+}
+
+.dropbtn {
+  background-color: #4CAF50;
+  color: rgb(0, 0, 0);
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropbtn:hover,
+.dropbtn:focus {
+  background-color: #3e8e41;
 }
 
 /* MOBILE */

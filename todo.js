@@ -7,6 +7,13 @@ function updateLocalStorage() {
 
 let todos = [];
 
+let bgColors = ["#F0F8FF", "#F0FFF0", "#FFF5EE", "#F5F5F5", "#FFFACD", "#FFDAB9", "#FFE4E1", "#FFF0F5", "#FAF0E6", "#FDF5E6"];
+
+// Define a variable to store the selected color
+let selectedColor;
+
+
+
 function getLocalStorage() {
     let todoLocal = JSON.parse(localStorage.getItem('todos'));
     if (todoLocal) {
@@ -29,6 +36,16 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     const topPriorityInput = document.getElementById('priorityCheck');
 
+    // generate a random index for color selection
+    let randomIndex = Math.floor(Math.random() * colorOptions.length);
+
+    // set the button background to the random color
+    button.style.backgroundColor = colorOptions[randomIndex].style.backgroundColor;
+
+    //set the selected color variable also
+    selectedColor = colorOptions[randomIndex].style.backgroundColor;
+
+
 
     // Calculate the current maximum votes
     let maxVotes = Math.max(...todos.map(todo => todo.votes)); //The map method creates a new array containing the votes of all todos, and the Math.max function finds the maximum value in this array. The ... operator (spread syntax) is used to spread the elements of this array into individual arguments to Math.max(). The effect is similar to calling Math.max(2, 5, 1), which returns 5.
@@ -40,7 +57,8 @@ form.addEventListener('submit', (e) => {
         text: input.value,
         votes: topPriorityInput.checked ? maxVotes + 1 : 0,
         deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
-        done: false
+        done: false,
+        bgColor: selectedColor
     }
 
     todos.push(newTodo);
@@ -139,6 +157,8 @@ function drawTodos() {
 
         // Make the list item draggable
         listItem.setAttribute('draggable', 'true');
+
+        listItem.style.backgroundColor = todo.bgColor ?? '#fff'; //, if todo.bgColor is a value that isn't null or undefined, it will be used. If todo.bgColor is null or undefined, the string '#fff' will be used instead.
 
         // Add drag and drop event listeners
         listItem.addEventListener('dragstart', (e) => {
@@ -434,3 +454,23 @@ function isPast(date) {
     now.setHours(0, 0, 0, 0);
     return date < now;
 }
+
+/* COLOR PICKER */
+
+let dropdown = document.getElementById("dropdown");
+let button = document.getElementById("dropbtn");
+let colorOptions = Array.from(document.getElementsByClassName("color-option"));
+
+button.addEventListener('click', function () {
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+});
+
+
+
+colorOptions.forEach(option => {
+    option.addEventListener('click', function () {
+        selectedColor = this.style.backgroundColor;  // Save the selected color
+        button.style.backgroundColor = selectedColor;
+        dropdown.style.display = "none";
+    });
+});
