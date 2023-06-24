@@ -27,11 +27,18 @@ const list = document.getElementById('todoList');
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
+    const topPriorityInput = document.getElementById('priorityCheck');
+
+
+    // Calculate the current maximum votes
+    let maxVotes = Math.max(...todos.map(todo => todo.votes)); //The map method creates a new array containing the votes of all todos, and the Math.max function finds the maximum value in this array. The ... operator (spread syntax) is used to spread the elements of this array into individual arguments to Math.max(). The effect is similar to calling Math.max(2, 5, 1), which returns 5.
+
+
 
     let newTodo = {
         id: Date.now(),
         text: input.value,
-        votes: 0,
+        votes: topPriorityInput.checked ? maxVotes + 1 : 0,
         deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
         done: false
     }
@@ -41,6 +48,8 @@ form.addEventListener('submit', (e) => {
 
     input.value = '';
     deadlineInput.value = '';
+    topPriorityInput.checked = false; // Reset the checkbox
+
 
     drawTodos();
 });

@@ -49,7 +49,7 @@ body {
 
 #todoForm {
     display: grid;
-    grid-template-columns: 3fr 1fr 1fr;
+    grid-template-columns: 3fr 1fr 1fr 1fr;
     align-items: center;
     justify-items: start;
     padding: 1rem;
@@ -67,6 +67,11 @@ body {
 #todoList input{
     font-size: 1.3rem;
     width: 100%;
+}
+
+#topPriorityInput{
+  font-size: 1.3rem;
+  width: 1.3rem;
 }
 
 #deadlineInput{
@@ -151,8 +156,22 @@ li {
   transform: translateY(2px);
 }
 
+/* CUSTOM CHECKBOX */
 
+.large-checkbox {
+  transform: scale(1.5);
+  /* Adjust this value to change the size of the checkbox */
+}
 
+#priorityCheckWrap {
+  display: flex;
+  align-items: center;
+}
+
+#priorityCheckWrap label {
+  white-space: nowrap;
+  margin: 0.5rem;
+}
 
 /* MOBILE */
 
