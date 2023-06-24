@@ -36,14 +36,7 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     const topPriorityInput = document.getElementById('priorityCheck');
 
-    // generate a random index for color selection
-    let randomIndex = Math.floor(Math.random() * colorOptions.length);
-
-    // set the button background to the random color
-    button.style.backgroundColor = colorOptions[randomIndex].style.backgroundColor;
-
-    //set the selected color variable also
-    selectedColor = colorOptions[randomIndex].style.backgroundColor;
+  
 
 
 
@@ -68,6 +61,14 @@ form.addEventListener('submit', (e) => {
     deadlineInput.value = '';
     topPriorityInput.checked = false; // Reset the checkbox
 
+    // generate a random index for color selection
+    let randomIndex = Math.floor(Math.random() * colorOptions.length);
+
+    // set the button background to the random color
+    button.style.backgroundColor = colorOptions[randomIndex].style.backgroundColor;
+
+    //set the selected color variable also
+    selectedColor = colorOptions[randomIndex].style.backgroundColor;
 
     drawTodos();
 });
@@ -472,5 +473,6 @@ colorOptions.forEach(option => {
         selectedColor = this.style.backgroundColor;  // Save the selected color
         button.style.backgroundColor = selectedColor;
         dropdown.style.display = "none";
+        console.log("selectedColor: " + selectedColor)
     });
 });
