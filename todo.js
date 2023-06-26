@@ -12,7 +12,7 @@ let bgColors = ["#F0F8FF", "#F0FFF0", "#FFF5EE", "#F5F5F5", "#FFFACD", "#FFDAB9"
 // Define a variable to store the selected color
 let selectedColor;
 
-
+let notificationToggle = document.getElementById('notificationToggle');
 
 function getLocalStorage() {
     let todoLocal = JSON.parse(localStorage.getItem('todos'));
@@ -265,16 +265,25 @@ list.addEventListener('drop', (e) => {
 let backupBtn = document.getElementById('backupBtn');
 
 backupBtn.addEventListener('click', () => {
+    console.log("click registered on backupBtn");
     let dataStr = JSON.stringify(todos);
-    let dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
 
-    let exportFileDefaultName = 'todos_backup.json';
-
-    let linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    // Check for the availability of the share API (primarily for iOS Safari)
+    if (navigator.share) {
+        navigator.share({
+            title: 'Todo backup',
+            text: dataStr,
+        }).catch(console.error);
+    } else {
+        let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+        let exportFileDefaultName = 'todos_backup.json';
+        let linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
 });
+
 
 /* Restore */
 
@@ -282,6 +291,7 @@ let uploadInput = document.getElementById('uploadInput');
 let restoreBtn = document.getElementById('restoreBtn');
 
 restoreBtn.addEventListener('click', () => {
+    console.log("click registered on restoreBtn");
     uploadInput.click();
 });
 
@@ -312,6 +322,18 @@ uploadInput.addEventListener('change', () => {
     }
 });
 
+/* Just testing event listeners */
+
+// Get the header element by its ID or any other appropriate selector
+const header = document.getElementById('myHeader');
+
+// Add a click event listener to the header
+header.addEventListener('click', function () {
+    alert('header clicked');
+    // Code to execute when the header is clicked
+    console.log('Header clicked!');
+    // Additional actions or functions can be performed here
+});
 
 // Helper function to check if a date is today
 function isToday(date) {
@@ -398,7 +420,7 @@ function editVotes(id) {
 
 /* BROWSER NOTIFICATIONS */
 
-let notificationToggle = document.getElementById('notificationToggle');
+
 
 notificationToggle.addEventListener('change', function() {
     if (this.checked) {
@@ -436,6 +458,7 @@ document.querySelector("#testNotification").addEventListener('click', () => {
 /* ONLY SHOW THE NOTIFICATION OPTION IF RUNNING FROM A SERVER */
 
 window.onload = function() {
+    console.log("loaded");
     const protocol = window.location.protocol;
     const notificationCheckbox = document.getElementById('notificationWrap');
 
