@@ -322,18 +322,7 @@ uploadInput.addEventListener('change', () => {
     }
 });
 
-/* Just testing event listeners */
 
-// Get the header element by its ID or any other appropriate selector
-const header = document.getElementById('myHeader');
-
-// Add a click event listener to the header
-header.addEventListener('click', function () {
-    alert('header clicked');
-    // Code to execute when the header is clicked
-    console.log('Header clicked!');
-    // Additional actions or functions can be performed here
-});
 
 // Helper function to check if a date is today
 function isToday(date) {
@@ -499,3 +488,4 @@ colorOptions.forEach(option => {
         console.log("selectedColor: " + selectedColor)
     });
 });
+

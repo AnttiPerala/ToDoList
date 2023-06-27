@@ -9,10 +9,23 @@
 
 <body>
     <header id="myHeader">
+            <!-- menu 2 -->
+            <input id="menu-toggle" type="checkbox" />
+            <label class='menu-button-container' for="menu-toggle">
+                <div class='menu-button'></div>
+            </label>
+            <ul class="menu">
+                <li><a href="#" id="loginBtn">Login</a> <span class="note"> (Only needed for syncing across many devices)</span> </li>
+                <li><a href="#" id="backupBtn">Backup</a></li>
+                <li><a href="#" id="restoreBtn">Restore</a></li>
+                <input type="file" id="uploadInput" style="display: none;" />
+            </ul>
         <h1 id="mainTitle">To Do List</h1>
         
 
     </header>
+
+
 
     <div id="menuRow">
 
@@ -63,18 +76,16 @@
 
             </div>
         </div>
-        
+
+
+ 
+
 
         <div id="backUpAndRestoreButtonsContainer">
-
-            
-
-
-
-            <button id="backupBtn">Backup</button>
             <input type="file" id="uploadInput"  style="display: none">
-            <button id="restoreBtn">Restore</button>
         </div>
+
+    
     
     </div>
 
