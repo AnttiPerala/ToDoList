@@ -149,8 +149,8 @@ function drawTodos() {
         }
         
         listItem.appendChild(todoText);
-        listItem.appendChild(voteDisplay);
         listItem.appendChild(deadlineDisplay);
+        listItem.appendChild(voteDisplay);
         listItem.appendChild(infoBtn);
         listItem.appendChild(upvoteBtn);
         listItem.appendChild(downvoteBtn);
@@ -404,6 +404,7 @@ function editVotes(id) {
 
     function updateTodoVotes(e) {
         todo.votes = parseInt(e.target.value);
+        applyPreferredSorting();
         updateLocalStorage();
         drawTodos();
     }
