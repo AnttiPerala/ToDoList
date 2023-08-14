@@ -51,7 +51,7 @@ form.addEventListener('submit', (e) => {
         votes: topPriorityInput.checked ? maxVotes + 1 : 0,
         deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
         done: false,
-        bgColor: selectedColor
+        bgColor: selectedColor,
     }
 
     todos.push(newTodo);
@@ -88,7 +88,7 @@ function drawTodos() {
         let listItem = document.createElement('li');
 
         // Embed the time added as a data-attribute
-        listItem.setAttribute('data-timeAdded', new Date(todo.timeAdded).toLocaleString());
+        listItem.setAttribute('data-timeAdded', new Date(todo.id).toLocaleString());
 
         // If there's a timeDone value, embed it as a data-attribute
         if (todo.timeDone) {
@@ -110,6 +110,15 @@ function drawTodos() {
             console.log('click');
             editVotes(todo.id);
         });
+
+        //add info buttons
+        let infoBtn = document.createElement('button');
+        infoBtn.classList.add("info-button");
+        infoBtn.innerHTML = '<span>i</span>';
+        infoBtn.addEventListener('click', () => {
+            alert(`Time Added: ${listItem.getAttribute('data-timeAdded')}\nTime Done: ${listItem.getAttribute('data-timeDone') || 'Not Done Yet'}`);
+        });
+
 
 
         // Add buttons for upvote, downvote and delete
@@ -142,10 +151,13 @@ function drawTodos() {
         listItem.appendChild(todoText);
         listItem.appendChild(voteDisplay);
         listItem.appendChild(deadlineDisplay);
+        listItem.appendChild(infoBtn);
         listItem.appendChild(upvoteBtn);
         listItem.appendChild(downvoteBtn);
         listItem.appendChild(doneBtn);
         listItem.appendChild(deleteBtn);
+        
+
 
         // Make the list item draggable
         listItem.setAttribute('draggable', 'true');
@@ -522,13 +534,13 @@ function sortAlphabetically() {
 
 
 
-
-
 function sortByTimeAdded() {
-    todos.sort((a, b) => new Date(a.timeAdded) - new Date(b.timeAdded));
+    todos.sort((a, b) => a.id - b.id);
     localStorage.setItem('preferredSorting', 'timeAdded');
     drawTodos();
 }
+
+
 function sortByTimeDone() {
     todos.sort((a, b) => {
         if (a.timeDone && b.timeDone) {

@@ -35,7 +35,7 @@ body {
 
 .listItem{
     display: grid;
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: 1fr 1fr 1fr 1fr 2fr 0.5fr 1fr 1fr 1fr 1fr;
     align-items: center;
     padding-left: 1rem;
 }
@@ -392,6 +392,19 @@ li {
     }
  
 
+
+.info-button {
+      border-radius: 50%;        /* Make the button round */
+      width: 30px;               /* Set a fixed width */
+      height: 30px;              /* Set a fixed height */
+      text-align: center;        /* Center the "i" horizontally */
+      line-height: 30px;         /* Center the "i" vertically */
+      border: none;              /* Remove default borders */
+      background-color: #eee;   /* A light background color */
+      cursor: pointer;           /* Change cursor to hand pointer on hover */
+  }
+  
+  
 
 /* MOBILE */
 
