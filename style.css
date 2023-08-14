@@ -37,7 +37,7 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 2fr 1fr 0.5fr 1fr 1fr 1fr 1fr;
     align-items: center;
-    padding-left: 1rem;
+    padding: 1rem;
 }
 
 #menuRow{
@@ -414,7 +414,7 @@ li {
     /* CSS rules for screens less than 1000px wide go here */
 
     body{
-        padding: 1rem;
+        padding: 0;
     }
 
     #menuRow{
@@ -424,7 +424,7 @@ li {
          
             row-gap: 2rem;
             grid-auto-flow: row dense;
-            padding-left: 0.2rem;
+            /* padding-left: 0.2rem; */
 
         }
     
