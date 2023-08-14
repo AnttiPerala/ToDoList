@@ -499,4 +499,8 @@ li {
       text-align: center;
   }
 
+  span {
+    padding: 0.5rem;
+}
+
 }
