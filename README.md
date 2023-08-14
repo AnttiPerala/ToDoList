@@ -4,7 +4,7 @@ Boost your productivity and create advanced To Do Lists with priority voting and
 # Features:
 + Free and open source
 + Runs in your browser without any special priviledges
-+ Cross platforms support (works on any device with a browser)
++ Cross platform support (works on any device with a browser)
 + To do-lists are stored locally (optional syncing and logins are considered for a later version)
 + To do-lists can be backed up as a JSON file and restored to another device
 + Use offline by downloading this repo to your machine
