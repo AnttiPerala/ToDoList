@@ -81,28 +81,18 @@ function drawTodos() {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    todos.sort((a, b) => {
-        // If a is done and b is not, a comes last
-        if (a.done && !b.done) return 1;
-        // If b is done and a is not, b comes last
-        if (b.done && !a.done) return -1;
-    
-        // If a's deadline is past and it's not done, and b's is not, a comes first
-        if (isPast(a.deadline) && !a.done && (!isPast(b.deadline) || b.done)) return -1;
-        // If b's deadline is past and it's not done, and a's is not, b comes first
-        if (isPast(b.deadline) && !b.done && (!isPast(a.deadline) || a.done)) return 1;
-    
-        // If a's deadline is today and b's is not, a comes first
-        if (isToday(a.deadline) && !isToday(b.deadline)) return -1;
-        // If b's deadline is today and a's is not, b comes first
-        if (isToday(b.deadline) && !isToday(a.deadline)) return 1;
-    
-        // If both deadlines are today or neither are, sort by votes
-        return b.votes - a.votes;
-    });
+
     
     todos.forEach(todo => {
         let listItem = document.createElement('li');
+
+        // Embed the time added as a data-attribute
+        listItem.setAttribute('data-timeAdded', new Date(todo.timeAdded).toLocaleString());
+
+        // If there's a timeDone value, embed it as a data-attribute
+        if (todo.timeDone) {
+        listItem.setAttribute('data-timeDone', new Date(todo.timeDone).toLocaleString());
+        }
 
         // Set the id of the list item
         listItem.id = todo.id;
@@ -192,6 +182,13 @@ function drawTodos() {
 function doneTodo(id) {
     let todo = todos.find(t => t.id === id);
     todo.done = !todo.done; //toggle
+
+    // If it's marked as done, set the timeDone. Otherwise, set it to null
+    if (todo.done) {
+        todo.timeDone = new Date().toISOString();
+    } else {
+        todo.timeDone = null;
+    }
 
     updateLocalStorage();
     drawTodos();
@@ -456,6 +453,7 @@ window.onload = function() {
     } else {
         notificationCheckbox.style.display = "none";
     }
+    applyPreferredSorting();
 }
 
 
@@ -488,4 +486,108 @@ colorOptions.forEach(option => {
         console.log("selectedColor: " + selectedColor)
     });
 });
+
+/* SORT OPTIONS IN MENU */
+
+function sortByPoints() {
+    todos.sort((a, b) => {
+        // If a is done and b is not, a comes last
+        if (a.done && !b.done) return 1;
+        // If b is done and a is not, b comes last
+        if (b.done && !a.done) return -1;
+    
+        // If a's deadline is past and it's not done, and b's is not, a comes first
+        if (isPast(a.deadline) && !a.done && (!isPast(b.deadline) || b.done)) return -1;
+        // If b's deadline is past and it's not done, and a's is not, b comes first
+        if (isPast(b.deadline) && !b.done && (!isPast(a.deadline) || a.done)) return 1;
+    
+        // If a's deadline is today and b's is not, a comes first
+        if (isToday(a.deadline) && !isToday(b.deadline)) return -1;
+        // If b's deadline is today and a's is not, b comes first
+        if (isToday(b.deadline) && !isToday(a.deadline)) return 1;
+    
+        // If both deadlines are today or neither are, sort by votes
+        return b.votes - a.votes;
+    });
+    localStorage.setItem('preferredSorting', 'points');
+    drawTodos();
+}
+
+function sortAlphabetically() {
+    todos.sort((a, b) => a.text.localeCompare(b.text));
+    localStorage.setItem('preferredSorting', 'alphabet');
+    drawTodos();
+}
+
+
+function sortByColor() {
+    todos.sort((a, b) => {
+        if (a.color && b.color) {
+            return a.color.localeCompare(b.color);
+        } else if (a.color) {
+            return -1;
+        } else if (b.color) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    localStorage.setItem('preferredSorting', 'color');
+    drawTodos();
+}
+
+
+function sortByTimeAdded() {
+    todos.sort((a, b) => new Date(a.timeAdded) - new Date(b.timeAdded));
+    localStorage.setItem('preferredSorting', 'timeAdded');
+    drawTodos();
+}
+function sortByTimeDone() {
+    todos.sort((a, b) => {
+        if (a.timeDone && b.timeDone) {
+            return new Date(a.timeDone) - new Date(b.timeDone);  // If both are done, compare their done times
+        } else if (a.timeDone) {
+            return -1;  // If only 'a' is done, 'a' comes first
+        } else if (b.timeDone) {
+            return 1;   // If only 'b' is done, 'b' comes first
+        } else {
+            return 0;   // If neither is done, their order remains unchanged
+        }
+    });
+    localStorage.setItem('preferredSorting', 'timeDone');
+    drawTodos();
+}
+
+
+document.querySelector("#sortPointsBtn").addEventListener("click", sortByPoints);
+document.querySelector("#sortAlphaBtn").addEventListener("click", sortAlphabetically);
+document.querySelector("#sortColorBtn").addEventListener("click", sortByColor);
+document.querySelector("#sortTimeAddedBtn").addEventListener("click", sortByTimeAdded);
+document.querySelector("#sortTimeDoneBtn").addEventListener("click", sortByTimeDone);
+
+function applyPreferredSorting() {
+    const sortingMethod = localStorage.getItem('preferredSorting');
+    
+    switch(sortingMethod) {
+        case 'points':
+            sortByPoints();
+            break;
+        case 'alphabet':
+            sortAlphabetically();
+            break;
+        case 'color':
+            sortByColor();
+            break;
+        case 'timeAdded':
+            sortByTimeAdded();
+            break;
+        case 'timeDone':
+            sortByTimeDone();
+            break;
+        default:
+            sortByPoints();
+            drawTodos();
+            break;
+    }
+}
 

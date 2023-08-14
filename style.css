@@ -242,9 +242,15 @@ li {
   left: 0;
 }
 
-#hamburgerMenu a {
+.menu a {
   display: block;
   margin-bottom: 10px;
+  text-decoration: none;
+}
+
+.menu a:hover {
+
+  text-decoration: underline;
 }
 
 #closeMenuButton {
@@ -255,6 +261,8 @@ li {
   border: none;
   font-size: 1.5em;
 }
+
+
 
 
 /* MENU 2 */
