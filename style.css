@@ -414,7 +414,7 @@ li {
     /* CSS rules for screens less than 1000px wide go here */
 
     body{
-        padding: 0;
+        padding: 1rem;
     }
 
     #menuRow{
@@ -498,9 +498,5 @@ li {
     span.votes {
       text-align: center;
   }
-
-  span {
-    padding: 0.5rem;
-}
 
 }

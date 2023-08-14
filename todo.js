@@ -154,9 +154,8 @@ function drawTodos() {
         listItem.appendChild(infoBtn);
         listItem.appendChild(upvoteBtn);
         listItem.appendChild(downvoteBtn);
-        listItem.appendChild(doneBtn);
         listItem.appendChild(deleteBtn);
-        
+        listItem.appendChild(doneBtn);
 
 
         // Make the list item draggable
@@ -209,16 +208,22 @@ function doneTodo(id) {
 }
 
 function deleteTodo(id) {
-
     let todo = todos.find(t => t.id === id);
-    console.log("Deleted todo with text: " + todo.text)
-    // Filter out the todo with the given id (which will delete it)
-    todos = todos.filter(todo => todo.id !== id);
 
-    applyPreferredSorting();
-    updateLocalStorage();
-    drawTodos();
+    // Ask for confirmation
+    let isConfirmed = window.confirm(`Are you sure you want to delete the todo: "${todo.text}"?`);
+
+    if (isConfirmed) {
+        console.log("Deleted todo with text: " + todo.text)
+        // Filter out the todo with the given id (which will delete it)
+        todos = todos.filter(todo => todo.id !== id);
+
+        applyPreferredSorting();
+        updateLocalStorage();
+        drawTodos();
+    }
 }
+
 
 
 // Initial drawing of todos
