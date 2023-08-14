@@ -56,6 +56,7 @@ form.addEventListener('submit', (e) => {
 
     todos.push(newTodo);
     updateLocalStorage();
+    applyPreferredSorting();
 
     input.value = '';
     deadlineInput.value = '';
@@ -520,21 +521,7 @@ function sortAlphabetically() {
 }
 
 
-function sortByColor() {
-    todos.sort((a, b) => {
-        if (a.color && b.color) {
-            return a.color.localeCompare(b.color);
-        } else if (a.color) {
-            return -1;
-        } else if (b.color) {
-            return 1;
-        } else {
-            return 0;
-        }
-    });
-    localStorage.setItem('preferredSorting', 'color');
-    drawTodos();
-}
+
 
 
 function sortByTimeAdded() {
@@ -591,3 +578,65 @@ function applyPreferredSorting() {
     }
 }
 
+// Function to convert RGB to HSL
+function rgbToHsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    let max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if(max === min){
+        h = s = 0; // achromatic
+    } else {
+        let diff = max - min;
+        s = l > 0.5 ? diff / (2 - max - min) : diff / (max + min);
+        switch(max){
+            case r: h = (g - b) / diff + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / diff + 2; break;
+            case b: h = (r - g) / diff + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h * 360, s * 100, l * 100];
+}
+
+function sortByColor() {
+    todos.sort((a, b) => {
+        const colorA = a.bgColor ? a.bgColor.slice(4, -1).split(', ') : [255, 255, 255]; // Convert "rgb(r, g, b)" to [r, g, b]
+        const colorB = b.bgColor ? b.bgColor.slice(4, -1).split(', ') : [255, 255, 255];
+
+        const hueA = rgbToHsl(+colorA[0], +colorA[1], +colorA[2])[0];
+        const hueB = rgbToHsl(+colorB[0], +colorB[1], +colorB[2])[0];
+
+        return hueA - hueB;
+    });
+
+    localStorage.setItem('preferredSorting', 'color');
+    drawTodos();
+}
+
+/* Close menu */
+/* The behavior of the "toggle menu" you've described relies on the interaction of the CSS pseudo-class :checked and the general sibling combinator (~). Here's a breakdown of how it works:
+
+Checkbox (Input Element):
+
+<input id="menu-toggle" type="checkbox" />
+This checkbox acts as a state manager for the menu. When it's checked, the menu is open; when it's unchecked, the menu is closed.
+
+Label for the Checkbox:
+
+<label class='menu-button-container' for="menu-toggle">
+    <div class='menu-button'></div>
+</label>
+This label is associated with the checkbox by the for attribute. Clicking on this label will change the state of the checkbox (check/uncheck). Typically, there would be a CSS style that makes this label appear as a menu button or icon to the user.
+
+CSS Behavior (not provided but assumed):
+
+In your CSS, there would likely be rules that use the :checked pseudo-class and the general sibling combinator (~) to change the visibility or position of the .menu when the checkbox is checked.  */
+
+document.querySelector(".menu").addEventListener("click", function(e) {
+    // Check if a link within the menu was clicked
+    if (e.target.tagName === 'A') {
+        document.getElementById("menu-toggle").checked = false;
+    }
+});
