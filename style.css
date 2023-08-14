@@ -414,7 +414,7 @@ li {
     /* CSS rules for screens less than 1000px wide go here */
 
     body{
-        padding: 1rem;
+        padding: 0;
     }
 
     #menuRow{
@@ -428,10 +428,35 @@ li {
 
         }
     
-        .listItem > :nth-child(n+4) {
+        .listItem > :nth-child(n+5) {
             grid-column: span 2;
             grid-row: 2;
         }
+
+        /* individual spans for the button to take correct amount of space */
+        /* 5th element of the list */
+.listItem > :nth-child(5) {
+  grid-column: 1 / span 2;  /* spanning the first two columns */
+  grid-row: 2;
+}
+
+/* 6th element of the list */
+.listItem > :nth-child(6) {
+  grid-column: 3 / span 2;  /* spanning the next two columns */
+  grid-row: 2;
+}
+
+/* 7th element of the list */
+.listItem > :nth-child(7) {
+  grid-column: 5 / span 3;  /* spanning the next three columns */
+  grid-row: 2;
+}
+
+/* 8th element of the list */
+.listItem > :nth-child(8) {
+  grid-column: 8 / span 3;  /* spanning the next three columns */
+  grid-row: 2;
+}
 
         .button-30{
             margin-bottom: 2rem;
@@ -469,5 +494,9 @@ li {
     .button-30{
       font-size: 14px;
     }
+
+    span.votes {
+      text-align: center;
+  }
 
 }

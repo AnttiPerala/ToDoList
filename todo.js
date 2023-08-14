@@ -203,6 +203,7 @@ function doneTodo(id) {
         todo.timeDone = null;
     }
 
+    applyPreferredSorting();
     updateLocalStorage();
     drawTodos();
 }
@@ -214,6 +215,7 @@ function deleteTodo(id) {
     // Filter out the todo with the given id (which will delete it)
     todos = todos.filter(todo => todo.id !== id);
 
+    applyPreferredSorting();
     updateLocalStorage();
     drawTodos();
 }
@@ -225,20 +227,17 @@ drawTodos();
 function upvote(id) {
     let todo = todos.find(t => t.id === id);
     todo.votes++;
+    applyPreferredSorting();
     updateLocalStorage();
     drawTodos();
 }
 
-function upvote(id) {
-    let todo = todos.find(t => t.id === id);
-    todo.votes++;
-    updateLocalStorage();
-    drawTodos();
-}
+
 
 function downvote(id) {
     let todo = todos.find(t => t.id === id);
     todo.votes--;
+    applyPreferredSorting();
     updateLocalStorage();
     drawTodos();
 }
