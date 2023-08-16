@@ -13,6 +13,7 @@ Boost your productivity and create advanced To Do Lists with priority voting and
 + Vote for the item priority
 + Many sorting options for the items, including the point system, alphabetical order, color sorting, time-based sorting
 + Works on both mobile and desktop devices
++ filter existing items by typing in the task input bar
 
 
 
