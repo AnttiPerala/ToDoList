@@ -667,7 +667,7 @@ document.querySelector('#todoInput').addEventListener('input', function() {
     listItems.forEach(item => {
       const itemText = item.querySelector('.toDoText').textContent.toLowerCase();
       if (itemText.includes(filterValue)) {
-        item.style.display = 'list-item';
+        item.style.display = 'grid';
       } else {
         item.style.display = 'none';
       }
