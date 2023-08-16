@@ -657,3 +657,19 @@ document.querySelector(".menu").addEventListener("click", function(e) {
         document.getElementById("menu-toggle").checked = false;
     }
 });
+
+/* MAKE THE INPUT FIELD ALSO FILTER */
+
+document.querySelector('#todoInput').addEventListener('input', function() {
+    const filterValue = this.value.toLowerCase();
+    const listItems = document.querySelectorAll('.listItem');
+  
+    listItems.forEach(item => {
+      const itemText = item.querySelector('.toDoText').textContent.toLowerCase();
+      if (itemText.includes(filterValue)) {
+        item.style.display = 'list-item';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
