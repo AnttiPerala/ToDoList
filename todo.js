@@ -36,6 +36,8 @@ form.addEventListener('submit', (e) => {
     e.preventDefault();
     const topPriorityInput = document.getElementById('priorityCheck');
 
+   
+
   
 
 
@@ -43,6 +45,7 @@ form.addEventListener('submit', (e) => {
     // Calculate the current maximum votes
     let maxVotes = Math.max(...todos.map(todo => todo.votes)); //The map method creates a new array containing the votes of all todos, and the Math.max function finds the maximum value in this array. The ... operator (spread syntax) is used to spread the elements of this array into individual arguments to Math.max(). The effect is similar to calling Math.max(2, 5, 1), which returns 5.
 
+    const detailsTextarea = document.querySelector('.detailsTextarea');
 
 
     let newTodo = {
@@ -52,6 +55,7 @@ form.addEventListener('submit', (e) => {
         deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
         done: false,
         bgColor: selectedColor,
+        details: detailsTextarea ? detailsTextarea.value : null,
     }
 
     todos.push(newTodo);
@@ -72,6 +76,7 @@ form.addEventListener('submit', (e) => {
     selectedColor = colorOptions[randomIndex].style.backgroundColor;
 
     drawTodos();
+    document.getElementById('detailsContainer').innerHTML = '';
 });
 
 
@@ -98,6 +103,11 @@ function drawTodos() {
         // Set the id of the list item
         listItem.id = todo.id;
 
+        //add details as data attribute
+        if (todo.details) {
+            listItem.setAttribute('data-details', todo.details);
+        }
+
         let todoText = document.createElement('span');
         todoText.classList.add("toDoText");
         todoText.textContent = todo.text;
@@ -115,9 +125,19 @@ function drawTodos() {
         let infoBtn = document.createElement('button');
         infoBtn.classList.add("info-button");
         infoBtn.innerHTML = '<span>i</span>';
-        infoBtn.addEventListener('click', () => {
-            alert(`Time Added: ${listItem.getAttribute('data-timeAdded')}\nTime Done: ${listItem.getAttribute('data-timeDone') || 'Not Done Yet'}`);
-        });
+// Modify the Info Button Functionality
+infoBtn.addEventListener('click', (e) => {
+    let listItem = e.target.parentElement; 
+    let date=`Time Added: ${listItem.getAttribute('data-timeAdded')}\nTime Done: ${listItem.getAttribute('data-timeDone') || 'Not Done Yet'}`;
+    let details = listItem.getAttribute('data-details');
+
+    if (details || date) {
+        showDetails(date + details);
+    } else {
+        alert("No additional details available.");
+    }
+
+});
 
 
 
@@ -694,3 +714,37 @@ document.querySelector('#todoInput').addEventListener('input', function() {
       }
     });
   });
+
+  document.querySelector('.addDetails').addEventListener('click', () => {
+    let textarea = document.createElement('textarea');
+    textarea.name = "todoDetails"; // This will be useful when gathering form data
+    textarea.placeholder = "Enter additional details...";
+    textarea.classList.add('detailsTextarea');
+
+    document.getElementById('detailsContainer').appendChild(textarea);
+});
+
+/* CUSTOM MODAL */
+
+let modal = document.getElementById('detailsModal');
+let closeModal = document.querySelector('.modal-close');
+let detailsTextElement = document.getElementById('detailsText');
+
+// Function to open the modal and set the details text
+function showDetails(details) {
+    detailsTextElement.textContent = details;
+    modal.style.display = 'block';
+}
+
+// Close the modal
+closeModal.onclick = function() {
+    modal.style.display = 'none';
+}
+
+// Close the modal if clicked outside the modal content
+window.onclick = function(event) {
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+

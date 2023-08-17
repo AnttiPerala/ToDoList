@@ -43,17 +43,22 @@ body {
 #menuRow{
     background: #00ffff52;
     display: grid;
-    grid-template-columns: 8fr 1fr 1fr;
+    grid-template-columns: 8fr 1fr;
     align-items: center;
 }
 
 #todoForm {
-    display: grid;
-    grid-template-columns: 3fr 1fr 1fr 1fr;
-    align-items: center;
-    justify-items: start;
-    padding: 1rem;
-    gap: 1rem;
+  display: grid;
+  grid-template-columns: 5.5fr 2fr 1fr 1fr 1fr;
+  align-items: center;
+  justify-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+/* this puts the main add button to the left side of the second row */
+#todoForm > :nth-child(n+6):nth-child(-n+10) {
+  justify-self: start;
 }
 
 #todoInput, #deadlineInput, .submitTodo {
@@ -110,6 +115,40 @@ li {
     /* Background color when hovered */
    border: 1px rgba(0, 0, 0, 0.1) solid; /* This is just an example color, you can replace it with your preferred color */
   }
+
+  /* CUSTOM MODAL */
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%; /* Adjust this if you want */
+    max-width: 500px; /* Adjust this if you want */
+}
+
+.modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
 
 /* BUTTONS */
 .button-30 {
@@ -427,7 +466,26 @@ transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
     box-shadow: 0 6px 20px rgb(0 118 255 / 23%);
 }
 
+.btn.addDetails{
+  background-color: lightslategray;
+  padding: 0 20px;
+}
 
+.dropbtn{
+  display: inline-block;
+  outline: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0 20px;
+  height: 45px;
+  line-height: 45px;
+  border-radius: 7px;
+  color: white;
+  font-weight: 400;
+  font-size: 16px;
+  box-shadow: 0 4px 14px 0 rgb(0 118 255 / 39%);
+  transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
+  }
 
 /* MOBILE */
 

@@ -70,10 +70,19 @@
         </div>
     </div>
 
+    <div id="extraInfoButtonContainer">
+        <button class="addDetails btn" type="button">+ Details</button>
+        <input type="file" id="uploadInput"  style="display: none"> <!-- maybe needed for restore -->
+    </div>
 
+            <div id="detailsContainer"></div>
             
             <button class="submitTodo btn" type="submit">Add</button>
         </form>
+        
+
+        
+        
         <div id="notificationPlaceholder">
             <div id="notificationWrap">
                 <label for="notificationToggle"> Enable notifications</label>
@@ -82,21 +91,22 @@
 
             </div>
         </div>
-
-
- 
-
-
-        <div id="backUpAndRestoreButtonsContainer">
-            <input type="file" id="uploadInput"  style="display: none">
-        </div>
-
     
     
     </div>
 
    
-    
+
+
+<div id="detailsModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2>Todo Details</h2>
+        <p id="detailsText"></p>
+        <button id="saveDetailsBtn">Edit Details</button>
+    </div>
+</div>
+
     
 
     <ul id="todoList">
