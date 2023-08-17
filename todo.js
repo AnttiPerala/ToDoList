@@ -92,8 +92,12 @@ function drawTodos() {
     todos.forEach(todo => {
         let listItem = document.createElement('li');
 
+         // Check if the todo has a timeAdded property, and use it, otherwise use id
+        let timeAddedValue = todo.timeAdded ? new Date(todo.timeAdded).toLocaleString() : new Date(todo.id).toLocaleString();
+    
+
         // Embed the time added as a data-attribute
-        listItem.setAttribute('data-timeAdded', new Date(todo.id).toLocaleString());
+        listItem.setAttribute('data-timeAdded', timeAddedValue);
 
         // If there's a timeDone value, embed it as a data-attribute
         if (todo.timeDone) {
@@ -396,12 +400,24 @@ uploadInput.addEventListener('change', () => {
 
 // Helper function to check if a date is today
 function isToday(date) {
-    if (!date) return false;
+    let parsedDate;
+
+    if (typeof date === 'string') {
+        parsedDate = new Date(date);
+    } else if (date instanceof Date) {
+        parsedDate = date;
+    } else {
+        console.error("Received invalid date:", date);
+        return false;
+    }
+
     const today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
+    return parsedDate.getDate() === today.getDate() &&
+           parsedDate.getMonth() === today.getMonth() &&
+           parsedDate.getFullYear() === today.getFullYear();
 }
+
+
 
 /* DOUBLE CLICK TO EDIT TEXT */
 
@@ -552,43 +568,69 @@ window.onload = function() {
         if (isEditing) {
             // Save Changes logic
             valueSpans.forEach(span => {
+                let valueToUse;
                 const input = span.querySelector('input');
+                const textarea = span.querySelector('textarea');
+    
                 if (input) {
-                    span.textContent = input.value;  // reset back to text
-                    const detailTypeClass = span.closest('p').classList[0];
-                    const todoProp = classNameToObjectPropMap[detailTypeClass];
+                    valueToUse = input.value;
+                } else if (textarea) {
+                    valueToUse = textarea.value;
+                }
     
-                    switch(todoProp) {
-                        case 'votes':
-                            todoToUpdate[todoProp] = Number(input.value);
-                            break;
+                span.textContent = valueToUse;
     
-                        case 'timeAdded':
-                        case 'deadline':
-                        case 'timeDone':
-                            if (input.value) {
-                                todoToUpdate[todoProp] = new Date(input.value).toISOString();
-                            } else {
-                                todoToUpdate[todoProp] = null;
+                const detailTypeClass = span.closest('p').classList[0];
+                const todoProp = classNameToObjectPropMap[detailTypeClass];
+    
+                switch (todoProp) {
+                    case 'votes':
+                        todoToUpdate[todoProp] = Number(valueToUse);
+                        break;
+                    case 'timeAdded':
+                    case 'deadline':
+                    case 'timeDone':
+                        if (valueToUse) {
+                            const dateObj = new Date(valueToUse);
+                            todoToUpdate[todoProp] = dateObj.toISOString();
+                            span.setAttribute('data-iso', dateObj.toISOString());  // Set the data-iso attribute
+                            // Using nicer formatting for display
+                            span.textContent = formatDateTimeForDisplay(dateObj.toISOString());  
+    
+                            if (todoProp === 'timeDone') {
+                                todoToUpdate.done = true;  // Mark as done if 'timeDone' has a value.
                             }
-                            break;
+                        } else {
+                            todoToUpdate[todoProp] = null;
+                            if (todoProp === 'timeDone') {
+                                todoToUpdate.done = false;  // Mark as not done if 'timeDone' has no value.
+                                span.textContent = "Not done yet";
+                            } else if (todoProp === 'deadline') {
+                                span.textContent = "No deadline set";
+                            } else if (todoProp === 'timeAdded') {
+                                span.textContent = "No time added"; // or any other placeholder text you prefer
+                            }
+                        }
+                        break;
     
-                        default:
-                            todoToUpdate[todoProp] = input.value;
-                    }
+                    default:
+                        todoToUpdate[todoProp] = valueToUse;
                 }
             });
+    
             saveDetailsBtn.textContent = "Edit Details";
+    
         } else {
             // Edit Details logic
             valueSpans.forEach(span => {
                 const currentText = span.textContent;
                 const parentP = span.closest('p');
-    
+            
                 if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
                     const isoDateTime = span.getAttribute('data-iso') || "";
                     span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
-
+                } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) { // check for the textarea cases
+                    span.innerHTML = `<textarea rows="1">${currentText}</textarea>`; // the rows attribute can be adjusted to your liking
                 } else {
                     span.innerHTML = `<input type="text" value="${currentText}">`;
                 }
@@ -597,9 +639,11 @@ window.onload = function() {
         }
     
         isEditing = !isEditing;
+        applyPreferredSorting();
         updateLocalStorage();        
         drawTodos();
     });
+    
     
     
     
@@ -672,10 +716,17 @@ function sortAlphabetically() {
 
 
 function sortByTimeAdded() {
-    todos.sort((a, b) => a.id - b.id);
+    todos.sort((a, b) => {
+        // Check if timeAdded exists for the todos, if not, use id
+        let timeA = a.timeAdded ? new Date(a.timeAdded).getTime() : a.id;
+        let timeB = b.timeAdded ? new Date(b.timeAdded).getTime() : b.id;
+
+        return timeA - timeB;
+    });
     localStorage.setItem('preferredSorting', 'timeAdded');
     drawTodos();
 }
+
 
 
 function sortByTimeDone() {
@@ -771,6 +822,13 @@ function sortByColor() {
 
 function sortByDeadline() {
     todos.sort((a, b) => {
+        // If a is done and b is not, then a should come after b
+        if (a.done && !b.done) return 1;
+        
+        // If b is done and a is not, then b should come after a
+        if (b.done && !a.done) return -1;
+        
+        // Now that we've handled the "done" cases, we can compare deadlines
         if (a.deadline && b.deadline) {
             return new Date(a.deadline) - new Date(b.deadline);
         } else if (a.deadline) {
@@ -784,6 +842,7 @@ function sortByDeadline() {
     localStorage.setItem('preferredSorting', 'deadline');
     drawTodos();
 }
+
 
 /* Close menu */
 /* The behavior of the "toggle menu" you've described relies on the interaction of the CSS pseudo-class :checked and the general sibling combinator (~). Here's a breakdown of how it works:
@@ -883,3 +942,23 @@ function formatDateTimeForDisplay(isoString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
     return dateObj.toLocaleString(undefined, options);
 }
+
+/* DELETE STORAGE */
+
+document.getElementById("clearLocalStorageBtn").addEventListener("click", function(event) {
+    // Prevent default behavior (like navigating to another page)
+    event.preventDefault();
+
+    // Display a confirmation dialog
+    var userConfirmation = window.confirm("Are you sure you want to clear selected items from LocalStorage?");
+
+    // If the user clicks "OK"
+    if (userConfirmation) {
+        // Delete only the specified items from localStorage
+        localStorage.removeItem('todos');
+        localStorage.removeItem('preferredSorting');
+        
+        // Notify the user
+        drawTodos();
+    }
+});
