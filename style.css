@@ -305,9 +305,9 @@ li {
 }
 
 .menu-button-container {
+  padding-top: 1rem;
   display: flex;
   height: 100%;
-  width: 30px;
   cursor: pointer;
   flex-direction: column;
   justify-content: center;
@@ -357,7 +357,6 @@ li {
  .menu {
   max-width: 40rem;
    top: 0;
-   margin-top: 50px;
    left: 0;
    flex-direction: column;
    width: 100%;
@@ -440,6 +439,10 @@ transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
     body{
         padding: 0;
     }
+
+    h1#mainTitle {
+      font-size: 4rem;
+  }
 
     #menuRow{
       grid-template-columns: 1fr;

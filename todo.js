@@ -568,6 +568,8 @@ document.querySelector("#sortAlphaBtn").addEventListener("click", sortAlphabetic
 document.querySelector("#sortColorBtn").addEventListener("click", sortByColor);
 document.querySelector("#sortTimeAddedBtn").addEventListener("click", sortByTimeAdded);
 document.querySelector("#sortTimeDoneBtn").addEventListener("click", sortByTimeDone);
+document.querySelector("#sortDeadlineBtn").addEventListener('click', sortByDeadline);
+
 
 function applyPreferredSorting() {
     const sortingMethod = localStorage.getItem('preferredSorting');
@@ -580,6 +582,9 @@ function applyPreferredSorting() {
             sortAlphabetically();
             break;
         case 'color':
+            sortByColor();
+            break;
+        case 'deadline':
             sortByColor();
             break;
         case 'timeAdded':
@@ -629,6 +634,22 @@ function sortByColor() {
     });
 
     localStorage.setItem('preferredSorting', 'color');
+    drawTodos();
+}
+
+function sortByDeadline() {
+    todos.sort((a, b) => {
+        if (a.deadline && b.deadline) {
+            return new Date(a.deadline) - new Date(b.deadline);
+        } else if (a.deadline) {
+            return -1; // If only a has a deadline, a comes first
+        } else if (b.deadline) {
+            return 1;  // If only b has a deadline, b comes first
+        } else {
+            return 0;  // If neither have a deadline, they are equal
+        }
+    });
+    localStorage.setItem('preferredSorting', 'deadline');
     drawTodos();
 }
 
