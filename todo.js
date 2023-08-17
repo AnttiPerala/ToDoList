@@ -125,19 +125,43 @@ function drawTodos() {
         let infoBtn = document.createElement('button');
         infoBtn.classList.add("info-button");
         infoBtn.innerHTML = '<span>i</span>';
-// Modify the Info Button Functionality
-infoBtn.addEventListener('click', (e) => {
-    let listItem = e.target.parentElement; 
-    let date=`Time Added: ${listItem.getAttribute('data-timeAdded')}\nTime Done: ${listItem.getAttribute('data-timeDone') || 'Not Done Yet'}`;
-    let details = listItem.getAttribute('data-details');
 
-    if (details || date) {
-        showDetails(date + details);
-    } else {
-        alert("No additional details available.");
-    }
+    // Modify the Info Button Functionality
+    infoBtn.addEventListener('click', (e) => {
+        let listItem = e.target.closest('li'); 
+    
+        if (!listItem) return; 
+    
+        let timeAdded = listItem.getAttribute('data-timeAdded');
+        let timeDoneValue = listItem.getAttribute('data-timeDone');
+    
+        let timeDone;
+    
+        if (timeDoneValue) {  // Check if the attribute exists and is not null
+            timeDone = new Date(timeDoneValue).toLocaleString();
+        } else {
+            timeDone = "Not done yet";
+        }
+    
+        let details = listItem.getAttribute('data-details');
 
-});
+        let toDoTextElement = listItem.querySelector('.toDoText');
+
+        let formattedDeadline = todo.deadline ? formatDateToDateTimeLocal(todo.deadline) : "No deadline set";
+
+    showDetails(todo.id,`
+        <p class="detailsMainText">Text: <span class="value">${toDoTextElement.textContent}</span></p>
+        <p class="detailsVotes">Votes: <span class="value">${todo.votes}</span></p>
+        <p class="detailsDate">Time Added: <span class="value">${formatDateToDateTimeLocal(listItem.getAttribute('data-timeAdded'))}</span></p>
+        <p class="detailsDeadline">Deadline: <span class="value">${formattedDeadline}</span></p>
+        <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p>
+        <p class="detailsDetails">Additional details: <span class="value">${details ? details : "None"}</span></p>`);
+
+    
+        
+    });
+    
+    
 
 
 
@@ -162,11 +186,22 @@ infoBtn.addEventListener('click', (e) => {
         deleteBtn.textContent = 'Delete';
         deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
 
-        // Add a display for the deadline
-        let deadlineDisplay = document.createElement('span');
-        if (todo.deadline) {
-            deadlineDisplay.textContent = `Deadline: ${todo.deadline.toDateString()}`;
-        }
+      // Add a display for the deadline
+let deadlineDisplay = document.createElement('span');
+if (todo.deadline) {
+    // Ensure that todo.deadline is a Date object
+    if (!(todo.deadline instanceof Date)) {
+        todo.deadline = new Date(todo.deadline);
+    }
+
+    // If it's a valid date after attempting conversion
+    if (!isNaN(todo.deadline.getTime())) {
+        deadlineDisplay.textContent = `Deadline: ${todo.deadline.toDateString()}`;
+    } else {
+        deadlineDisplay.textContent = `Deadline: Invalid Date`; // or handle it some other way
+    }
+}
+
         
         listItem.appendChild(todoText);
         listItem.appendChild(deadlineDisplay);
@@ -208,7 +243,7 @@ infoBtn.addEventListener('click', (e) => {
             todo.notified = true;
             updateLocalStorage();
         }
-    });
+    }); /* end foreach todo */
 }
 
 function doneTodo(id) {
@@ -492,6 +527,80 @@ window.onload = function() {
         notificationCheckbox.style.display = "none";
     }
     applyPreferredSorting();
+
+    /* DETAILS EDITING */
+    const detailsModal = document.getElementById('detailsModal');
+    const detailsTextElem = document.getElementById('detailsText');
+    const saveDetailsBtn = document.getElementById('saveDetailsBtn');
+    let isEditing = false;  // A flag to track the editing state
+    
+    const classNameToObjectPropMap = {
+        "detailsMainText": "text",
+        "detailsVotes": "votes",
+        "detailsDate": "timeAdded",
+        "detailsDeadline": "deadline",  // New mapping for the deadline
+        "detailsTimeDone": "timeDone",
+        "detailsDetails": "details"
+    };
+    
+    saveDetailsBtn.addEventListener('click', () => {
+        const valueSpans = detailsTextElem.querySelectorAll('.value');
+        const todoId = detailsModal.getAttribute('data-todo-id');
+        let todoToUpdate = todos.find(todo => todo.id === Number(todoId));
+    
+        if (isEditing) {
+            // Save Changes logic
+            valueSpans.forEach(span => {
+                const input = span.querySelector('input');
+                if (input) {
+                    span.textContent = input.value;  // reset back to text
+                    const detailTypeClass = span.closest('p').classList[0];
+                    const todoProp = classNameToObjectPropMap[detailTypeClass];
+    
+                    switch(todoProp) {
+                        case 'votes':
+                            todoToUpdate[todoProp] = Number(input.value);
+                            break;
+    
+                        case 'timeAdded':
+                        case 'deadline':
+                        case 'timeDone':
+                            if (input.value) {
+                                todoToUpdate[todoProp] = new Date(input.value).toISOString();
+                            } else {
+                                todoToUpdate[todoProp] = null;
+                            }
+                            break;
+    
+                        default:
+                            todoToUpdate[todoProp] = input.value;
+                    }
+                }
+            });
+            saveDetailsBtn.textContent = "Edit Details";
+        } else {
+            // Edit Details logic
+            valueSpans.forEach(span => {
+                const currentText = span.textContent;
+                const parentP = span.closest('p');
+    
+                if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
+                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(currentText)}">`;
+                } else {
+                    span.innerHTML = `<input type="text" value="${currentText}">`;
+                }
+            });
+            saveDetailsBtn.textContent = "Save Changes";
+        }
+    
+        isEditing = !isEditing;
+        updateLocalStorage();        
+        drawTodos();
+    });
+    
+    
+    
+    
 }
 
 
@@ -728,13 +837,16 @@ document.querySelector('#todoInput').addEventListener('input', function() {
 
 let modal = document.getElementById('detailsModal');
 let closeModal = document.querySelector('.modal-close');
-let detailsTextElement = document.getElementById('detailsText');
+let detailsTextElem = document.getElementById('detailsText');
 
 // Function to open the modal and set the details text
-function showDetails(details) {
-    detailsTextElement.textContent = details;
+function showDetails(todoId, detailsHTML) {
+    detailsTextElem.innerHTML = detailsHTML;
+    modal.setAttribute('data-todo-id', todoId); // Save the todoId in the modal for reference
     modal.style.display = 'block';
 }
+
+
 
 // Close the modal
 closeModal.onclick = function() {
@@ -748,3 +860,14 @@ window.onclick = function(event) {
     }
 }
 
+/* HELPER FUNCTION FOR TIME FORMATTING */
+
+function formatDateToDateTimeLocal(date) {
+    let parsedDate = new Date(date);
+    
+    // Check if parsedDate is valid
+    if (isNaN(parsedDate.getTime())) return "";
+
+    let formattedDate = parsedDate.toISOString().split('.')[0];
+    return formattedDate;
+}
