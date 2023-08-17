@@ -81,6 +81,7 @@ form.addEventListener('submit', (e) => {
 
 
 function drawTodos() {
+    let list = document.querySelector('#todoList');
     list.innerHTML = '';
 
     // Get today's date at midnight for comparison
@@ -958,7 +959,7 @@ document.getElementById("clearLocalStorageBtn").addEventListener("click", functi
         localStorage.removeItem('todos');
         localStorage.removeItem('preferredSorting');
         
-        // Notify the user
+        todos = [];
         drawTodos();
     }
 });

@@ -116,6 +116,14 @@ li {
    border: 1px rgba(0, 0, 0, 0.1) solid; /* This is just an example color, you can replace it with your preferred color */
   }
 
+  div#detailsContainer {
+    width: 100%;
+}
+  textarea.detailsTextarea {
+    width: 100%;
+    min-height: 5rem;
+}
+
   /* CUSTOM MODAL */
 
   .modal {
@@ -583,5 +591,9 @@ transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
     span.votes {
       text-align: center;
   }
+
+  #todoForm > :nth-child(n+6):nth-child(-n+10) {
+    justify-self: center;
+}
 
 }
