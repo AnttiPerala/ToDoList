@@ -149,13 +149,14 @@ function drawTodos() {
 
         let formattedDeadline = todo.deadline ? formatDateToDateTimeLocal(todo.deadline) : "No deadline set";
 
-    showDetails(todo.id,`
+        showDetails(todo.id,`
         <p class="detailsMainText">Text: <span class="value">${toDoTextElement.textContent}</span></p>
         <p class="detailsVotes">Votes: <span class="value">${todo.votes}</span></p>
-        <p class="detailsDate">Time Added: <span class="value">${formatDateToDateTimeLocal(listItem.getAttribute('data-timeAdded'))}</span></p>
-        <p class="detailsDeadline">Deadline: <span class="value">${formattedDeadline}</span></p>
-        <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p>
+        <p class="detailsDate">Time Added: <span class="value" data-iso="${listItem.getAttribute('data-timeAdded')}">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></p>
+        <p class="detailsDeadline">Deadline: <span class="value" data-iso="${todo.deadline}">${formatDateTimeForDisplay(todo.deadline)}</span></p>
+        <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p> 
         <p class="detailsDetails">Additional details: <span class="value">${details ? details : "None"}</span></p>`);
+    
 
     
         
@@ -585,7 +586,9 @@ window.onload = function() {
                 const parentP = span.closest('p');
     
                 if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
-                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(currentText)}">`;
+                    const isoDateTime = span.getAttribute('data-iso') || "";
+                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
+
                 } else {
                     span.innerHTML = `<input type="text" value="${currentText}">`;
                 }
@@ -851,6 +854,7 @@ function showDetails(todoId, detailsHTML) {
 // Close the modal
 closeModal.onclick = function() {
     modal.style.display = 'none';
+    isEditing = false;
 }
 
 // Close the modal if clicked outside the modal content
@@ -870,4 +874,12 @@ function formatDateToDateTimeLocal(date) {
 
     let formattedDate = parsedDate.toISOString().split('.')[0];
     return formattedDate;
+}
+
+/* NICER TIME DISPLAY FORMAT */
+function formatDateTimeForDisplay(isoString) {
+    if (!isoString) return "";
+    const dateObj = new Date(isoString);
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    return dateObj.toLocaleString(undefined, options);
 }
