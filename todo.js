@@ -34,31 +34,48 @@ const list = document.getElementById('todoList');
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const topPriorityInput = document.getElementById('priorityCheck');
+    const topPriorityInput = document.getElementById('topPriorityCheck');
+    const midPriorityCheck = document.getElementById('midPriorityCheck');
 
-   
+   // Add event listeners to the checkboxes
+topPriorityCheck.addEventListener('change', function() {
+    if (this.checked) {
+        midPriorityCheck.checked = false;
+    }
+});
+
+midPriorityCheck.addEventListener('change', function() {
+    if (this.checked) {
+        topPriorityCheck.checked = false;
+    }
+});
 
   
 
 
 
-    // Calculate the current maximum votes
-    let maxVotes = Math.max(...todos.map(todo => todo.votes)); //The map method creates a new array containing the votes of all todos, and the Math.max function finds the maximum value in this array. The ... operator (spread syntax) is used to spread the elements of this array into individual arguments to Math.max(). The effect is similar to calling Math.max(2, 5, 1), which returns 5.
+// Calculate the current maximum votes
+let maxVotes = Math.max(...todos.map(todo => todo.votes));
 
-    const detailsTextarea = document.querySelector('.detailsTextarea');
+// Calculate the average votes
+let sumVotes = todos.reduce((acc, todo) => acc + todo.votes, 0);
+let averageVotes = todos.length ? Math.max(1, Math.round(sumVotes / todos.length)) : 1; 
+
+const detailsTextarea = document.querySelector('.detailsTextarea');
+
+let newTodo = {
+    id: Date.now(),
+    text: input.value,
+    votes: topPriorityInput.checked ? maxVotes + 1 : midPriorityCheck.checked ? averageVotes : 0,
+    deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
+    done: false,
+    bgColor: selectedColor,
+    details: detailsTextarea ? detailsTextarea.value : null,
+}
+
+todos.push(newTodo);
 
 
-    let newTodo = {
-        id: Date.now(),
-        text: input.value,
-        votes: topPriorityInput.checked ? maxVotes + 1 : 0,
-        deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
-        done: false,
-        bgColor: selectedColor,
-        details: detailsTextarea ? detailsTextarea.value : null,
-    }
-
-    todos.push(newTodo);
     updateLocalStorage();
     applyPreferredSorting();
 
