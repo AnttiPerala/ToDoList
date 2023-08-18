@@ -584,102 +584,86 @@ window.onload = function() {
 
     };
     
-saveDetailsBtn.addEventListener('click', () => {
-    const valueSpans = detailsTextElem.querySelectorAll('.value');
-    const todoId = detailsModal.getAttribute('data-todo-id');
-    let todoToUpdate = todos.find(todo => todo.id === Number(todoId));
-    console.log("Initial todoToUpdate:", todoToUpdate);
-
-    if (isEditing) {
-        // Save Changes logic
-        valueSpans.forEach(span => {
-            let valueToUse;
-            const input = span.querySelector('input');
-            const textarea = span.querySelector('textarea');
-
-            if (input) {
-                valueToUse = input.value;
-            } else if (textarea) {
-                valueToUse = textarea.value;
-                span.textContent = valueToUse; // Convert textarea back to text
-            }
-
-            const detailTypeClass = span.closest('p').classList[0];
-            const todoProp = classNameToObjectPropMap[detailTypeClass];
-
-            switch (todoProp) {
-                case 'votes':
-                    todoToUpdate[todoProp] = Number(valueToUse);
-                    span.textContent = valueToUse;  // Convert votes input back to text
-                    break;
-                case 'timeAdded':
-                case 'deadline':
-                case 'timeDone':
-                    if (valueToUse) {
-                        const dateObj = new Date(valueToUse);
-                        todoToUpdate[todoProp] = dateObj.toISOString();
-                        span.setAttribute('data-iso', dateObj.toISOString());
-                        span.textContent = formatDateTimeForDisplay(dateObj.toISOString());
-
-                        if (todoProp === 'timeDone') {
-                            todoToUpdate.done = true;
+    saveDetailsBtn.addEventListener('click', () => {
+        const valueSpans = detailsTextElem.querySelectorAll('.value');
+        const todoId = detailsModal.getAttribute('data-todo-id');
+        let todoToUpdate = todos.find(todo => todo.id === Number(todoId));
+        console.log("Initial todoToUpdate:", todoToUpdate);
+    
+        const colorBox = document.querySelector('.colorBox'); // Move this line outside the loop
+    
+        if (isEditing) {
+            // Save Changes logic
+            valueSpans.forEach(span => {
+                let valueToUse;
+                const input = span.querySelector('input');
+                const textarea = span.querySelector('textarea');
+    
+                if (input) {
+                    valueToUse = input.value;
+                } else if (textarea) {
+                    valueToUse = textarea.value;
+                    span.textContent = valueToUse; // Convert textarea back to text
+                }
+    
+                const detailTypeClass = span.closest('p').classList[0];
+                const todoProp = classNameToObjectPropMap[detailTypeClass];
+    
+                switch (todoProp) {
+                    case 'votes':
+                        todoToUpdate[todoProp] = Number(valueToUse);
+                        span.textContent = valueToUse;  // Convert votes input back to text
+                        break;
+                    case 'bgColor':
+                        const colorInput = span.querySelector('input[type="color"]');
+                        if (colorInput) {
+                            colorBox.style.display = 'none';
+                            todoToUpdate['bgColor'] = colorInput.value;
                         }
-                    } else {
-                        todoToUpdate[todoProp] = null;
-                        if (todoProp === 'timeDone') {
-                            todoToUpdate.done = false;
-                            span.textContent = "Not done yet";
-                        } else if (todoProp === 'deadline') {
-                            span.textContent = "No deadline set";
-                        } else if (todoProp === 'timeAdded') {
-                            span.textContent = "No time added";
+                        break;
+                    default:
+                        todoToUpdate[todoProp] = valueToUse;
+                        if (input && input.type !== 'color') {
+                            span.textContent = valueToUse; // Convert input back to text
                         }
-                    }
-                    break;
-                case 'bgColor':
-                    const colorInput = span.querySelector('input[type="color"]');
-                    if (colorInput) {
-                        console.log("Before:", todoToUpdate['bgColor']); // Log before
-                        todoToUpdate['bgColor'] = colorInput.value;
-                        console.log("After:", todoToUpdate['bgColor']);  // Log after
-                    }
-                    break;
-                default:
-                    todoToUpdate[todoProp] = valueToUse;
-                    if (input && input.type !== 'color') {
-                        span.textContent = valueToUse; // Convert input back to text
-                    }
-            }
-        });
-
-        saveDetailsBtn.textContent = "Edit Details";
-    } else {
-        // Edit Details logic
-        valueSpans.forEach(span => {
-            const currentText = span.textContent;
-            const parentP = span.closest('p');
-
-            if (parentP.classList.contains('detailsBgColor')) {
-                const currentColor = todoToUpdate.bgColor || "#000000"; // Default to black if no color is set
-                span.innerHTML = `<input type="color" value="${currentColor}">`;
-            } else if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
-                const isoDateTime = span.getAttribute('data-iso') || "";
-                span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
-            } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) {
-                span.innerHTML = `<textarea rows="1">${currentText}</textarea>`;
-            } else {
-                span.innerHTML = `<input type="text" value="${currentText}">`;
-            }
-        });
-
-        saveDetailsBtn.textContent = "Save Changes";
-    }
-
-    isEditing = !isEditing;
-    applyPreferredSorting();
-    updateLocalStorage();        
-    drawTodos();
-});
+                }
+            });
+    
+            saveDetailsBtn.textContent = "Edit Details";
+        } else {
+            // Edit Details logic
+            valueSpans.forEach(span => {
+                const currentText = span.textContent;
+                const parentP = span.closest('p');
+    
+                if (parentP.classList.contains('detailsBgColor')) {
+                    colorBox.style.display = 'none'; // Hide colorBox when switching to edit mode
+                    const currentColor = todoToUpdate.bgColor || "#000000";
+                    span.innerHTML = `<input type="color" value="${currentColor}">`;
+                } else if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
+                    const isoDateTime = span.getAttribute('data-iso') || "";
+                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
+                } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) {
+                    span.innerHTML = `<textarea rows="1">${currentText}</textarea>`;
+                } else {
+                    span.innerHTML = `<input type="text" value="${currentText}">`;
+                }
+            });
+    
+            saveDetailsBtn.textContent = "Save Changes";
+        }
+    
+        isEditing = !isEditing;
+    
+        if (!isEditing) {
+            colorBox.style.display = 'block'; // Show colorBox when switching back to view mode
+        }
+    
+        applyPreferredSorting();
+        updateLocalStorage();        
+        drawTodos();
+    });
+    
 }
 
 
