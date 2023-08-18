@@ -1058,3 +1058,14 @@ document.getElementById("clearLocalStorageBtn").addEventListener("click", functi
         drawTodos();
     }
 });
+
+/* TOGGLE FORM OPTIONS DETAILS */
+
+document.querySelector('.collapsible-btn').addEventListener('click', function() {
+    const content = document.querySelector('.collapsible-content');
+    if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'grid';
+    } else {
+        content.style.display = 'none';
+    }
+});

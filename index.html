@@ -1,125 +1,141 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Todo List</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
     <header id="myHeader">
-            <!-- menu 2 -->
-            <div class="menuWrap">
-                    <input id="menu-toggle" type="checkbox" />
-                <label class='menu-button-container' for="menu-toggle">
-                    <div class='menu-button'></div>
-                </label>
-                <ul class="menu">
-                    <li><a href="#" id="loginBtn">Login</a> <span class="note"> (Only needed for syncing across devices)</span> </li>
-                    <li><a href="#" id="backupBtn">Backup</a></li>
-                    <li><a href="#" id="restoreBtn">Restore</a></li>
-                    <li><a href="#" id="sortPointsBtn">Sort by Points</a><span class="note"> (Default)</span></li>
-                    <li><a href="#" id="sortAlphaBtn">Sort Alphabetically</a></li>
-                    <li><a href="#" id="sortColorBtn">Sort by Color</a></li>
-                    <li><a href="#" id="sortDeadlineBtn">Sort by Deadline</a></li>
-                    <li><a href="#" id="sortTimeAddedBtn">Sort by Time Added</a></li>
-                    <li><a href="#" id="sortTimeDoneBtn">Sort by Time Marked "Done"</a></li>
-                    <li><a href="#" id="clearLocalStorageBtn">Delete all to do items</a></li>
+      <!-- menu 2 -->
+      <div class="menuWrap">
+        <input id="menu-toggle" type="checkbox" />
+        <label class="menu-button-container" for="menu-toggle">
+          <div class="menu-button"></div>
+        </label>
+        <ul class="menu">
+          <li>
+            <a href="#" id="loginBtn">Login</a>
+            <span class="note"> (Only needed for syncing across devices)</span>
+          </li>
+          <li><a href="#" id="backupBtn">Backup</a></li>
+          <li><a href="#" id="restoreBtn">Restore</a></li>
+          <li>
+            <a href="#" id="sortPointsBtn">Sort by Points</a
+            ><span class="note"> (Default)</span>
+          </li>
+          <li><a href="#" id="sortAlphaBtn">Sort Alphabetically</a></li>
+          <li><a href="#" id="sortColorBtn">Sort by Color</a></li>
+          <li><a href="#" id="sortDeadlineBtn">Sort by Deadline</a></li>
+          <li><a href="#" id="sortTimeAddedBtn">Sort by Time Added</a></li>
+          <li>
+            <a href="#" id="sortTimeDoneBtn">Sort by Time Marked "Done"</a>
+          </li>
+          <li>
+            <a href="#" id="clearLocalStorageBtn">Delete all to do items</a>
+          </li>
 
-                    <input type="file" id="uploadInput" style="display: none;" />
-                </ul>
-            </div>
-           
-        <h1 id="mainTitle">To Do List</h1>
-        
+          <input type="file" id="uploadInput" style="display: none" />
+        </ul>
+      </div>
 
+      <h1 id="mainTitle">To Do List</h1>
     </header>
 
-
-
     <div id="menuRow">
+      <form id="todoForm">
+        <input type="text" id="todoInput" placeholder="Add a new task" />
 
-        <form id="todoForm">
-            <input type="text" id="todoInput" placeholder="Add a new task">
-            <input type="date" id="deadlineInput">
-            <div id="priorityCheckWrap">
+        <button class="collapsible-btn" type="button">Options</button>
 
-                    <label for="priorityCheck">Top Priority: </label>
-                    <input type="checkbox" id="topPriorityCheck" class="large-checkbox">
-                    <br>
-                    <label for="priorityCheck">Mid Priority: </label>
-                    <input type="checkbox" id="midPriorityCheck" class="large-checkbox">
-                
+        <div class="collapsible-content">
+          <!-- all your other elements, like #deadlineInput, .dropdown, etc. -->
+          <div class="deadLineWrap">
+                Deadline:
+            <input type="date" id="deadlineInput" />
+          </div>
+          
+          <div id="priorityCheckWrap">
+            <label for="priorityCheck">Top Priority: </label>
+            <input
+              type="checkbox"
+              id="topPriorityCheck"
+              class="large-checkbox"
+            />
+            <br />
+            <label for="priorityCheck">Mid Priority: </label>
+            <input
+              type="checkbox"
+              id="midPriorityCheck"
+              class="large-checkbox"
+            />
+          </div>
+          <div class="dropdown">
+            <button class="dropbtn" id="dropbtn" type="button">
+              Choose color
+            </button>
+            <div class="dropdown-content" id="dropdown">
+              <div style="background-color: #ffb3ba" class="color-option"></div>
+              <div style="background-color: #ffdfba" class="color-option"></div>
+              <div style="background-color: #ffffba" class="color-option"></div>
+              <div style="background-color: #baffc9" class="color-option"></div>
+              <div style="background-color: #bae1ff" class="color-option"></div>
+              <div style="background-color: #e8b5ce" class="color-option"></div>
+              <div style="background-color: #f7d5b6" class="color-option"></div>
+              <div style="background-color: #f2f6b6" class="color-option"></div>
+              <div style="background-color: #a6e3d7" class="color-option"></div>
+              <div style="background-color: #c3ddf9" class="color-option"></div>
+              <div style="background-color: #ccd1ff" class="color-option"></div>
+              <div style="background-color: #e8ccff" class="color-option"></div>
+              <div style="background-color: #ffccf9" class="color-option"></div>
+              <div style="background-color: #ffcccc" class="color-option"></div>
+              <div style="background-color: #d5a6a6" class="color-option"></div>
+              <div style="background-color: #aedff7" class="color-option"></div>
+              <div style="background-color: #d6f5d6" class="color-option"></div>
+              <div style="background-color: #f5f6c4" class="color-option"></div>
+              <div style="background-color: #f6ecf7" class="color-option"></div>
+              <div style="background-color: #f7d9c4" class="color-option"></div>
             </div>
-    <div class="dropdown">
-        <button class="dropbtn" id="dropbtn" type="button">Choose color</button>
-        <div class="dropdown-content" id="dropdown">
-            <div style="background-color:#FFB3BA;" class="color-option"></div>
-            <div style="background-color:#FFDFBA;" class="color-option"></div>
-            <div style="background-color:#FFFFBA;" class="color-option"></div>
-            <div style="background-color:#BAFFC9;" class="color-option"></div>
-            <div style="background-color:#BAE1FF;" class="color-option"></div>
-            <div style="background-color:#E8B5CE;" class="color-option"></div>
-            <div style="background-color:#F7D5B6;" class="color-option"></div>
-            <div style="background-color:#F2F6B6;" class="color-option"></div>
-            <div style="background-color:#A6E3D7;" class="color-option"></div>
-            <div style="background-color:#C3DDF9;" class="color-option"></div>
-            <div style="background-color:#CCD1FF;" class="color-option"></div>
-            <div style="background-color:#E8CCFF;" class="color-option"></div>
-            <div style="background-color:#FFCCF9;" class="color-option"></div>
-            <div style="background-color:#FFCCCC;" class="color-option"></div>
-            <div style="background-color:#D5A6A6;" class="color-option"></div>
-            <div style="background-color:#AEDFF7;" class="color-option"></div>
-            <div style="background-color:#D6F5D6;" class="color-option"></div>
-            <div style="background-color:#F5F6C4;" class="color-option"></div>
-            <div style="background-color:#F6ECF7;" class="color-option"></div>
-            <div style="background-color:#F7D9C4;" class="color-option"></div>
+          </div>
+
+          <div id="extraInfoButtonContainer">
+            <button class="addDetails btn" type="button">+ Details</button>
+            <input type="file" id="uploadInput" style="display: none" />
+            <!-- maybe needed for restore -->
+          </div>
+
+          <div id="detailsContainer"></div>
+        </div><!-- end collapsible content -->
+
+        <button class="submitTodo btn" type="submit">Add</button>
+
+        
+      </form>
+
+      <div id="notificationPlaceholder">
+        <div id="notificationWrap">
+          <label for="notificationToggle"> Enable notifications</label>
+          <input
+            type="checkbox"
+            id="notificationToggle"
+            name="notificationToggle"
+          />
+          <button id="testNotification">Test Notification</button>
         </div>
+      </div>
     </div>
 
-    <div id="extraInfoButtonContainer">
-        <button class="addDetails btn" type="button">+ Details</button>
-        <input type="file" id="uploadInput"  style="display: none"> <!-- maybe needed for restore -->
-    </div>
-
-            <div id="detailsContainer"></div>
-            
-            <button class="submitTodo btn" type="submit">Add</button>
-        </form>
-        
-
-        
-        
-        <div id="notificationPlaceholder">
-            <div id="notificationWrap">
-                <label for="notificationToggle"> Enable notifications</label>
-                <input type="checkbox" id="notificationToggle" name="notificationToggle">
-                <button id="testNotification">Test Notification</button>
-
-            </div>
-        </div>
-    
-    
-    </div>
-
-   
-
-
-<div id="detailsModal" class="modal">
-    <div class="modal-content">
+    <div id="detailsModal" class="modal">
+      <div class="modal-content">
         <span class="modal-close">&times;</span>
         <h2>Todo Details</h2>
         <p id="detailsText"></p>
         <button id="saveDetailsBtn">Edit Details</button>
+      </div>
     </div>
-</div>
 
-    
-
-    <ul id="todoList">
-    </ul>
+    <ul id="todoList"></ul>
     <script src="todo.js"></script>
-</body>
-
+  </body>
 </html>

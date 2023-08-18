@@ -51,12 +51,50 @@ body {
 
 #todoForm {
   display: grid;
-  grid-template-columns: 5.5fr 2fr 1fr 1fr 1fr;
+  /* grid-template-columns: 5.5fr 2fr 1fr 1fr 1fr; */
   align-items: center;
   justify-items: center;
   padding: 1rem;
   gap: 1rem;
 }
+
+.collapsible-content {
+  display: none;
+  /* any other styling you want for the content */
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.collapsible-btn {
+  display: block; /* Ensures the button takes up full width of its container */
+  width: 100%; 
+  height: 40px; /* You can adjust this */
+  background-color: #cccccc; /* Gray background */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  position: relative; /* Sets a context for the triangle */
+  text-align: center; /* Centers any text or content in the button */
+  font-weight: bold;
+  color: #333;
+}
+
+.collapsible-btn:after {
+  content: ''; /* This creates a triangle using borders */
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #333; /* This creates the triangle */
+  position: absolute; /* Absolute positioning relative to the button */
+  top: 50%;
+  right: 20px; /* This positions the triangle to the right with 20px margin */
+  transform: translateY(-50%); /* Centers the triangle vertically */
+}
+
+.collapsible-btn.active:after {
+  border-top: none;
+  border-bottom: 8px solid #333; /* Changes the triangle to point upwards when active */
+}
+
+
 
 /* this puts the main add button to the left side of the second row */
 #todoForm > :nth-child(n+6):nth-child(-n+10) {
@@ -581,7 +619,7 @@ white-space: nowrap;
         }
 
         #todoForm {
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: 1fr;
           align-items: center;
           justify-items: center;
           padding: 0.5rem;
@@ -628,6 +666,27 @@ white-space: nowrap;
 
   #todoForm > :nth-child(n+6):nth-child(-n+10) {
     justify-self: center;
+}
+
+.collapsible-content {
+  display: none;
+  /* any other styling you want for the content */
+  grid-template-columns: 1fr;
+  grid-column: span 2;
+}
+
+.dropdown  {
+  text-align: center;
+  margin: 1rem;
+}
+
+div#extraInfoButtonContainer {
+  text-align: center;
+  margin: 1rem;
+}
+
+.deadLineWrap{
+  margin: 1rem;
 }
 
 }
