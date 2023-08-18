@@ -180,6 +180,7 @@ function drawTodos() {
 
         showDetails(todo.id,`
         <p class="detailsMainText">Text: <span class="value">${toDoTextElement.textContent}</span></p>
+        <p class="detailsCategory">Category: <span class="value">${todo.category ? todo.category : "None"}</span></p>
         <p class="detailsVotes">Votes: <span class="value">${todo.votes}</span></p>
         <p class="detailsDate">Time Added: <span class="value" data-iso="${listItem.getAttribute('data-timeAdded')}">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></p>
         <p class="detailsDeadline">Deadline: <span class="value" data-iso="${todo.deadline}">${formatDateTimeForDisplay(todo.deadline)}</span></p>
@@ -592,7 +593,9 @@ window.onload = function() {
         "detailsDeadline": "deadline",  // New mapping for the deadline
         "detailsTimeDone": "timeDone",
         "detailsDetails": "details",
-        'detailsBgColor': 'bgColor'
+        'detailsBgColor': 'bgColor',
+        'detailsCategory': 'category',
+
 
     };
     
@@ -634,6 +637,15 @@ window.onload = function() {
                             colorBox.style.display = 'block'; // Display the colorBox
                         }
                         break;
+                        case 'category':
+                            const categorySelect = span.querySelector('select');
+                            if (categorySelect) {
+                                todoToUpdate[todoProp] = categorySelect.value === 'none' ? null : categorySelect.value;
+                                span.textContent = todoToUpdate[todoProp] || 'none';
+                                console.log('Updated category:', todoToUpdate[todoProp]); // Add this line
+
+                            }
+                        break;
                     default:
                         todoToUpdate[todoProp] = valueToUse;
                         if (input && input.type !== 'color') {
@@ -653,6 +665,20 @@ window.onload = function() {
                     colorBox.style.display = 'none'; // Hide colorBox when switching to edit mode
                     const currentColor = todoToUpdate.bgColor || "#ffffff";
                     span.innerHTML = `<input type="color" value="${currentColor}">`;
+                } else if (parentP.classList.contains('detailsCategory')) {
+                    const currentCategory = todoToUpdate.category || 'none';
+                    span.innerHTML = `
+                        <select>
+                            <option value="none" ${currentCategory === 'none' ? 'selected' : ''}>None</option>
+                            <option value="personal" ${currentCategory === 'personal' ? 'selected' : ''}>Personal</option>
+                            <option value="work" ${currentCategory === 'work' ? 'selected' : ''}>Work</option>
+                            <option value="school" ${currentCategory === 'school' ? 'selected' : ''}>School</option>
+                            <option value="groceries" ${currentCategory === 'groceries' ? 'selected' : ''}>Groceries</option>
+                            <option value="household" ${currentCategory === 'household' ? 'selected' : ''}>Household</option>
+                            <option value="children" ${currentCategory === 'children' ? 'selected' : ''}>Children</option>
+                            <option value="fitness" ${currentCategory === 'fitness' ? 'selected' : ''}>Fitness</option>
+                        </select>
+                    `;
                 } else if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
                     const isoDateTime = span.getAttribute('data-iso') || "";
                     span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
