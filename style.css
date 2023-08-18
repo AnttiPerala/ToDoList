@@ -45,7 +45,7 @@ body {
 #menuRow{
     background: #fff;
     display: grid;
-    grid-template-columns: 8fr 1fr;
+/*     grid-template-columns: 8fr 1fr; */
     align-items: center;
 }
 

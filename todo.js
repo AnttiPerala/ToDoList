@@ -38,6 +38,14 @@ const list = document.getElementById('todoList');
 form.addEventListener('submit', (e) => {
 
         e.preventDefault();
+
+        // Check if the input value is empty or whitespace
+            const trimmedInput = input.value.trim();
+            if (!trimmedInput) {
+                alert("Please enter a task before submitting!");
+                return; // Exit early from the event listener
+            }
+
         const topPriorityInput = document.getElementById('topPriorityCheck');
         const midPriorityCheck = document.getElementById('midPriorityCheck');
 
@@ -68,7 +76,7 @@ form.addEventListener('submit', (e) => {
 
     let newTodo = {
         id: Date.now(),
-        text: input.value,
+        text: trimmedInput,
         votes: topPriorityInput.checked ? maxVotes + 1 : midPriorityCheck.checked ? averageVotes : 0,
         deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
         done: false,
