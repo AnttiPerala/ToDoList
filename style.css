@@ -43,7 +43,7 @@ body {
 }
 
 #menuRow{
-    background: #00ffff52;
+    background: #fff;
     display: grid;
     grid-template-columns: 8fr 1fr;
     align-items: center;
@@ -102,6 +102,7 @@ body {
 ul#todoList {
     list-style-type: none;
     padding: 0;
+    border: 4px #9f9f9f solid;
 }
 
 #backUpAndRestoreButtonsContainer{
@@ -343,10 +344,12 @@ li {
   padding: 1em;
 }
 
-.menuWrap{
-  position: absolute;
+.menuWrap {
+    position: absolute;
+    top: 2rem;
+    align-items: center;
+    min-height: 50px;
 }
-
 
 .menu>li {
   display: flex;
