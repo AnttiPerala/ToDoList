@@ -356,6 +356,15 @@ li {
   font-size: 1.5em;
 }
 
+/* Styles for the checkmark */
+.menu .checkmark {
+  display: none; /* Hide by default */
+  margin-right: 5px; /* Space between the checkmark and the text */
+}
+
+.menu .active .checkmark {
+  display: inline; /* Show checkmark for active items */
+}
 
 
 

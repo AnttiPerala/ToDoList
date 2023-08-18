@@ -839,12 +839,42 @@ function sortByTimeDone() {
 }
 
 
-document.querySelector("#sortPointsBtn").addEventListener("click", sortByPoints);
-document.querySelector("#sortAlphaBtn").addEventListener("click", sortAlphabetically);
-document.querySelector("#sortColorBtn").addEventListener("click", sortByColor);
-document.querySelector("#sortTimeAddedBtn").addEventListener("click", sortByTimeAdded);
-document.querySelector("#sortTimeDoneBtn").addEventListener("click", sortByTimeDone);
-document.querySelector("#sortDeadlineBtn").addEventListener('click', sortByDeadline);
+document.querySelector("#sortPointsBtn").addEventListener("click", function(){
+    localStorage.setItem('preferredSorting', 'points');
+    sortByPoints();
+    highlightActiveSortingOption();
+});
+
+document.querySelector("#sortAlphaBtn").addEventListener("click", function(){
+    localStorage.setItem('preferredSorting', 'alphabet');
+    sortAlphabetically();
+    highlightActiveSortingOption();
+});
+
+document.querySelector("#sortColorBtn").addEventListener("click", function(){
+    localStorage.setItem('preferredSorting', 'color');
+    sortByColor();
+    highlightActiveSortingOption();
+});
+
+document.querySelector("#sortTimeAddedBtn").addEventListener("click", function(){
+    localStorage.setItem('preferredSorting', 'timeAdded');
+    sortByTimeAdded();
+    highlightActiveSortingOption();
+});
+
+document.querySelector("#sortTimeDoneBtn").addEventListener("click", function(){
+    localStorage.setItem('preferredSorting', 'timeDone');
+    sortByTimeDone();
+    highlightActiveSortingOption();
+});
+
+document.querySelector("#sortDeadlineBtn").addEventListener('click', function(){
+    localStorage.setItem('preferredSorting', 'deadline');
+    sortByDeadline();
+    highlightActiveSortingOption();
+});
+
 
 
 function applyPreferredSorting() {
@@ -874,6 +904,8 @@ function applyPreferredSorting() {
             drawTodos();
             break;
     }
+    highlightActiveSortingOption();  // Call the function to visually indicate the active sorting option
+
 }
 
 // Function to convert RGB to HSL
@@ -1132,3 +1164,36 @@ function filterTodosByCategory(category) {
     
 }
 
+/* SHOW CHECKMARK IN ACTIVE SORTING MENU ITEM */
+
+function highlightActiveSortingOption() {
+    const sortingMethod = localStorage.getItem('preferredSorting');
+
+    console.log('highlightActiveSortingOption');
+    // Remove active class from all menu items
+    document.querySelectorAll('.menu li').forEach(li => li.classList.remove('active'));
+
+    // Mapping sorting methods to their respective element IDs
+    const sortingToElementIdMap = {
+        'points': 'sortPointsBtn',
+        'alphabet': 'sortAlphaBtn',
+        'color': 'sortColorBtn',
+        'deadline': 'sortDeadlineBtn',
+        'timeAdded': 'sortTimeAddedBtn',
+        'timeDone': 'sortTimeDoneBtn'
+    };
+
+    const activeElementId = sortingToElementIdMap[sortingMethod];
+    if (activeElementId) {
+        const activeElement = document.getElementById(activeElementId);
+        if (activeElement) {
+            activeElement.closest('li').classList.add('active');  // Highlight the parent <li> of the active sorting button
+        }
+    }
+}
+
+document.querySelector("#menu-toggle").addEventListener('change', function() {
+    if(this.checked) {
+        highlightActiveSortingOption();
+    }
+});
