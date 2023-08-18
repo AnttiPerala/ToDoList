@@ -157,6 +157,11 @@ li {
     cursor: pointer;
 }
 
+.colorBox {
+  height: 1rem;
+  width: 1rem;
+}
+
 
 /* BUTTONS */
 .button-30 {
