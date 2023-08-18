@@ -972,12 +972,15 @@ document.querySelector('#todoInput').addEventListener('input', function() {
   });
 
   document.querySelector('.addDetails').addEventListener('click', () => {
-    let textarea = document.createElement('textarea');
-    textarea.name = "todoDetails"; // This will be useful when gathering form data
-    textarea.placeholder = "Enter additional details...";
-    textarea.classList.add('detailsTextarea');
+    if (!document.querySelector('.detailsTextarea')){ //check first if exists already
+            let textarea = document.createElement('textarea');
+        textarea.name = "todoDetails"; // This will be useful when gathering form data
+        textarea.placeholder = "Enter additional details...";
+        textarea.classList.add('detailsTextarea');
 
-    document.getElementById('detailsContainer').appendChild(textarea);
+        document.getElementById('detailsContainer').appendChild(textarea); 
+    }
+   
 });
 
 /* CUSTOM MODAL */

@@ -532,7 +532,7 @@ white-space: nowrap;
     }
 
     h1#mainTitle {
-      font-size: 4rem;
+      font-size: 3.5rem;
   }
 
     #menuRow{
@@ -581,7 +581,7 @@ white-space: nowrap;
         }
 
         #todoForm {
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr 1fr;
           align-items: center;
           justify-items: center;
           padding: 0.5rem;
@@ -594,19 +594,28 @@ white-space: nowrap;
 
       #todoList input{
         grid-column: span 7;
-      };
+      }
+
+      #todoInput{
+        grid-column: span 2;
+      }
 
       #deadlineInput{
         opacity: 1;
         width: 90vw;
         -webkit-min-logical-width: 90vw;
-
+        grid-column: span 2;
 
     }
+
+    button.submitTodo.btn {
+      grid-column: span 2;
+  }
 
     #deadlineInput::before {
       content: "Deadline (optional): ";
       display: block;
+      
     }
 
     .button-30{
