@@ -177,6 +177,7 @@ function drawTodos() {
         <p class="detailsDate">Time Added: <span class="value" data-iso="${listItem.getAttribute('data-timeAdded')}">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></p>
         <p class="detailsDeadline">Deadline: <span class="value" data-iso="${todo.deadline}">${formatDateTimeForDisplay(todo.deadline)}</span></p>
         <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p> 
+        <p class="detailsBgColor">Background Color: <span class="value"><div class="colorBox" style="background-color: ${todo.bgColor || "#ffffff"}"; width: 20px; height: 20px;"></div></span></p>
         <p class="detailsDetails">Additional details: <span class="value">${details ? details : "None"}</span></p>`);
     
 
@@ -415,10 +416,11 @@ uploadInput.addEventListener('change', () => {
 });
 
 
-
 // Helper function to check if a date is today
 function isToday(date) {
     let parsedDate;
+
+    if (!date) return false; // handle null or undefined dates
 
     if (typeof date === 'string') {
         parsedDate = new Date(date);
@@ -430,9 +432,11 @@ function isToday(date) {
     }
 
     const today = new Date();
-    return parsedDate.getDate() === today.getDate() &&
-           parsedDate.getMonth() === today.getMonth() &&
-           parsedDate.getFullYear() === today.getFullYear();
+    today.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
+
+    parsedDate.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
+
+    return parsedDate.getTime() === today.getTime();
 }
 
 
@@ -575,13 +579,16 @@ window.onload = function() {
         "detailsDate": "timeAdded",
         "detailsDeadline": "deadline",  // New mapping for the deadline
         "detailsTimeDone": "timeDone",
-        "detailsDetails": "details"
+        "detailsDetails": "details",
+        'detailsBgColor': 'bgColor'
+
     };
     
     saveDetailsBtn.addEventListener('click', () => {
         const valueSpans = detailsTextElem.querySelectorAll('.value');
         const todoId = detailsModal.getAttribute('data-todo-id');
         let todoToUpdate = todos.find(todo => todo.id === Number(todoId));
+        console.log("Initial todoToUpdate:", todoToUpdate);
     
         if (isEditing) {
             // Save Changes logic
@@ -589,18 +596,21 @@ window.onload = function() {
                 let valueToUse;
                 const input = span.querySelector('input');
                 const textarea = span.querySelector('textarea');
-    
+            
                 if (input) {
-                    valueToUse = input.value;
+                    if (input.type === "color") {
+                        valueToUse = input.value; // Ensure we're correctly assigning the value for color input
+                        console.log("Color value assigned: ", valueToUse); // Log for checking
+                    } else {
+                        valueToUse = input.value;
+                    }
                 } else if (textarea) {
                     valueToUse = textarea.value;
                 }
     
-                span.textContent = valueToUse;
-    
                 const detailTypeClass = span.closest('p').classList[0];
                 const todoProp = classNameToObjectPropMap[detailTypeClass];
-    
+            
                 switch (todoProp) {
                     case 'votes':
                         todoToUpdate[todoProp] = Number(valueToUse);
@@ -611,44 +621,56 @@ window.onload = function() {
                         if (valueToUse) {
                             const dateObj = new Date(valueToUse);
                             todoToUpdate[todoProp] = dateObj.toISOString();
-                            span.setAttribute('data-iso', dateObj.toISOString());  // Set the data-iso attribute
-                            // Using nicer formatting for display
-                            span.textContent = formatDateTimeForDisplay(dateObj.toISOString());  
-    
+                            span.setAttribute('data-iso', dateObj.toISOString());
+                            span.textContent = formatDateTimeForDisplay(dateObj.toISOString());
+        
                             if (todoProp === 'timeDone') {
-                                todoToUpdate.done = true;  // Mark as done if 'timeDone' has a value.
+                                todoToUpdate.done = true;
                             }
                         } else {
                             todoToUpdate[todoProp] = null;
                             if (todoProp === 'timeDone') {
-                                todoToUpdate.done = false;  // Mark as not done if 'timeDone' has no value.
+                                todoToUpdate.done = false;
                                 span.textContent = "Not done yet";
                             } else if (todoProp === 'deadline') {
                                 span.textContent = "No deadline set";
                             } else if (todoProp === 'timeAdded') {
-                                span.textContent = "No time added"; // or any other placeholder text you prefer
+                                span.textContent = "No time added";
                             }
                         }
                         break;
-    
+                    case 'bgColor':
+                        const colorInput = span.querySelector('input[type="color"]');
+                        if (colorInput) {
+                            console.log("Before:", todoToUpdate['bgColor']); // Log before
+                            todoToUpdate['bgColor'] = colorInput.value;
+                            console.log("After:", todoToUpdate['bgColor']);  // Log after
+                        }
+                        break;
                     default:
                         todoToUpdate[todoProp] = valueToUse;
                 }
             });
     
             saveDetailsBtn.textContent = "Edit Details";
-    
         } else {
             // Edit Details logic
             valueSpans.forEach(span => {
                 const currentText = span.textContent;
                 const parentP = span.closest('p');
-            
+                
+                // Explicitly handle the detailsBgColor case first
+                if (parentP.classList.contains('detailsBgColor')) {
+                    const currentColor = todoToUpdate.bgColor || "#000000"; // Default to black if no color is set
+                    span.innerHTML = `<input type="color" value="${currentColor}">`;
+                    return; // Skip the rest of this iteration
+                }
+        
                 if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
                     const isoDateTime = span.getAttribute('data-iso') || "";
                     span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
-                } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) { // check for the textarea cases
-                    span.innerHTML = `<textarea rows="1">${currentText}</textarea>`; // the rows attribute can be adjusted to your liking
+                } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) {
+                    span.innerHTML = `<textarea rows="1">${currentText}</textarea>`;
                 } else {
                     span.innerHTML = `<input type="text" value="${currentText}">`;
                 }
@@ -663,20 +685,33 @@ window.onload = function() {
     });
     
     
-    
-    
-    
 }
+
 
 
 // Helper function to check if a date is in the past
 function isPast(date) {
-    if (!date) return false;
-    const now = new Date();
-    // Set to midnight for accurate comparison
-    now.setHours(0, 0, 0, 0);
-    return date < now;
+    let parsedDate;
+
+    if (!date) return false; // handle null or undefined dates
+
+    if (typeof date === 'string') {
+        parsedDate = new Date(date);
+    } else if (date instanceof Date) {
+        parsedDate = date;
+    } else {
+        console.error("Received invalid date:", date);
+        return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
+
+    parsedDate.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
+
+    return parsedDate.getTime() < today.getTime();
 }
+
 
 /* COLOR PICKER */
 
