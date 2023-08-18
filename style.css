@@ -3,6 +3,8 @@ body {
     padding: 2rem;
 }
 
+
+
 #mainTitle{
     font-size: 5rem;
     text-align: center;
@@ -341,6 +343,9 @@ li {
   padding: 1em;
 }
 
+.menuWrap{
+  position: absolute;
+}
 
 
 .menu>li {
@@ -360,11 +365,11 @@ li {
 .menu-button-container {
   padding-top: 1rem;
   display: flex;
-  height: 100%;
+/*   height: 100%; */
   cursor: pointer;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+/*   justify-content: center;
+  align-items: center; */
 }
 
 #menu-toggle {
@@ -407,15 +412,17 @@ li {
   transform: rotate(-405deg);
 }
 
- .menu {
+.menu {
   max-width: 40rem;
-   top: 0;
-   left: 0;
-   flex-direction: column;
-   width: 100%;
-   justify-content: center;
-   align-items: center;
- }
+  top: 1rem;
+  left: -1.5rem;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  z-index: 11;
+  position: relative;
+}
 
  #menu-toggle~.menu li {
    height: 0;

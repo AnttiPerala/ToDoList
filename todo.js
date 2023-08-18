@@ -742,10 +742,24 @@ function sortByPoints() {
 }
 
 function sortAlphabetically() {
-    todos.sort((a, b) => a.text.localeCompare(b.text));
+    todos.sort((a, b) => {
+        // If a.text is empty/null/undefined and b.text is not, a should come after b
+        if (!a.text && b.text) return 1;
+
+        // If b.text is empty/null/undefined and a.text is not, b should come after a
+        if (a.text && !b.text) return -1;
+
+        // If both are empty/null/undefined, they're considered equal in terms of sorting
+        if (!a.text && !b.text) return 0;
+
+        // If both are strings, compare them
+        return a.text.localeCompare(b.text);
+    });
+    
     localStorage.setItem('preferredSorting', 'alphabet');
     drawTodos();
 }
+
 
 
 
@@ -839,20 +853,54 @@ function rgbToHsl(r, g, b){
     return [h * 360, s * 100, l * 100];
 }
 
+// Convert hex color to RGB format
+function hexToRgb(hex) {
+    let bigint = parseInt(hex.slice(1), 16);
+    let r = (bigint >> 16) & 255;
+    let g = (bigint >> 8) & 255;
+    let b = bigint & 255;
+    return [r, g, b];
+}
+
 function sortByColor() {
     todos.sort((a, b) => {
-        const colorA = a.bgColor ? a.bgColor.slice(4, -1).split(', ') : [255, 255, 255]; // Convert "rgb(r, g, b)" to [r, g, b]
-        const colorB = b.bgColor ? b.bgColor.slice(4, -1).split(', ') : [255, 255, 255];
+        let colorA, colorB;
 
-        const hueA = rgbToHsl(+colorA[0], +colorA[1], +colorA[2])[0];
-        const hueB = rgbToHsl(+colorB[0], +colorB[1], +colorB[2])[0];
+        if (a.bgColor && a.bgColor.startsWith("#")) {
+            const rgb = hexToRgb(a.bgColor);
+            colorA = rgb ? [rgb.r, rgb.g, rgb.b] : [255, 255, 255];
+        } else if (a.bgColor && a.bgColor.startsWith("rgb")) {
+            colorA = a.bgColor.slice(4, -1).split(', ').map(Number);
+        } else {
+            colorA = [255, 255, 255]; // Default white
+        }
 
-        return hueA - hueB;
+        if (b.bgColor && b.bgColor.startsWith("#")) {
+            const rgb = hexToRgb(b.bgColor);
+            colorB = rgb ? [rgb.r, rgb.g, rgb.b] : [255, 255, 255];
+        } else if (b.bgColor && b.bgColor.startsWith("rgb")) {
+            colorB = b.bgColor.slice(4, -1).split(', ').map(Number);
+        } else {
+            colorB = [255, 255, 255]; // Default white
+        }
+
+        const hslA = rgbToHsl(...colorA);
+        const hslB = rgbToHsl(...colorB);
+
+        // Treat white and null as having infinite hue for sorting purposes
+        const hueA = (hslA[2] === 100) ? Infinity : hslA[0];
+        const hueB = (hslB[2] === 100) ? Infinity : hslB[0];
+
+        if (hueA !== hueB) return hueA - hueB;
+        return hslB[2] - hslA[2]; 
     });
 
     localStorage.setItem('preferredSorting', 'color');
     drawTodos();
 }
+
+
+
 
 function sortByDeadline() {
     todos.sort((a, b) => {
@@ -898,6 +946,9 @@ CSS Behavior (not provided but assumed):
 In your CSS, there would likely be rules that use the :checked pseudo-class and the general sibling combinator (~) to change the visibility or position of the .menu when the checkbox is checked.  */
 
 document.querySelector(".menu").addEventListener("click", function(e) {
+
+    e.stopPropagation();
+
     // Check if a link within the menu was clicked
     if (e.target.tagName === 'A') {
         document.getElementById("menu-toggle").checked = false;
