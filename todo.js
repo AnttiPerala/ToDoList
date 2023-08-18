@@ -150,6 +150,7 @@ function drawTodos() {
 
     // Modify the Info Button Functionality
     infoBtn.addEventListener('click', (e) => {
+        resetModal();
         let listItem = e.target.closest('li'); 
     
         if (!listItem) return; 
@@ -591,24 +592,23 @@ window.onload = function() {
         console.log("Initial todoToUpdate:", todoToUpdate);
     
         const colorBox = document.querySelector('.colorBox'); // Move this line outside the loop
-    
         if (isEditing) {
             // Save Changes logic
             valueSpans.forEach(span => {
                 let valueToUse;
                 const input = span.querySelector('input');
                 const textarea = span.querySelector('textarea');
-    
+                
+                const detailTypeClass = span.closest('p').classList[0];
+                const todoProp = classNameToObjectPropMap[detailTypeClass];
+        
                 if (input) {
                     valueToUse = input.value;
                 } else if (textarea) {
                     valueToUse = textarea.value;
                     span.textContent = valueToUse; // Convert textarea back to text
                 }
-    
-                const detailTypeClass = span.closest('p').classList[0];
-                const todoProp = classNameToObjectPropMap[detailTypeClass];
-    
+        
                 switch (todoProp) {
                     case 'votes':
                         todoToUpdate[todoProp] = Number(valueToUse);
@@ -617,8 +617,10 @@ window.onload = function() {
                     case 'bgColor':
                         const colorInput = span.querySelector('input[type="color"]');
                         if (colorInput) {
-                            colorBox.style.display = 'none';
                             todoToUpdate['bgColor'] = colorInput.value;
+                            span.innerHTML = ''; // Clear out the input field
+                            colorBox.style.backgroundColor = colorInput.value; // Set the colorBox's background to the chosen color
+                            colorBox.style.display = 'block'; // Display the colorBox
                         }
                         break;
                     default:
@@ -638,7 +640,7 @@ window.onload = function() {
     
                 if (parentP.classList.contains('detailsBgColor')) {
                     colorBox.style.display = 'none'; // Hide colorBox when switching to edit mode
-                    const currentColor = todoToUpdate.bgColor || "#000000";
+                    const currentColor = todoToUpdate.bgColor || "#ffffff";
                     span.innerHTML = `<input type="color" value="${currentColor}">`;
                 } else if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
                     const isoDateTime = span.getAttribute('data-iso') || "";
@@ -946,6 +948,14 @@ function showDetails(todoId, detailsHTML) {
 closeModal.onclick = function() {
     modal.style.display = 'none';
     isEditing = false;
+    saveDetailsBtn.textContent = "Edit Details";
+
+}
+
+function resetModal() {
+    isEditing = false;
+    saveDetailsBtn.textContent = "Edit Details";
+    // any other default state settings can go here
 }
 
 // Close the modal if clicked outside the modal content
