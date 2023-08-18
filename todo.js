@@ -1,3 +1,5 @@
+let todos = [];
+let filteredTodos = todos;  // GLOBAL VAR FOR CATEGORY FILTERING
 
 
 // Function to update localStorage
@@ -5,7 +7,7 @@ function updateLocalStorage() {
     localStorage.setItem('todos', JSON.stringify(todos));
 }
 
-let todos = [];
+
 
 let bgColors = ["#F0F8FF", "#F0FFF0", "#FFF5EE", "#F5F5F5", "#FFFACD", "#FFDAB9", "#FFE4E1", "#FFF0F5", "#FAF0E6", "#FDF5E6"];
 
@@ -32,69 +34,71 @@ const form = document.getElementById('todoForm');
 const input = document.getElementById('todoInput');
 const list = document.getElementById('todoList');
 
+//SUBMIT NEW TODO
 form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const topPriorityInput = document.getElementById('topPriorityCheck');
-    const midPriorityCheck = document.getElementById('midPriorityCheck');
 
-   // Add event listeners to the checkboxes
-topPriorityCheck.addEventListener('change', function() {
-    if (this.checked) {
-        midPriorityCheck.checked = false;
+        e.preventDefault();
+        const topPriorityInput = document.getElementById('topPriorityCheck');
+        const midPriorityCheck = document.getElementById('midPriorityCheck');
+
+    // Add event listeners to the checkboxes
+    topPriorityCheck.addEventListener('change', function() {
+        if (this.checked) {
+            midPriorityCheck.checked = false;
+        }
+    });
+
+    midPriorityCheck.addEventListener('change', function() {
+        if (this.checked) {
+            topPriorityCheck.checked = false;
+        }
+    });
+
+    // Calculate the current maximum votes
+    let maxVotes = Math.max(...todos.map(todo => todo.votes));
+
+    // Calculate the average votes
+    let sumVotes = todos.reduce((acc, todo) => acc + todo.votes, 0);
+    let averageVotes = todos.length ? Math.max(1, Math.round(sumVotes / todos.length)) : 1; 
+
+    const detailsTextarea = document.querySelector('.detailsTextarea');
+
+    const categoryValue = document.getElementById('categorySelect').value;
+
+
+    let newTodo = {
+        id: Date.now(),
+        text: input.value,
+        votes: topPriorityInput.checked ? maxVotes + 1 : midPriorityCheck.checked ? averageVotes : 0,
+        deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
+        done: false,
+        bgColor: selectedColor,
+        details: detailsTextarea ? detailsTextarea.value : null,
+        category: categoryValue
     }
-});
 
-midPriorityCheck.addEventListener('change', function() {
-    if (this.checked) {
-        topPriorityCheck.checked = false;
-    }
-});
+    todos.push(newTodo);
 
-  
+        updateLocalStorage();
+        applyPreferredSorting();
 
+        input.value = '';
+        deadlineInput.value = '';
+        topPriorityInput.checked = false; // Reset the checkbox
 
+        // generate a random index for color selection
+        let randomIndex = Math.floor(Math.random() * colorOptions.length);
 
-// Calculate the current maximum votes
-let maxVotes = Math.max(...todos.map(todo => todo.votes));
+        // set the button background to the random color
+        button.style.backgroundColor = colorOptions[randomIndex].style.backgroundColor;
 
-// Calculate the average votes
-let sumVotes = todos.reduce((acc, todo) => acc + todo.votes, 0);
-let averageVotes = todos.length ? Math.max(1, Math.round(sumVotes / todos.length)) : 1; 
+        //set the selected color variable also
+        selectedColor = colorOptions[randomIndex].style.backgroundColor;
 
-const detailsTextarea = document.querySelector('.detailsTextarea');
+        drawTodos();
+        document.getElementById('detailsContainer').innerHTML = '';
 
-let newTodo = {
-    id: Date.now(),
-    text: input.value,
-    votes: topPriorityInput.checked ? maxVotes + 1 : midPriorityCheck.checked ? averageVotes : 0,
-    deadline: deadlineInput.value ? new Date(deadlineInput.value) : null,
-    done: false,
-    bgColor: selectedColor,
-    details: detailsTextarea ? detailsTextarea.value : null,
-}
-
-todos.push(newTodo);
-
-
-    updateLocalStorage();
-    applyPreferredSorting();
-
-    input.value = '';
-    deadlineInput.value = '';
-    topPriorityInput.checked = false; // Reset the checkbox
-
-    // generate a random index for color selection
-    let randomIndex = Math.floor(Math.random() * colorOptions.length);
-
-    // set the button background to the random color
-    button.style.backgroundColor = colorOptions[randomIndex].style.backgroundColor;
-
-    //set the selected color variable also
-    selectedColor = colorOptions[randomIndex].style.backgroundColor;
-
-    drawTodos();
-    document.getElementById('detailsContainer').innerHTML = '';
-});
+}); //end form submit
 
 
 function drawTodos() {
@@ -105,9 +109,11 @@ function drawTodos() {
     let today = new Date();
     today.setHours(0, 0, 0, 0);
 
-
+    //update filtered
+    let categoryDrodown = document.getElementById('categorySelect');
+    filterTodosByCategory(categoryDrodown.value);
     
-    todos.forEach(todo => {
+    filteredTodos.forEach(todo => {
         let listItem = document.createElement('li');
 
          // Check if the todo has a timeAdded property, and use it, otherwise use id
@@ -558,6 +564,11 @@ document.querySelector("#testNotification").addEventListener('click', () => {
 
 window.onload = function() {
     console.log("loaded");
+
+    //filter to none
+    let categoryDrodown = document.getElementById('categorySelect');
+    filterTodosByCategory(categoryDrodown.value);
+  
     const protocol = window.location.protocol;
     const notificationCheckbox = document.getElementById('notificationWrap');
 
@@ -666,7 +677,7 @@ window.onload = function() {
         drawTodos();
     });
     
-}
+} // END WINDOW ONLOAD
 
 
 
@@ -1069,3 +1080,21 @@ document.querySelector('.collapsible-btn').addEventListener('click', function() 
         content.style.display = 'none';
     }
 });
+
+/* FILTER BY CATEGORIES */
+
+document.getElementById('categorySelect').addEventListener('change', function() {
+    const selectedCategory = this.value;
+    filterTodosByCategory(selectedCategory);
+    drawTodos();
+});
+
+function filterTodosByCategory(category) {
+    if (category === 'none') {
+        filteredTodos = todos;  // Display all todos when "None" is selected.
+    } else {
+        filteredTodos = todos.filter(todo => todo.category === category);
+    }
+    
+}
+
