@@ -94,6 +94,18 @@
                 Deadline:
             <input type="date" id="deadlineInput" />
           </div>
+
+          <div id="notificationPlaceholder">
+            <div id="notificationWrap">
+              <label for="notificationToggle"> Enable notifications</label>
+              <input
+                type="checkbox"
+                id="notificationToggle"
+                name="notificationToggle"
+              />
+              <button id="testNotification">Test Notification</button>
+            </div>
+          </div>
           
           <div id="priorityCheckWrap">
             <label for="priorityCheck">Top Priority: </label>
@@ -152,17 +164,7 @@
         
       </form>
 
-      <div id="notificationPlaceholder">
-        <div id="notificationWrap">
-          <label for="notificationToggle"> Enable notifications</label>
-          <input
-            type="checkbox"
-            id="notificationToggle"
-            name="notificationToggle"
-          />
-          <button id="testNotification">Test Notification</button>
-        </div>
-      </div>
+     
     </div>
 
     <div id="detailsModal" class="modal">

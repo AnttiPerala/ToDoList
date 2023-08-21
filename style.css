@@ -61,7 +61,7 @@ body {
 .collapsible-content {
   display: none;
   /* any other styling you want for the content */
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
 }
 
 .collapsible-btn {
