@@ -101,7 +101,7 @@ body {
   justify-self: start;
 }
 
-#todoInput, #deadlineInput, .submitTodo {
+#todoInput, .submitTodo {
     font-size: 1.3rem;
 }
 
@@ -121,6 +121,7 @@ body {
 
 #deadlineInput{
     opacity: 0.4;
+
 }
 
 .done {
@@ -677,8 +678,6 @@ white-space: nowrap;
 
       #deadlineInput{
         opacity: 1;
-        width: 90vw;
-        -webkit-min-logical-width: 90vw;
         grid-column: span 2;
 
     }
@@ -687,11 +686,6 @@ white-space: nowrap;
       grid-column: span 2;
   }
 
-    #deadlineInput::before {
-      content: "Deadline (optional): ";
-      display: block;
-      
-    }
 
     .button-30{
       font-size: 14px;
