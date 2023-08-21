@@ -203,6 +203,33 @@ li {
   width: 1rem;
 }
 
+/* TOAST NOTIFICATIONS FOR SUBMIT ETC */
+.toast {
+  visibility: hidden;
+  max-width: 50%;
+  margin: auto;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+
+
 
 /* BUTTONS */
 .button-30 {

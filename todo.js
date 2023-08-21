@@ -34,7 +34,7 @@ const form = document.getElementById('todoForm');
 const input = document.getElementById('todoInput');
 const list = document.getElementById('todoList');
 
-//SUBMIT NEW TODO
+//SUBMIT NEW TODO (ADDBTN)
 form.addEventListener('submit', (e) => {
 
         e.preventDefault();
@@ -106,7 +106,22 @@ form.addEventListener('submit', (e) => {
         drawTodos();
         document.getElementById('detailsContainer').innerHTML = '';
 
+        showToast("Todo item submitted!");
+
+
 }); //end form submit
+
+/* TOAST messages */
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerHTML = message;
+    toast.className = "toast show";
+    setTimeout(function() { 
+        toast.className = toast.className.replace("show", ""); 
+    }, 3000);
+}
+
 
 
 function drawTodos() {
