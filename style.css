@@ -538,6 +538,7 @@ li {
       border: none;              /* Remove default borders */
       background-color: #eee;   /* A light background color */
       cursor: pointer;           /* Change cursor to hand pointer on hover */
+      margin: 0.5rem;
   }
   
 
