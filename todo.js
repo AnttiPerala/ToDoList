@@ -698,6 +698,8 @@ window.onload = function() {
                             <option value="school" ${currentCategory === 'school' ? 'selected' : ''}>School</option>
                             <option value="groceries" ${currentCategory === 'groceries' ? 'selected' : ''}>Groceries</option>
                             <option value="household" ${currentCategory === 'household' ? 'selected' : ''}>Household</option>
+                            <option value="software" ${currentCategory === 'software' ? 'selected' : ''}>Software</option>
+                            <option value="entertainment" ${currentCategory === 'entertainment' ? 'selected' : ''}>Entertainment</option>
                             <option value="children" ${currentCategory === 'children' ? 'selected' : ''}>Children</option>
                             <option value="fitness" ${currentCategory === 'fitness' ? 'selected' : ''}>Fitness</option>
                         </select>

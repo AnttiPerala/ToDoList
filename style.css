@@ -3,6 +3,10 @@ body {
     padding: 2rem;
 }
 
+#myHeader {
+  padding: 0 0.5rem;
+}
+
 
 
 #mainTitle{
@@ -54,21 +58,24 @@ body {
   /* grid-template-columns: 5.5fr 2fr 1fr 1fr 1fr; */
   align-items: center;
   justify-items: center;
-  padding: 1rem;
-  gap: 1rem;
+
 }
 
 .collapsible-content {
   display: none;
   /* any other styling you want for the content */
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  background: #e7e7e7;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  width: 100%;
 }
 
 .collapsible-btn {
   display: block; /* Ensures the button takes up full width of its container */
   width: 100%; 
   height: 40px; /* You can adjust this */
-  background-color: #cccccc; /* Gray background */
+  background-color: #9f9f9f; /* Gray background */
   border: none;
   outline: none;
   cursor: pointer;
@@ -76,6 +83,7 @@ body {
   text-align: center; /* Centers any text or content in the button */
   font-weight: bold;
   color: #333;
+  margin: 0.5rem 0;
 }
 
 .collapsible-btn:after {
@@ -107,6 +115,7 @@ body {
 
 #todoInput{
   width:100%;
+  min-height: 40px;
 }
 
 #todoList input{
@@ -160,6 +169,7 @@ li {
 
   div#detailsContainer {
     width: 100%;
+    text-align: center;
 }
   textarea.detailsTextarea {
     width: 100%;
@@ -460,20 +470,20 @@ li {
   display: block;
   background-color: #9fa9f1;
   position: absolute;
-  height: 4px;
-  width: 30px;
+  height: 10px;
+  width: 50px;
   transition: transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .menu-button::before {
   content: '';
-  margin-top: -8px;
+  margin-top: -13px;
 }
 
 .menu-button::after {
   content: '';
-  margin-top: 8px;
+  margin-top: 13px;
 }
 
 #menu-toggle:checked+.menu-button-container .menu-button::before {
@@ -609,6 +619,7 @@ white-space: nowrap;
 
     h1#mainTitle {
       font-size: 3.5rem;
+      letter-spacing: 0.05rem;
   }
 
     #menuRow{
@@ -661,7 +672,7 @@ white-space: nowrap;
           align-items: center;
           justify-items: center;
           padding: 0.5rem;
-          gap: 0.5rem;
+ 
       }
 
       .toDoText{
@@ -704,6 +715,9 @@ white-space: nowrap;
   /* any other styling you want for the content */
   grid-template-columns: 1fr;
   grid-column: span 2;
+
+    width: 100%;
+    margin-bottom: 0.5rem;
 }
 
 .dropdown  {
@@ -718,6 +732,7 @@ div#extraInfoButtonContainer {
 
 .deadLineWrap{
   margin: 1rem;
+  text-align: center;
 }
 
 }
