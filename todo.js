@@ -1,3 +1,12 @@
+
+function rgbToHex(rgbStr) {
+    const result = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(rgbStr);
+    if (result) {
+        return "#" + (1 << 24 | result[1] << 16 | result[2] << 8 | result[3]).toString(16).slice(1).toUpperCase();
+    } else {
+        return rgbStr; // Return original string if it's not in RGB format
+    }
+}
 let todos = [];
 let filteredTodos = todos;  // GLOBAL VAR FOR CATEGORY FILTERING
 
@@ -208,7 +217,7 @@ function drawTodos() {
         <p class="detailsDate">Time Added: <span class="value" data-iso="${listItem.getAttribute('data-timeAdded')}">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></p>
         <p class="detailsDeadline">Deadline: <span class="value" data-iso="${todo.deadline}">${formatDateTimeForDisplay(todo.deadline)}</span></p>
         <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p> 
-        <p class="detailsBgColor">Background Color: <span class="value"><div class="colorBox" style="background-color: ${todo.bgColor || "#ffffff"}"; width: 20px; height: 20px;"></div></span></p>
+        <p class="detailsBgColor">Background Color: <span class="value"><div class="colorBox" style="background-color: ${rgbToHex(todo.bgColor) || "#ffffff"}"; width: 20px; height: 20px;"></div></span></p>
         <p class="detailsDetails">Additional details: <span class="value">${details ? details : "None"}</span></p>`);
     
 
@@ -271,7 +280,7 @@ if (todo.deadline) {
         // Make the list item draggable
         listItem.setAttribute('draggable', 'true');
 
-        listItem.style.backgroundColor = todo.bgColor ?? '#fff'; //, if todo.bgColor is a value that isn't null or undefined, it will be used. If todo.bgColor is null or undefined, the string '#fff' will be used instead.
+        listItem.style.backgroundColor = rgbToHex(todo.bgColor) ?? '#fff'; //, if todo.bgColor is a value that isn't null or undefined, it will be used. If todo.bgColor is null or undefined, the string '#fff' will be used instead.
 
         // Add drag and drop event listeners
         listItem.addEventListener('dragstart', (e) => {
@@ -687,7 +696,7 @@ window.onload = function() {
                 if (parentP.classList.contains('detailsBgColor')) {
                     colorBox.style.display = 'none'; // Hide colorBox when switching to edit mode
                     const currentColor = todoToUpdate.bgColor || "#ffffff";
-                    span.innerHTML = `<input type="color" value="${currentColor}">`;
+                    span.innerHTML = `<input type="color" value="${rgbToHex(currentColor)}">`;
                 } else if (parentP.classList.contains('detailsCategory')) {
                     const currentCategory = todoToUpdate.category || 'none';
                     span.innerHTML = `

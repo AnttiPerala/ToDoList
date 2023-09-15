@@ -129,7 +129,7 @@ body {
 }
 
 #deadlineInput{
-    opacity: 0.4;
+    opacity: 0.8;
 
 }
 
@@ -582,7 +582,7 @@ white-space: nowrap;
 .btn.addDetails{
   background-color: lightslategray;
   padding: 0 20px;
-  opacity: 0.4;
+  opacity: 0.8;
 }
 
 .dropbtn{
