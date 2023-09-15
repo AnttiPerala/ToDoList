@@ -736,3 +736,14 @@ div#extraInfoButtonContainer {
 }
 
 }
+
+@media screen and (max-width: 500px){
+  h1#mainTitle{
+    font-size: 3rem;
+    letter-spacing: -0.2rem;
+  }
+  
+  
+}
+
+
