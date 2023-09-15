@@ -1214,3 +1214,14 @@ document.querySelector("#menu-toggle").addEventListener('change', function() {
         highlightActiveSortingOption();
     }
 });
+
+function recalculatePoints() {
+    let voteCounter = todos.length;
+    todos.forEach(todo => {
+        todo.votes = voteCounter;
+        voteCounter--;
+    });
+    drawTodos();
+}
+
+document.getElementById('recalculatePointsBtn').addEventListener('click', recalculatePoints);
