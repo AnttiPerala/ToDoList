@@ -1182,10 +1182,18 @@ document.getElementById('categorySelect').addEventListener('change', function() 
 });
 
 function filterTodosByCategory(category) {
+    const filterNotice = document.getElementById("categoryFilteringNotice");
     if (category === 'none') {
         filteredTodos = todos;  // Display all todos when "None" is selected.
+        if (filterNotice){
+            filterNotice.innerHTML = "Showing all todos:";
+        }
+       
     } else {
         filteredTodos = todos.filter(todo => todo.category === category);
+        if (filterNotice){
+            filterNotice.innerHTML = "Showing todos of category <i>" + category + "</i>:";
+        }
     }
     
 }
