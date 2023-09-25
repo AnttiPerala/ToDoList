@@ -1,6 +1,7 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 2rem;
+    background-color: gainsboro;
 }
 
 #myHeader {
@@ -47,7 +48,6 @@ body {
 }
 
 #menuRow{
-    background: #fff;
     display: grid;
 /*     grid-template-columns: 8fr 1fr; */
     align-items: center;
@@ -65,8 +65,7 @@ body {
   display: none;
   /* any other styling you want for the content */
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-  background: #e7e7e7;
-  margin-bottom: 1rem;
+  background: #9fa9f1;
   padding: 1rem;
   width: 100%;
 }
@@ -75,7 +74,7 @@ body {
   display: block; /* Ensures the button takes up full width of its container */
   width: 100%; 
   height: 40px; /* You can adjust this */
-  background-color: #9f9f9f; /* Gray background */
+  background-color: #9fa9f1; /* Gray background */
   border: none;
   outline: none;
   cursor: pointer;
@@ -83,7 +82,7 @@ body {
   text-align: center; /* Centers any text or content in the button */
   font-weight: bold;
   color: #333;
-  margin: 0.5rem 0;
+  margin: 0;
 }
 
 .collapsible-btn:after {
@@ -116,6 +115,7 @@ body {
 #todoInput{
   width:100%;
   min-height: 40px;
+  padding: 0.5rem;
 }
 
 #todoList input{
@@ -151,6 +151,7 @@ ul#todoList {
     list-style-type: none;
     padding: 0;
     border: 4px #9f9f9f solid;
+    min-height: 50vh;
 }
 
 #backUpAndRestoreButtonsContainer{
@@ -174,6 +175,11 @@ li {
   textarea.detailsTextarea {
     width: 100%;
     min-height: 5rem;
+}
+
+#categoryFilteringNotice{
+  display: inline-block;
+  margin-top: 1rem;
 }
 
   /* CUSTOM MODAL */
@@ -213,6 +219,10 @@ li {
   height: 1rem;
   width: 1rem;
 }
+
+div#notificationWrap {
+  margin: 1rem;
+} 
 
 /* TOAST NOTIFICATIONS FOR SUBMIT ETC */
 .toast {
@@ -342,7 +352,7 @@ li {
   font-size: 16px;
   border: none;
   cursor: pointer;
-  opacity: 0.4;
+  opacity: 0.8;
 }
 
 .dropbtn:hover,
@@ -376,7 +386,6 @@ li {
 
 .menu a {
   display: block;
-  margin-bottom: 10px;
   text-decoration: none;
 }
 
@@ -431,19 +440,21 @@ li {
 
 .menuWrap {
     position: absolute;
-    top: 2rem;
+
     align-items: center;
     min-height: 50px;
 }
 
 .menu>li {
   display: flex;
+  align-items: center;
   margin: 0 1rem;
   overflow: hidden;
   padding: 0.5em 0;
   width: 100%;
   color: white;
-  background-color: #222;
+  background-color: #4268f2;
+ 
 }
 
 .menu li a {
@@ -451,13 +462,14 @@ li {
 }
 
 .menu-button-container {
-  padding-top: 1rem;
+
   display: flex;
-/*   height: 100%; */
+  height: 50px;
   cursor: pointer;
   flex-direction: column;
-/*   justify-content: center;
-  align-items: center; */
+  z-index: 100;
+  justify-content: center;
+  position: relative;
 }
 
 #menu-toggle {
@@ -557,6 +569,8 @@ li {
 
 .btn{
 display: inline-block;
+margin-bottom: 0.5rem;
+margin-top: 0.5rem;
 outline: 0;
 cursor: pointer;
 border: none;
@@ -586,6 +600,8 @@ white-space: nowrap;
 }
 
 .dropbtn{
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
   display: inline-block;
   outline: 0;
   cursor: pointer;
@@ -685,6 +701,7 @@ white-space: nowrap;
 
       #todoInput{
         grid-column: span 2;
+        padding: 0.5rem;
       }
 
       #deadlineInput{
@@ -717,7 +734,7 @@ white-space: nowrap;
   grid-column: span 2;
 
     width: 100%;
-    margin-bottom: 0.5rem;
+    margin: 0;
 }
 
 .dropdown  {
@@ -744,7 +761,7 @@ div#extraInfoButtonContainer {
   }
 
   .menuWrap{
-    top: 1.8rem;
+
   }
   
   
