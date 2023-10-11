@@ -1181,6 +1181,18 @@ document.getElementById('categorySelect').addEventListener('change', function() 
     drawTodos();
 });
 
+/* Remove category */
+document.addEventListener('click', function(event) {
+    // Check if the clicked element has the class 'close'
+    if (event.target.classList.contains('close')) {
+        console.log('Element with close clicked:', event.target);
+        document.querySelector('#categorySelect').value = 'none';
+        drawTodos();
+
+    }
+});
+
+
 function filterTodosByCategory(category) {
     const filterNotice = document.getElementById("categoryFilteringNotice");
     if (category === 'none') {
@@ -1192,7 +1204,7 @@ function filterTodosByCategory(category) {
     } else {
         filteredTodos = todos.filter(todo => todo.category === category);
         if (filterNotice){
-            filterNotice.innerHTML = "Showing todos of category <i>" + category + "</i>:";
+            filterNotice.innerHTML = "<span class='close'>&#215;</span> Showing todos of category <i>" + category + "</i>:";
         }
     }
     

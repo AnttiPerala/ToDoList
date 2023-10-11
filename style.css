@@ -319,7 +319,11 @@ div#notificationWrap {
 .dropdown {
   position: relative;
   display: inline-block;
+  text-align: center;
+  margin: 0.5rem;
 }
+
+
 
 .dropdown-content {
   display: none;
@@ -360,6 +364,12 @@ div#notificationWrap {
   background-color: #3e8e41;
 }
 
+/* little x to close stuff */
+span.close {
+font-size: 1.3rem;
+color: red;
+cursor: pointer;
+}
 
 /* HAMBURGER MENU */
 
@@ -723,34 +733,31 @@ white-space: nowrap;
       text-align: center;
   }
 
-  #todoForm > :nth-child(n+6):nth-child(-n+10) {
-    justify-self: center;
-}
+    #todoForm > :nth-child(n+6):nth-child(-n+10) {
+      justify-self: center;
+  }
 
-.collapsible-content {
-  display: none;
-  /* any other styling you want for the content */
-  grid-template-columns: 1fr;
-  grid-column: span 2;
+  .collapsible-content {
+    display: none;
+    /* any other styling you want for the content */
+    grid-template-columns: 1fr;
+    grid-column: span 2;
 
-    width: 100%;
-    margin: 0;
-}
+      width: 100%;
+      margin: 0;
+      padding-top: 0;
+  }
 
-.dropdown  {
-  text-align: center;
-  margin: 1rem;
-}
 
-div#extraInfoButtonContainer {
-  text-align: center;
-  margin: 1rem;
-}
+  div#extraInfoButtonContainer {
+    text-align: center;
+    margin-top: 0;
+  }
 
-.deadLineWrap{
-  margin: 1rem;
-  text-align: center;
-}
+  .deadLineWrap{
+    margin: 1rem;
+    text-align: center;
+  }
 
 }
 
@@ -760,10 +767,7 @@ div#extraInfoButtonContainer {
     letter-spacing: -0.2rem;
   }
 
-  .menuWrap{
-
-  }
-  
+ 
   
 }
 
