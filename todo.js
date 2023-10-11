@@ -115,8 +115,20 @@ form.addEventListener('submit', (e) => {
         drawTodos();
         document.getElementById('detailsContainer').innerHTML = '';
 
-        showToast("Todo item submitted!");
+        //showToast("Todo item submitted!");
 
+        let wavebutton = document.querySelector('.submitTodo');
+  
+        let wave = document.createElement('div');
+        wave.classList.add('wave', 'animate');
+        wavebutton.textContent = 'Added!';
+        wavebutton.appendChild(wave);
+        
+        
+        wave.addEventListener('animationend', function() {
+          wave.remove();
+          wavebutton.textContent = 'Add';
+        });
 
 }); //end form submit
 
