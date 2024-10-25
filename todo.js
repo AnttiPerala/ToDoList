@@ -435,43 +435,48 @@ const submitTodoButton = document.querySelector('.submitTodo');
 
 
 
+// Updated backup functionality to include both To-Do items and Worktimes
 backupBtn.addEventListener('click', () => {
     // Indicate backup is starting on the .submitTodo button
     submitTodoButton.textContent = 'Backing up...';
-
+  
     try {
-        // Serialize the todos array to a JSON string
-        const dataStr = JSON.stringify(todos);
-        // Create a Blob for the JSON data
-        const blob = new Blob([dataStr], {type: 'application/json'});
-        // Create an Object URL for the blob
-        const url = URL.createObjectURL(blob);
-
-        // Create a temporary link to trigger the download
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'todos_backup.json');
-        document.body.appendChild(link); // Append the link to the body temporarily
-
-        link.click(); // Programmatically click the link to trigger the download
-
-        document.body.removeChild(link); // Remove the link after triggering the download
-        URL.revokeObjectURL(url); // Release the Object URL
-
-        // Provide feedback that the backup was successful
-        submitTodoButton.textContent = 'Backup Successful!';
-        // Optionally, revert the button text back to its original state after some time
-        setTimeout(() => {
-            submitTodoButton.textContent = 'Add'; // Or whatever your original button text is
-        }, 3000); // Change back after 3 seconds
+      // Serialize both todos and worktimes arrays to a JSON string
+      const dataToExport = {
+        todos: todos,
+        worktimes: worktimes
+      };
+      const dataStr = JSON.stringify(dataToExport);
+      // Create a Blob for the JSON data
+      const blob = new Blob([dataStr], {type: 'application/json'});
+      // Create an Object URL for the blob
+      const url = URL.createObjectURL(blob);
+  
+      // Create a temporary link to trigger the download
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'todos_worktimes_backup.json');
+      document.body.appendChild(link); // Append the link to the body temporarily
+  
+      link.click(); // Programmatically click the link to trigger the download
+  
+      document.body.removeChild(link); // Remove the link after triggering the download
+      URL.revokeObjectURL(url); // Release the Object URL
+  
+      // Provide feedback that the backup was successful
+      submitTodoButton.textContent = 'Backup Successful!';
+      // Optionally, revert the button text back to its original state after some time
+      setTimeout(() => {
+        submitTodoButton.textContent = 'Add'; // Or whatever your original button text is
+      }, 3000); // Change back after 3 seconds
     } catch (error) {
-        // In case of an error during the backup process
-        console.error('Backup failed:', error);
-        submitTodoButton.textContent = 'Backup Failed';
-        // Reset the button text after a delay
-        setTimeout(() => {
-            submitTodoButton.textContent = 'Add'; // Revert to your original button text
-        }, 3000); // Reset after 3 seconds
+      // In case of an error during the backup process
+      console.error('Backup failed:', error);
+      submitTodoButton.textContent = 'Backup Failed';
+      // Reset the button text after a delay
+      setTimeout(() => {
+        submitTodoButton.textContent = 'Add'; // Revert to your original button text
+      }, 3000); // Reset after 3 seconds
     }
 });
 

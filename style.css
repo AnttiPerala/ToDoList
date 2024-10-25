@@ -101,6 +101,11 @@ body {
   border-bottom: 8px solid #333; /* Changes the triangle to point upwards when active */
 }
 
+ button.btn.inactive {
+  background-color: #eee;
+  color: gray;
+}
+
 
 
 /* this puts the main add button to the left side of the second row */
@@ -763,6 +768,7 @@ white-space: nowrap;
       font-size: 14px;
     }
 
+   
     span.votes {
       text-align: center;
   }
