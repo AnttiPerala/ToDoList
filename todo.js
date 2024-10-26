@@ -500,20 +500,41 @@ uploadInput.addEventListener('change', () => {
     } else {
         let reader = new FileReader();
         reader.onload = function(e) {
-            let contents = e.target.result;
-            let json = JSON.parse(contents);
-            // Validate the JSON contents here, if necessary
-            if (Array.isArray(json)) {
-                todos = json.map(todo => {
-                    if (todo.deadline) {
-                        todo.deadline = new Date(todo.deadline);
-                    }
-                    return todo;
-                });
-                updateLocalStorage();
-                drawTodos();
-            } else {
-                alert("Invalid file contents");
+            try {
+                let contents = e.target.result;
+                let json = JSON.parse(contents);
+
+                // Validate that the JSON has the correct structure
+                if (json.todos && Array.isArray(json.todos) && json.worktimes && Array.isArray(json.worktimes)) {
+                    // Restore todos
+                    todos = json.todos.map(todo => {
+                        if (todo.deadline) {
+                            todo.deadline = new Date(todo.deadline);
+                        }
+                        return todo;
+                    });
+
+                    // Restore worktimes
+                    worktimes = json.worktimes.map(worktime => {
+                        return {
+                            ...worktime,
+                            start: new Date(worktime.start),
+                            end: new Date(worktime.end)
+                        };
+                    });
+
+                    updateLocalStorage(); // Update local storage for todos and worktimes
+                    localStorage.setItem("worktimes", JSON.stringify(worktimes));
+                    
+                    drawTodos();
+                    drawWorktimes();
+                    alert("Data successfully restored!");
+                } else {
+                    alert("Invalid file contents: JSON format is incorrect.");
+                }
+            } catch (error) {
+                console.error("Failed to parse the backup file: ", error);
+                alert("Invalid file contents: Failed to parse JSON.");
             }
         };
         reader.readAsText(file);
