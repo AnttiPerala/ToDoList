@@ -119,6 +119,8 @@ diaryBtn.addEventListener("click", function () {
     diaryContainer.style.display = "block";
     todoContainer.style.display = "none";
 
+    document.getElementById('mainTitle').textContent = 'Diary Entries';
+    createDiaryMenu();
     addCategoryFilter();
     drawDiary();
 });
@@ -168,6 +170,10 @@ function createDiaryMenu() {
     const menuItems = [
         { id: 'exportDiaryBtn', text: 'Export as TXT' },
         { id: 'clearDiaryBtn', text: 'Delete all diary entries' },
+        { id: 'copyLifeEventsBtn', text: 'Copy Life Events to Clipboard' },
+        { id: 'copyPurchasesBtn', text: 'Copy Purchases to Clipboard' },
+        { id: 'copyItemPlacementsBtn', text: 'Copy Item Placements to Clipboard' },
+        { id: 'copyDataLocationsBtn', text: 'Copy Data Locations to Clipboard' },
         { id: 'backupDiaryBtn', text: 'Backup' },
         { id: 'restoreDiaryBtn', text: 'Restore' },
         { id: 'loginDiaryBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
@@ -195,6 +201,25 @@ function attachDiaryMenuListeners() {
     document.getElementById('backupDiaryBtn').addEventListener('click', backupDiary);
     document.getElementById('restoreDiaryBtn').addEventListener('click', restoreDiary);
     document.getElementById('loginDiaryBtn').addEventListener('click', loginDiary);
+    document.getElementById('copyLifeEventsBtn').addEventListener('click', () => copyEntriesByCategory('Life Event'));
+    document.getElementById('copyPurchasesBtn').addEventListener('click', () => copyEntriesByCategory('Purchase'));
+    document.getElementById('copyItemPlacementsBtn').addEventListener('click', () => copyEntriesByCategory('Item placement'));
+    document.getElementById('copyDataLocationsBtn').addEventListener('click', () => copyEntriesByCategory('Data location change'));
+}
+
+function copyEntriesByCategory(category) {
+    const entries = diaryEntries
+        .filter(entry => entry.category === category)
+        .map(entry => {
+            const date = new Date(entry.date);
+            return `${date.toLocaleDateString()}: ${entry.description}`;
+        })
+        .join('\n');
+        
+    navigator.clipboard.writeText(entries)
+        .then(() => {
+            alert(`${category} entries copied to clipboard!`);
+        });
 }
 
 function exportDiaryText() {

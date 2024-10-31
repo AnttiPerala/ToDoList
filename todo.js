@@ -1389,7 +1389,8 @@ todoBtn.addEventListener("click", function () {
   
     diaryBtn.classList.add('inactive');
   
-  
+    document.getElementById('mainTitle').textContent = 'To Do List';
+
     drawTodos(); // Assuming there is a function drawTodos() for displaying to-do items
     createTodoMenu();
   

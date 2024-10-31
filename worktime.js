@@ -40,6 +40,7 @@ worktimeBtn.addEventListener("click", function () {
     diaryContainer.style.display = "none";
     todoContainer.style.display = "none";
 
+    document.getElementById('mainTitle').textContent = 'Worktime Tracker';
     createWorktimeMenu();
 });
 
@@ -231,15 +232,24 @@ function createWorktimeMenu() {
     const menuItems = [
         { id: 'exportWorktimeCsvBtn', text: 'Export CSV' },
         { id: 'exportWorktimeTextBtn', text: 'Export Text' },
-        { id: 'clearWorktimeBtn', text: 'Delete all worktime items' }
+        { id: 'clearWorktimeBtn', text: 'Delete all worktime items' },
+        { id: 'backupWorktimeBtn', text: 'Backup' },
+        { id: 'restoreWorktimeBtn', text: 'Restore' },
+        { id: 'loginWorktimeBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
     ];
 
     menu.innerHTML = menuItems.map(item => `
         <li>
             <span class="checkmark">✔</span>
             <a href="#" id="${item.id}">${item.text}</a>
+            ${item.note ? `<span class="note"> ${item.note}</span>` : ''}
         </li>
     `).join('');
+
+    // Add file input for restore functionality
+    const fileInput = document.createElement('li');
+    fileInput.innerHTML = '<input type="file" id="uploadWorktimeInput" style="display: none" />';
+    menu.appendChild(fileInput);
 
     attachWorktimeMenuListeners();
 }
@@ -248,8 +258,28 @@ function attachWorktimeMenuListeners() {
     document.getElementById('exportWorktimeCsvBtn').addEventListener('click', exportWorktimeCsv);
     document.getElementById('exportWorktimeTextBtn').addEventListener('click', exportWorktimeText);
     document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
+    document.getElementById('backupWorktimeBtn').addEventListener('click', backupWorktime);
+    document.getElementById('restoreWorktimeBtn').addEventListener('click', restoreWorktime);
+    document.getElementById('loginWorktimeBtn').addEventListener('click', loginWorktime);
 }
 
+function backupWorktime() {
+    const data = JSON.stringify(worktimes);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'worktime_backup.json';
+    a.click();
+}
+
+function restoreWorktime() {
+    document.getElementById('uploadWorktimeInput').click();
+}
+
+function loginWorktime() {
+    alert('Login functionality coming soon!');
+}
 function exportWorktimeCsv() {
     const csvContent = worktimes.map(entry => {
         const start = new Date(entry.start);
@@ -290,3 +320,5 @@ function clearWorktimeData() {
         drawWorktimes();
     }
 }
+
+
