@@ -33,10 +33,45 @@ diaryBtn.addEventListener("click", function () {
     diaryContainer.style.display = "block";
     todoContainer.style.display = "none";
 
+    addCategoryFilter();
     drawDiary();
 });
+function addCategoryFilter() {
+    const existingFilter = document.querySelector('.diary-filter');
+    if (existingFilter) {
+        existingFilter.remove();
+    }
 
-function drawDiary() {
+    const defaultCategories = [
+        "Life Event",
+        "Purchase",
+        "Item placement",
+        "Data location change"
+    ];
+    
+    const usedCategories = [...new Set(diaryEntries.map(entry => entry.category))];
+    const allCategories = [...new Set([...defaultCategories, ...usedCategories])]
+        .filter(category => category);
+        
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'diary-filter';
+    filterContainer.innerHTML = `
+        <select id="categoryFilter">
+            <option value="all">All Categories</option>
+            ${allCategories.map(category => 
+                `<option value="${category}">${category}</option>`
+            ).join('')}
+        </select>
+    `;
+    
+    document.getElementById('diaryList').before(filterContainer);
+    
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        drawDiary(this.value);
+    });
+}
+
+function drawDiary(filterCategory = 'all') {
     const diaryList = document.getElementById('diaryList');
     const table = document.createElement('div');
     table.className = 'diary-table';
@@ -49,7 +84,11 @@ function drawDiary() {
         <div class="diary-header">Delete</div>
     `;
 
-    diaryEntries.forEach(entry => {
+    const filteredEntries = filterCategory === 'all' 
+        ? diaryEntries 
+        : diaryEntries.filter(entry => entry.category === filterCategory);
+
+    filteredEntries.forEach(entry => {
         const date = new Date(entry.date);
         
         table.innerHTML += `
@@ -69,63 +108,23 @@ function drawDiary() {
     diaryList.appendChild(table);
 }
 
-function drawDiaryEntries(filterCategory) {
-    // Clear existing entries
-    const existingEntries = document.querySelectorAll('.diaryItem');
-    existingEntries.forEach(entry => entry.remove());
+// Call addCategoryFilter when switching to diary mode
+diaryBtn.addEventListener("click", function () {
+    diaryBtn.classList.remove('inactive');
+    todoBtn.classList.add('inactive');
+    worktimeBtn.classList.add('inactive');
+
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("diaryDate").value = today;
+
+    worktimeContainer.style.display = "none";
+    diaryContainer.style.display = "block";
+    todoContainer.style.display = "none";
+
+    addCategoryFilter();
+    drawDiary();
+});
     
-    // Filter and display entries
-    const filteredEntries = filterCategory 
-        ? diaryEntries.filter(entry => entry.category === filterCategory)
-        : diaryEntries;
-
-    filteredEntries.forEach((entry, index) => {
-        const li = document.createElement("li");
-        li.className = "diaryItem";
-        li.style.backgroundColor = entry.color;
-
-        const dateSpan = document.createElement("span");
-        dateSpan.className = "diary-date";
-        dateSpan.textContent = new Date(entry.date).toLocaleDateString();
-        
-        const descriptionSpan = document.createElement("span");
-        descriptionSpan.className = "diary-description";
-        descriptionSpan.innerHTML = entry.description; // Use innerHTML to render the <br> tags
-
-        // Create category dropdown
-        const categorySelect = document.createElement("select");
-        categorySelect.className = "diary-category-select";
-        
-        // Add empty option first
-        const emptyOption = document.createElement("option");
-        emptyOption.value = "";
-        emptyOption.textContent = "No category";
-        categorySelect.appendChild(emptyOption);
-        
-        const categories = ["Life Event", "Purchase", "Item placement", "Data location change"];
-        categories.forEach(category => {
-            const option = document.createElement("option");
-            option.value = category;
-            option.textContent = category;
-            if (entry.category === category) {
-                option.selected = true;
-            }
-            categorySelect.appendChild(option);
-        });
-
-        categorySelect.addEventListener('change', (e) => {
-            entry.category = e.target.value;
-            updateDiaryStorage();
-        });
-
-        li.appendChild(dateSpan);
-        li.appendChild(descriptionSpan);
-        li.appendChild(categorySelect);
-        
-        diaryList.appendChild(li);
-    });
-}
-
 
 // Add form submit handler
 document.getElementById('diaryForm').addEventListener('submit', (e) => {
