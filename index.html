@@ -224,9 +224,15 @@
         <!--  Diary Container -->
         <div id="diaryModeWrap" style="display: none;">
           <form id="diaryForm">
-              <input type="text" id="diaryInput" placeholder="Write your diary entry...">
-              <input type="date" id="diaryDate" required>
-              <button type="submit" class="button-30">Add Entry</button>
+                        <input type="text" id="diaryInput" placeholder="Write your diary entry...">
+                        <input type="date" id="diaryDate" required>
+                        <select id="diaryCategory" required>
+                            <option value="Life Event">Life Event</option>
+                            <option value="Purchase">Purchase</option>
+                            <option value="Item placement">Item placement</option>
+                            <option value="Data location change">Data location change</option>
+                        </select>
+                        <button type="submit" class="button-30">Add Entry</button>
           </form>
           <ul id="diaryList"></ul>
       </div><!-- end diaryModeWrap -->

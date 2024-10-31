@@ -49,14 +49,40 @@ function drawDiary() {
         li.className = "diaryItem";
         li.style.backgroundColor = entry.color;
 
+        // Create category dropdown for each entry
+        const categorySelect = document.createElement("select");
+        categorySelect.className = "diary-category-select";
+        
+        const categories = ["Life Event", "Purchase", "Item placement", "Data location change"];
+        categories.forEach(category => {
+            const option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            if (entry.category === category) {
+                option.selected = true;
+            }
+            categorySelect.appendChild(option);
+        });
+
+        // Add change listener to update category
+        categorySelect.addEventListener('change', (e) => {
+            entry.category = e.target.value;
+            updateDiaryStorage();
+        });
+
         const dateSpan = document.createElement("span");
         dateSpan.className = "diary-date";
-        // Convert stored ISO string back to Date object for display
         dateSpan.textContent = new Date(entry.date).toLocaleDateString();
         
         const descriptionSpan = document.createElement("span");
         descriptionSpan.className = "diary-description";
-        descriptionSpan.textContent = entry.description;        
+        descriptionSpan.textContent = entry.description;
+
+        // Add all elements to the list item
+        li.appendChild(categorySelect);
+        li.appendChild(dateSpan);
+        li.appendChild(descriptionSpan);
+        
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Delete";
         deleteBtn.className = "button-30";
@@ -78,25 +104,23 @@ function drawDiary() {
             }
         };
 
-        li.appendChild(dateSpan);
-        li.appendChild(descriptionSpan);
         li.appendChild(editBtn);
         li.appendChild(deleteBtn);
         diaryList.appendChild(li);
     });
 }
-
-// Add form submit handler
+// Update form submit handler
 document.getElementById('diaryForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const description = document.getElementById('diaryInput').value.trim();
     const date = document.getElementById('diaryDate').value;
+    const category = document.getElementById('diaryCategory').value;
     
     if (!description) {
         alert("Please enter a diary entry!");
         return;
     }
     
-    addDiaryEntry(description, date);
+    addDiaryEntry(description, date, category);
     document.getElementById('diaryInput').value = '';
 });
