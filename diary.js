@@ -37,42 +37,36 @@ diaryBtn.addEventListener("click", function () {
 });
 
 function drawDiary() {
-    diaryList.innerHTML = "";
+    const diaryList = document.getElementById('diaryList');
+    const table = document.createElement('div');
+    table.className = 'diary-table';
     
-    // Track currently selected filter
-    const filterSelect = document.createElement("select");
-    filterSelect.className = "diary-filter-select";
-    
-    // Add "Show All" option first
-    const allOption = document.createElement("option");
-    allOption.value = "";
-    allOption.textContent = "Show All";
-    filterSelect.appendChild(allOption);
-    
-    // Add all category options
-    const categories = ["Life Event", "Purchase", "Item placement", "Data location change"];
-    categories.forEach(category => {
-        const option = document.createElement("option");
-        option.value = category;
-        option.textContent = category;
-        filterSelect.appendChild(option);
+    table.innerHTML = `
+        <div class="diary-header">Date</div>
+        <div class="diary-header">Category</div>
+        <div class="diary-header">Description</div>
+        <div class="diary-header">Edit</div>
+        <div class="diary-header">Delete</div>
+    `;
+
+    diaryEntries.forEach(entry => {
+        const date = new Date(entry.date);
+        
+        table.innerHTML += `
+            <div class="diary-cell">${date.toLocaleDateString()}</div>
+            <div class="diary-cell">${entry.category}</div>
+            <div class="diary-cell">${entry.description}</div>
+            <div class="diary-cell">
+                <button onclick="editDiaryEntry(${entry.id})" class="btn-edit">Edit</button>
+            </div>
+            <div class="diary-cell">
+                <button onclick="deleteDiaryEntry(${entry.id})" class="btn-delete">Delete</button>
+            </div>
+        `;
     });
 
-    // Add filter dropdown at the top of the list
-    const filterContainer = document.createElement("div");
-    filterContainer.className = "diary-filter-container";
-    filterContainer.textContent = "Filter by category: ";
-    filterContainer.appendChild(filterSelect);
-    diaryList.appendChild(filterContainer);
-
-    // Filter entries based on selected category
-    filterSelect.addEventListener('change', (e) => {
-        const selectedCategory = e.target.value;
-        drawDiaryEntries(selectedCategory);
-    });
-
-    // Initial draw of all entries
-    drawDiaryEntries("");
+    diaryList.innerHTML = '';
+    diaryList.appendChild(table);
 }
 
 function drawDiaryEntries(filterCategory) {
@@ -149,3 +143,25 @@ document.getElementById('diaryForm').addEventListener('submit', (e) => {
       alert("Please enter a diary entry!");
   }
 });
+
+let editingDiaryId = null;
+
+function editDiaryEntry(id) {
+    const entry = diaryEntries.find(item => item.id === id);
+    if (entry) {
+        document.getElementById('diaryInput').value = entry.description.replace(/<br>/g, '\n');
+        document.getElementById('diaryDate').value = new Date(entry.date).toISOString().split('T')[0];
+        document.getElementById('diaryCategory').value = entry.category;
+        
+        const submitButton = diaryForm.querySelector('button[type="submit"]');
+        submitButton.textContent = 'Update Entry';
+        
+        editingDiaryId = id;
+    }
+}
+
+function deleteDiaryEntry(id) {
+    diaryEntries = diaryEntries.filter(item => item.id !== id);
+    updateDiaryStorage();
+    drawDiary();
+}

@@ -902,3 +902,22 @@ form#worktimeForm {
   background-color: #e2e2ff;
   padding: 0.5rem;
 }
+
+.diary-table {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    gap: 10px;
+    padding: 10px;
+    width: 100%;
+}
+
+.diary-header {
+    font-weight: bold;
+    background-color: #f5f5f5;
+    padding: 8px;
+}
+
+.diary-cell {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
