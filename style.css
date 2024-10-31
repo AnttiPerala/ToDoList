@@ -708,6 +708,12 @@ white-space: nowrap;
   gap: 1rem;
 }
 
+#modeSelect {
+  display: flex;
+  justify-content: center;
+  gap: 4%;
+  margin-bottom: 1rem;
+}
 
 /* MOBILE */
 
