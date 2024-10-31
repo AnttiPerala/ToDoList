@@ -137,41 +137,71 @@ function updateProjectList() {
     });
 }
 
-// Function to add a new worktime entry
-worktimeForm.addEventListener("submit", function(e) {
-  e.preventDefault();
-  const description = document.getElementById('workDescription').value;
-  const project = document.getElementById('projectInput').value;
-  const start = new Date(document.getElementById('workStart').value);
-  let end;
+let editingId = null;
 
-  if (workDuration.value) {
-      // Calculate end time based on duration
-      end = new Date(start.getTime() + workDuration.value * 60000);
-  } else if (workEnd.value) {
-      // Use the provided end time
-      end = new Date(workEnd.value);
-  } else {
-      alert('Please provide either duration or end time');
-      return;
-  }
+function editWorktime(id) {
+    const entry = worktimes.find(item => item.id === id);
+    if (entry) {
+        // Fill form with entry data
+        document.getElementById('workDescription').value = entry.description;
+        document.getElementById('projectInput').value = entry.project || '';
+        document.getElementById('workStart').value = new Date(entry.start).toISOString().slice(0, 16);
+        document.getElementById('workEnd').value = new Date(entry.end).toISOString().slice(0, 16);
+        
+        // Clear duration field since we're showing end time
+        document.getElementById('workDuration').value = '';
+        
+        // Change submit button text
+        const submitButton = worktimeForm.querySelector('button[type="submit"]');
+        submitButton.textContent = 'Update Worktime';
+        
+        // Store editing id
+        editingId = id;
+    }
+}
 
-  // Add the worktime entry
-  const entry = {
-      id: Date.now(),
-      description,
-      project,
-      start: start.toISOString(),
-      end: end.toISOString()
-  };
+// Modify the form submit handler to handle both new entries and updates
+worktimeForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const description = document.getElementById('workDescription').value;
+    const project = document.getElementById('projectInput').value;
+    const start = new Date(document.getElementById('workStart').value);
+    let end;
 
-  worktimes.push(entry);
-  localStorage.setItem('worktimes', JSON.stringify(worktimes));
-  drawWorktimes(); // Assuming you have a function to display the entries
-  this.reset();
-  workEnd.disabled = false;
-  workDuration.disabled = false;
-  updateProjectList();
+    if (workDuration.value) {
+        end = new Date(start.getTime() + workDuration.value * 60000);
+    } else if (workEnd.value) {
+        end = new Date(workEnd.value);
+    } else {
+        alert('Please provide either duration or end time');
+        return;
+    }
+
+    const entry = {
+        id: editingId || Date.now(),
+        description,
+        project,
+        start: start.toISOString(),
+        end: end.toISOString()
+    };
+
+    if (editingId) {
+        // Update existing entry
+        const index = worktimes.findIndex(item => item.id === editingId);
+        worktimes[index] = entry;
+        editingId = null;
+        worktimeForm.querySelector('button[type="submit"]').textContent = 'Add Worktime';
+    } else {
+        // Add new entry
+        worktimes.push(entry);
+    }
+
+    localStorage.setItem('worktimes', JSON.stringify(worktimes));
+    drawWorktimes();
+    this.reset();
+    workEnd.disabled = false;
+    workDuration.disabled = false;
+    updateProjectList();
 });
 
 // Initialize project list when page loads

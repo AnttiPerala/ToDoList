@@ -878,3 +878,27 @@ white-space: nowrap;
     padding: 8px;
     border-bottom: 1px solid #ddd;
 }
+
+#worktimeForm input {
+    height: 40px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+#worktimeForm input[type="datetime-local"] {
+    min-height: 40px;
+    line-height: 40px;
+}
+
+form#worktimeForm {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.5rem;
+  background-color: #e2e2ff;
+  padding: 0.5rem;
+}
