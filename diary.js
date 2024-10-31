@@ -25,18 +25,16 @@ diaryBtn.addEventListener("click", function () {
     diaryBtn.classList.remove('inactive');
     //add inactive class
     todoBtn.classList.add('inactive');
-
     worktimeBtn.classList.add('inactive');
+
+    // Get today's date in YYYY-MM-DD format for the date input
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById("diaryDate").value = today;
+
     worktimeContainer.style.display = "none";
     diaryContainer.style.display = "block";
     todoContainer.style.display = "none";
 
-    // Populate worktime form with current date and time
-    const now = new Date().toISOString().slice(0, 16);
-    document.getElementById("diaryDate").value = now;
-    // Hide To-Do container and show Worktime container
-    todoContainer.style.display = "none";
-    diaryContainer.style.display = "block";
     drawDiary();
 });
 
@@ -49,7 +47,15 @@ function drawDiary() {
         li.className = "diaryItem";
         li.style.backgroundColor = entry.color;
 
-        // Create category dropdown for each entry
+        const dateSpan = document.createElement("span");
+        dateSpan.className = "diary-date";
+        dateSpan.textContent = new Date(entry.date).toLocaleDateString();
+        
+        const descriptionSpan = document.createElement("span");
+        descriptionSpan.className = "diary-description";
+        descriptionSpan.textContent = entry.description;
+
+        // Create category dropdown
         const categorySelect = document.createElement("select");
         categorySelect.className = "diary-category-select";
         
@@ -64,24 +70,15 @@ function drawDiary() {
             categorySelect.appendChild(option);
         });
 
-        // Add change listener to update category
         categorySelect.addEventListener('change', (e) => {
             entry.category = e.target.value;
             updateDiaryStorage();
         });
 
-        const dateSpan = document.createElement("span");
-        dateSpan.className = "diary-date";
-        dateSpan.textContent = new Date(entry.date).toLocaleDateString();
-        
-        const descriptionSpan = document.createElement("span");
-        descriptionSpan.className = "diary-description";
-        descriptionSpan.textContent = entry.description;
-
-        // Add all elements to the list item
-        li.appendChild(categorySelect);
+        // Add elements in the desired order
         li.appendChild(dateSpan);
         li.appendChild(descriptionSpan);
+        li.appendChild(categorySelect);
         
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "Delete";
@@ -108,8 +105,7 @@ function drawDiary() {
         li.appendChild(deleteBtn);
         diaryList.appendChild(li);
     });
-}
-// Update form submit handler
+}// Update form submit handler
 document.getElementById('diaryForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const description = document.getElementById('diaryInput').value.trim();
