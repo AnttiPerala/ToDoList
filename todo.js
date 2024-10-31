@@ -407,151 +407,8 @@ list.addEventListener('drop', (e) => {
     drawTodos();
 });
 
-let backupBtn = document.getElementById('backupBtn');
 const submitTodoButton = document.querySelector('.submitTodo');
 
-
-/* backupBtn.addEventListener('click', () => {
-    console.log("click registered on backupBtn");
-    let dataStr = JSON.stringify(todos);
-
-    // Check for the availability of the share API (primarily for iOS Safari)
-    if (navigator.share) {
-        navigator.share({
-            title: 'Todo backup',
-            text: dataStr,
-        }).catch(console.error);
-    } else {
-        let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-        let exportFileDefaultName = 'todos_backup.json';
-        let linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
-    }
-}); */
-
-
-
-
-
-// Updated backup functionality to include both To-Do items and Worktimes
-backupBtn.addEventListener('click', () => {
-    // Indicate backup is starting on the .submitTodo button
-    submitTodoButton.textContent = 'Backing up...';
-  
-    try {
-      // Serialize both todos and worktimes arrays to a JSON string
-      const dataToExport = {
-        todos: todos,
-        worktimes: worktimes,
-        diaryEntries: diaryEntries
-
-      };
-      const dataStr = JSON.stringify(dataToExport);
-      // Create a Blob for the JSON data
-      const blob = new Blob([dataStr], {type: 'application/json'});
-      // Create an Object URL for the blob
-      const url = URL.createObjectURL(blob);
-  
-      // Create a temporary link to trigger the download
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', 'todos_worktimes_backup.json');
-      document.body.appendChild(link); // Append the link to the body temporarily
-  
-      link.click(); // Programmatically click the link to trigger the download
-  
-      document.body.removeChild(link); // Remove the link after triggering the download
-      URL.revokeObjectURL(url); // Release the Object URL
-  
-      // Provide feedback that the backup was successful
-      submitTodoButton.textContent = 'Backup Successful!';
-      // Optionally, revert the button text back to its original state after some time
-      setTimeout(() => {
-        submitTodoButton.textContent = 'Add'; // Or whatever your original button text is
-      }, 3000); // Change back after 3 seconds
-    } catch (error) {
-      // In case of an error during the backup process
-      console.error('Backup failed:', error);
-      submitTodoButton.textContent = 'Backup Failed';
-      // Reset the button text after a delay
-      setTimeout(() => {
-        submitTodoButton.textContent = 'Add'; // Revert to your original button text
-      }, 3000); // Reset after 3 seconds
-    }
-});
-
-
-
-
-/* Restore */
-
-let uploadInput = document.getElementById('uploadInput');
-let restoreBtn = document.getElementById('restoreBtn');
-
-restoreBtn.addEventListener('click', () => {
-    console.log("click registered on restoreBtn");
-    uploadInput.click();
-});
-
-uploadInput.addEventListener('change', () => {
-    let file = uploadInput.files[0];
-    if (!file) {
-        alert("No file selected");
-    } else {
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                let contents = e.target.result;
-                let json = JSON.parse(contents);
-
-                // Validate that the JSON has the correct structure
-                if (json.todos && Array.isArray(json.todos) && 
-                    json.worktimes && Array.isArray(json.worktimes) &&
-                    json.diaryEntries && Array.isArray(json.diaryEntries)) {
-                    
-                    // Restore todos
-                    todos = json.todos.map(todo => {
-                        if (todo.deadline) {
-                            todo.deadline = new Date(todo.deadline);
-                        }
-                        return todo;
-                    });
-
-                    // Restore worktimes
-                    worktimes = json.worktimes.map(worktime => {
-                        return {
-                            ...worktime,
-                            start: new Date(worktime.start),
-                            end: new Date(worktime.end)
-                        };
-                    });
-
-                    // Restore diary entries
-                    diaryEntries = json.diaryEntries;
-
-                    // Update all storage
-                    updateLocalStorage();
-                    localStorage.setItem("worktimes", JSON.stringify(worktimes));
-                    localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
-                    
-                    // Refresh all views
-                    drawTodos();
-                    drawWorktimes();
-                    drawDiary();
-                    alert("Data successfully restored!");
-                } else {
-                    alert("Invalid file contents: JSON format is incorrect.");
-                }
-            } catch (error) {
-                console.error("Failed to parse the backup file: ", error);
-                alert("Invalid file contents: Failed to parse JSON.");
-            }
-        };
-        reader.readAsText(file);
-    }
-});
 
 
 
@@ -885,6 +742,204 @@ colorOptions.forEach(option => {
     });
 });
 
+function createTodoMenu() {
+    const menu = document.querySelector('.menu');
+    const menuItems = [
+        { id: 'sortPointsBtn', text: 'Sort by Points', note: '(Default)' },
+        { id: 'sortAlphaBtn', text: 'Sort Alphabetically' },
+        { id: 'sortColorBtn', text: 'Sort by Color' },
+        { id: 'sortDeadlineBtn', text: 'Sort by Deadline' },
+        { id: 'sortTimeAddedBtn', text: 'Sort by Time Added' },
+        { id: 'sortTimeDoneBtn', text: 'Sort by Time Marked "Done"' },
+        { id: 'recalculatePointsBtn', text: 'Recalculate Points' },
+        { id: 'clearLocalStorageBtn', text: 'Delete all to do items' },
+        { id: 'backupBtn', text: 'Backup' },
+        { id: 'restoreBtn', text: 'Restore' },
+        { id: 'loginBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
+    ];
+
+    menu.innerHTML = menuItems.map(item => `
+        <li>
+            <span class="checkmark">✔</span>
+            <a href="#" id="${item.id}">${item.text}</a>
+            ${item.note ? `<span class="note"> ${item.note}</span>` : ''}
+        </li>
+    `).join('');
+
+    // Add the file input for restore functionality
+    const fileInput = document.createElement('li');
+    fileInput.innerHTML = '<input type="file" id="uploadInput" style="display: none" />';
+    menu.appendChild(fileInput);
+    attachTodoMenuListeners();
+}
+
+// Call this function when the page loads
+createTodoMenu();
+
+function attachTodoMenuListeners() {
+    let backupBtn = document.getElementById('backupBtn');
+
+
+    document.getElementById('sortPointsBtn').addEventListener('click', sortByPoints);
+    document.getElementById('sortAlphaBtn').addEventListener('click', sortAlphabetically);
+    document.getElementById('sortColorBtn').addEventListener('click', sortByColor);
+    document.getElementById('sortDeadlineBtn').addEventListener('click', sortByDeadline);
+    document.getElementById('sortTimeAddedBtn').addEventListener('click', sortByTimeAdded);
+    document.getElementById('sortTimeDoneBtn').addEventListener('click', sortByTimeDone);
+    document.getElementById('recalculatePointsBtn').addEventListener('click', recalculatePoints);
+    //document.getElementById('clearLocalStorageBtn').addEventListener('click', clearLocalStorage);
+    //document.getElementById('backupBtn').addEventListener('click', backup);
+    //document.getElementById('restoreBtn').addEventListener('click', restore);
+    //document.getElementById('loginBtn').addEventListener('click', login);
+
+
+    /* DELETE STORAGE */
+
+document.getElementById("clearLocalStorageBtn").addEventListener("click", function(event) {
+    // Prevent default behavior (like navigating to another page)
+    event.preventDefault();
+
+    // Display a confirmation dialog
+    var userConfirmation = window.confirm("Are you sure you want to clear selected items from LocalStorage?");
+
+    // If the user clicks "OK"
+    if (userConfirmation) {
+        // Delete only the specified items from localStorage
+        localStorage.removeItem('todos');
+        localStorage.removeItem('preferredSorting');
+        
+        todos = [];
+        drawTodos();
+    }
+});
+
+
+
+// Updated backup functionality to include both To-Do items and Worktimes
+backupBtn.addEventListener('click', () => {
+    // Indicate backup is starting on the .submitTodo button
+    submitTodoButton.textContent = 'Backing up...';
+  
+    try {
+      // Serialize both todos and worktimes arrays to a JSON string
+      const dataToExport = {
+        todos: todos,
+        worktimes: worktimes,
+        diaryEntries: diaryEntries
+
+      };
+      const dataStr = JSON.stringify(dataToExport);
+      // Create a Blob for the JSON data
+      const blob = new Blob([dataStr], {type: 'application/json'});
+      // Create an Object URL for the blob
+      const url = URL.createObjectURL(blob);
+  
+      // Create a temporary link to trigger the download
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'todos_worktimes_backup.json');
+      document.body.appendChild(link); // Append the link to the body temporarily
+  
+      link.click(); // Programmatically click the link to trigger the download
+  
+      document.body.removeChild(link); // Remove the link after triggering the download
+      URL.revokeObjectURL(url); // Release the Object URL
+  
+      // Provide feedback that the backup was successful
+      submitTodoButton.textContent = 'Backup Successful!';
+      // Optionally, revert the button text back to its original state after some time
+      setTimeout(() => {
+        submitTodoButton.textContent = 'Add'; // Or whatever your original button text is
+      }, 3000); // Change back after 3 seconds
+    } catch (error) {
+      // In case of an error during the backup process
+      console.error('Backup failed:', error);
+      submitTodoButton.textContent = 'Backup Failed';
+      // Reset the button text after a delay
+      setTimeout(() => {
+        submitTodoButton.textContent = 'Add'; // Revert to your original button text
+      }, 3000); // Reset after 3 seconds
+    }
+});
+
+
+
+
+/* Restore */
+
+let uploadInput = document.getElementById('uploadInput');
+let restoreBtn = document.getElementById('restoreBtn');
+
+restoreBtn.addEventListener('click', () => {
+    console.log("click registered on restoreBtn");
+    uploadInput.click();
+});
+
+uploadInput.addEventListener('change', () => {
+    let file = uploadInput.files[0];
+    if (!file) {
+        alert("No file selected");
+    } else {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                let contents = e.target.result;
+                let json = JSON.parse(contents);
+
+                // Validate that the JSON has the correct structure
+                if (json.todos && Array.isArray(json.todos) && 
+                    json.worktimes && Array.isArray(json.worktimes) &&
+                    json.diaryEntries && Array.isArray(json.diaryEntries)) {
+                    
+                    // Restore todos
+                    todos = json.todos.map(todo => {
+                        if (todo.deadline) {
+                            todo.deadline = new Date(todo.deadline);
+                        }
+                        return todo;
+                    });
+
+                    // Restore worktimes
+                    worktimes = json.worktimes.map(worktime => {
+                        return {
+                            ...worktime,
+                            start: new Date(worktime.start),
+                            end: new Date(worktime.end)
+                        };
+                    });
+
+                    // Restore diary entries
+                    diaryEntries = json.diaryEntries;
+
+                    // Update all storage
+                    updateLocalStorage();
+                    localStorage.setItem("worktimes", JSON.stringify(worktimes));
+                    localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
+                    
+                    // Refresh all views
+                    drawTodos();
+                    drawWorktimes();
+                    drawDiary();
+                    alert("Data successfully restored!");
+                } else {
+                    alert("Invalid file contents: JSON format is incorrect.");
+                }
+            } catch (error) {
+                console.error("Failed to parse the backup file: ", error);
+                alert("Invalid file contents: Failed to parse JSON.");
+            }
+        };
+        reader.readAsText(file);
+    }
+});
+
+
+}
+
+
+
+
+
 /* SORT OPTIONS IN MENU */
 
 function sortByPoints() {
@@ -1128,24 +1183,6 @@ function sortByDeadline() {
 }
 
 
-/* Close menu */
-/* The behavior of the "toggle menu" you've described relies on the interaction of the CSS pseudo-class :checked and the general sibling combinator (~). Here's a breakdown of how it works:
-
-Checkbox (Input Element):
-
-<input id="menu-toggle" type="checkbox" />
-This checkbox acts as a state manager for the menu. When it's checked, the menu is open; when it's unchecked, the menu is closed.
-
-Label for the Checkbox:
-
-<label class='menu-button-container' for="menu-toggle">
-    <div class='menu-button'></div>
-</label>
-This label is associated with the checkbox by the for attribute. Clicking on this label will change the state of the checkbox (check/uncheck). Typically, there would be a CSS style that makes this label appear as a menu button or icon to the user.
-
-CSS Behavior (not provided but assumed):
-
-In your CSS, there would likely be rules that use the :checked pseudo-class and the general sibling combinator (~) to change the visibility or position of the .menu when the checkbox is checked.  */
 
 document.querySelector(".menu").addEventListener("click", function(e) {
 
@@ -1241,25 +1278,7 @@ function formatDateTimeForDisplay(isoString) {
     return dateObj.toLocaleString(undefined, options);
 }
 
-/* DELETE STORAGE */
 
-document.getElementById("clearLocalStorageBtn").addEventListener("click", function(event) {
-    // Prevent default behavior (like navigating to another page)
-    event.preventDefault();
-
-    // Display a confirmation dialog
-    var userConfirmation = window.confirm("Are you sure you want to clear selected items from LocalStorage?");
-
-    // If the user clicks "OK"
-    if (userConfirmation) {
-        // Delete only the specified items from localStorage
-        localStorage.removeItem('todos');
-        localStorage.removeItem('preferredSorting');
-        
-        todos = [];
-        drawTodos();
-    }
-});
 
 /* TOGGLE FORM OPTIONS DETAILS */
 
