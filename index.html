@@ -1,88 +1,89 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="UTF-8">
 
-    <title>Todo List</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
 
-  <body>
-    <header id="myHeader">
-      <!-- menu 2 -->
-      <div class="menuWrap">
-        <input id="menu-toggle" type="checkbox" />
-        <label class="menu-button-container" for="menu-toggle">
-          <div class="menu-button"></div>
-        </label>
-        <ul class="menu">
-           
-           
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortPointsBtn">Sort by Points</a>
-                <span class="note"> (Default)</span>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortAlphaBtn">Sort Alphabetically</a>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortColorBtn">Sort by Color</a>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortDeadlineBtn">Sort by Deadline</a>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortTimeAddedBtn">Sort by Time Added</a>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="sortTimeDoneBtn">Sort by Time Marked "Done"</a>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="recalculatePointsBtn">Recalculate Points</a>
-            </li>
-            </li>
-            <li>
-                <span class="checkmark">✔</span>
-                <a href="#" id="clearLocalStorageBtn">Delete all to do items</a>
-            </li>
-            <li>
-              <span class="checkmark">✔</span>
-              <a href="#" id="backupBtn">Backup</a>
-          </li>
-          <li>
-              <span class="checkmark">✔</span>
-              <a href="#" id="restoreBtn">Restore</a>
-          </li>
-            <li>
-              <span class="checkmark">✔</span>
-              <a href="#" id="loginBtn">Login</a>
-              <span class="note"> (In development. Only needed for syncing across devices)</span>
-          </li>
-            <li>
-                <input type="file" id="uploadInput" style="display: none" />
-            </li>
-        </ul>
-        
-      </div>
+  <title>Todo List</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-      <h1 id="mainTitle">To Do List</h1>
-    </header>
+<body>
+  <header id="myHeader">
+    <!-- menu 2 -->
+    <div class="menuWrap">
+      <input id="menu-toggle" type="checkbox" />
+      <label class="menu-button-container" for="menu-toggle">
+        <div class="menu-button"></div>
+      </label>
+      <ul class="menu">
 
-    <div id="modeSelect">
-      <button id="btnTodoMode" class="btn" type="submit">To Do</button>
-      <button id="btnWorktimeMode" class="btn inactive" type="submit">Worktime</button>
-      <button id="btnDiaryMode" class="btn inactive" type="submit">Diary</button>
+
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortPointsBtn">Sort by Points</a>
+          <span class="note"> (Default)</span>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortAlphaBtn">Sort Alphabetically</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortColorBtn">Sort by Color</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortDeadlineBtn">Sort by Deadline</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortTimeAddedBtn">Sort by Time Added</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="sortTimeDoneBtn">Sort by Time Marked "Done"</a>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="recalculatePointsBtn">Recalculate Points</a>
+        </li>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="clearLocalStorageBtn">Delete all to do items</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="backupBtn">Backup</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="restoreBtn">Restore</a>
+        </li>
+        <li>
+          <span class="checkmark">✔</span>
+          <a href="#" id="loginBtn">Login</a>
+          <span class="note"> (In development. Only needed for syncing across devices)</span>
+        </li>
+        <li>
+          <input type="file" id="uploadInput" style="display: none" />
+        </li>
+      </ul>
 
     </div>
 
-    <div id="todoModeWrap">
+    <h1 id="mainTitle">To Do List</h1>
+  </header>
+
+  <div id="modeSelect">
+    <button id="btnTodoMode" class="btn" type="submit">To Do</button>
+    <button id="btnWorktimeMode" class="btn inactive" type="submit">Worktime</button>
+    <button id="btnDiaryMode" class="btn inactive" type="submit">Diary</button>
+
+  </div>
+
+  <div id="todoModeWrap">
 
     <div id="menuRow">
       <form id="todoForm">
@@ -92,55 +93,43 @@
 
         <div class="collapsible-content">
           <!-- all your other elements, like #deadlineInput, .dropdown, etc. -->
-          
+
           <div class="dropdown">
             <label for="categorySelect">Category:</label>
             <select id="categorySelect">
-                <option value="none">None</option>
-                <option value="personal">Personal</option>
-                <option value="work">Work</option>
-                <option value="software">Software</option>
-                <option value="school">School</option>
-                <option value="groceries">Groceries</option>
-                <option value="household">Household</option>
-                <option value="entertainment">Entertainment</option>
-                <option value="children">Children</option>
-                <option value="fitness">Fitness</option>
+              <option value="none">None</option>
+              <option value="personal">Personal</option>
+              <option value="work">Work</option>
+              <option value="software">Software</option>
+              <option value="school">School</option>
+              <option value="groceries">Groceries</option>
+              <option value="household">Household</option>
+              <option value="entertainment">Entertainment</option>
+              <option value="children">Children</option>
+              <option value="fitness">Fitness</option>
             </select>
             <span class='close'>&#215;</span>
-        </div>
+          </div>
 
           <div class="deadLineWrap">
-                Deadline:
+            Deadline:
             <input type="date" id="deadlineInput" />
           </div>
 
           <div id="notificationPlaceholder">
             <div id="notificationWrap">
               <label for="notificationToggle"> Enable notifications</label>
-              <input
-                type="checkbox"
-                id="notificationToggle"
-                name="notificationToggle"
-              />
+              <input type="checkbox" id="notificationToggle" name="notificationToggle" />
               <button id="testNotification">Test Notification</button>
             </div>
           </div>
-          
+
           <div id="priorityCheckWrap">
             <label for="priorityCheck">Top Priority: </label>
-            <input
-              type="checkbox"
-              id="topPriorityCheck"
-              class="large-checkbox"
-            />
+            <input type="checkbox" id="topPriorityCheck" class="large-checkbox" />
             <br />
             <label for="priorityCheck">Mid Priority: </label>
-            <input
-              type="checkbox"
-              id="midPriorityCheck"
-              class="large-checkbox"
-            />
+            <input type="checkbox" id="midPriorityCheck" class="large-checkbox" />
           </div>
           <div class="dropdown">
             <button class="dropbtn chooseColor" id="dropbtn" type="button">
@@ -180,15 +169,15 @@
         </div><!-- end collapsible content -->
 
         <button class="submitTodo btn" type="submit">Add</button>
-        
 
 
-        
+
+
       </form>
 
 
 
-     
+
     </div>
 
     <div id="detailsModal" class="modal">
@@ -208,38 +197,43 @@
 
   </div><!-- close todoModeWrap -->
 
-    <!-- Worktime Container -->
-    <div id="worktimeModeWrap" style="display: none;">
-      <form id="worktimeForm">
-          <input type="text" id="workDescription" placeholder="Enter work description" required />
-          <input type="datetime-local" id="workStart" required />
-          <input type="datetime-local" id="workEnd" required />
-          <button type="submit" class="button-30">Add Worktime</button>
-      </form>
+  <!-- Worktime Container -->
+  <div id="worktimeModeWrap" style="display: none;">
+    <form id="worktimeForm">
+      <input type="text" id="workDescription" placeholder="Enter work description" required />
+      <input type="datetime-local" id="workStart" required />
+      <input type="datetime-local" id="workEnd" required />
+      <button type="submit" class="button-30">Add Worktime</button>
+    </form>
 
-      <ul id="worktimeList"></ul>
-    </div> <!-- end worktimeModeWrap -->
+    <ul id="worktimeList"></ul>
+  </div> <!-- end worktimeModeWrap -->
 
 
-        <!--  Diary Container -->
-        <div id="diaryModeWrap" style="display: none;">
-          <form id="diaryForm">
-                        <input type="text" id="diaryInput" placeholder="Write your diary entry...">
-                        <input type="date" id="diaryDate" required>
-                        <select id="diaryCategory" required>
-                            <option value="Life Event">Life Event</option>
-                            <option value="Purchase">Purchase</option>
-                            <option value="Item placement">Item placement</option>
-                            <option value="Data location change">Data location change</option>
-                        </select>
-                        <button type="submit" class="button-30">Add Entry</button>
-          </form>
-          <ul id="diaryList"></ul>
-      </div><!-- end diaryModeWrap -->
+  <!--  Diary Container -->
+  <div id="diaryModeWrap" style="display: none;">
+    <form id="diaryForm">
+      <textarea id="diaryInput" placeholder="Write your diary entry..." rows="4"
+        style="width: 100%; margin-bottom: 10px;">
+  </textarea>
+  <div class="diaryEntryButtons">
+    <input type="date" id="diaryDate" required>
+        <select id="diaryCategory" required>
+          <option value="Life Event">Life Event</option>
+          <option value="Purchase">Purchase</option>
+          <option value="Item placement">Item placement</option>
+          <option value="Data location change">Data location change</option>
+        </select>
+        <button type="submit" class="button-30">Add Entry</button>
+      </div>
+    </form>
+    <ul id="diaryList"></ul>
+  </div><!-- end diaryModeWrap -->
 
-    <script src="todo.js?v=1.1"></script><!-- Query string for cache busting -->
-    <script src="worktime.js"></script>
-    <script src="diary.js"></script>
+  <script src="todo.js?v=1.1"></script><!-- Query string for cache busting -->
+  <script src="worktime.js"></script>
+  <script src="diary.js"></script>
 
-  </body>
+</body>
+
 </html>

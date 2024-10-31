@@ -702,6 +702,11 @@ white-space: nowrap;
   margin-right: 10px;
 }
 
+.diaryEntryButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
 
 
 /* MOBILE */
