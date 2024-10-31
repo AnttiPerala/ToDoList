@@ -1,3 +1,6 @@
+const todoBtn = document.getElementById("btnTodoMode"); // Assuming there's a button for To-Do list with this ID
+
+
 
 function rgbToHex(rgbStr) {
     const result = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(rgbStr);
@@ -1372,3 +1375,22 @@ function recalculatePoints() {
 }
 
 document.getElementById('recalculatePointsBtn').addEventListener('click', recalculatePoints);
+
+// Integration for switching back to To-Do list from Worktime
+todoBtn.addEventListener("click", function () {
+    // Hide Worktime container and show To-Do container
+    worktimeContainer.style.display = "none";
+    diaryContainer.style.display = "none";
+    todoContainer.style.display = "block";
+  
+    worktimeBtn.classList.add('inactive');
+    //add inactive class
+    todoBtn.classList.remove('inactive');
+  
+    diaryBtn.classList.add('inactive');
+  
+  
+    drawTodos(); // Assuming there is a function drawTodos() for displaying to-do items
+    createTodoMenu();
+  
+  });

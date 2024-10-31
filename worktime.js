@@ -18,7 +18,6 @@
 
 // JavaScript code to handle the worktime tab functionality
 const worktimeBtn = document.getElementById("btnWorktimeMode");
-const todoBtn = document.getElementById("btnTodoMode"); // Assuming there's a button for To-Do list with this ID
 const diaryBtn =  document.getElementById("btnDiaryMode");
 const worktimeContainer = document.getElementById("worktimeModeWrap");
 const diaryContainer = document.getElementById("diaryModeWrap");
@@ -33,25 +32,17 @@ let worktimes = JSON.parse(localStorage.getItem("worktimes")) || [];
 
 // Event listener to toggle between To-Do list and Worktime diary
 worktimeBtn.addEventListener("click", function () {
-    //remove inactive class
     worktimeBtn.classList.remove('inactive');
-    //add inactive class
     todoBtn.classList.add('inactive');
-
     diaryBtn.classList.add('inactive');
 
+    worktimeContainer.style.display = "block";
+    diaryContainer.style.display = "none";
+    todoContainer.style.display = "none";
 
-
-      // Populate worktime form with current date and time
-  const now = new Date().toISOString().slice(0, 16);
-  document.getElementById("workStart").value = now;
-  document.getElementById("workEnd").value = now;
-  // Hide To-Do container and show Worktime container
-  todoContainer.style.display = "none";
-  diaryContainer.style.display = "none";
-  worktimeContainer.style.display = "block";
-  drawWorktimes();
+    createWorktimeMenu();
 });
+
 
 // Function to draw worktime entries
 function drawWorktimes() {
@@ -233,19 +224,69 @@ drawWorktimes();
 
 
 
-// Integration for switching back to To-Do list from Worktime
-todoBtn.addEventListener("click", function () {
-  // Hide Worktime container and show To-Do container
-  worktimeContainer.style.display = "none";
-  diaryContainer.style.display = "none";
-  todoContainer.style.display = "block";
-
-  worktimeBtn.classList.add('inactive');
-  //add inactive class
-  todoBtn.classList.remove('inactive');
-
-  diaryBtn.classList.add('inactive');
 
 
-  drawTodos(); // Assuming there is a function drawTodos() for displaying to-do items
-});
+function createWorktimeMenu() {
+    const menu = document.querySelector('.menu');
+    const menuItems = [
+        { id: 'exportWorktimeCsvBtn', text: 'Export CSV' },
+        { id: 'exportWorktimeTextBtn', text: 'Export Text' },
+        { id: 'clearWorktimeBtn', text: 'Delete all worktime items' }
+    ];
+
+    menu.innerHTML = menuItems.map(item => `
+        <li>
+            <span class="checkmark">✔</span>
+            <a href="#" id="${item.id}">${item.text}</a>
+        </li>
+    `).join('');
+
+    attachWorktimeMenuListeners();
+}
+
+function attachWorktimeMenuListeners() {
+    document.getElementById('exportWorktimeCsvBtn').addEventListener('click', exportWorktimeCsv);
+    document.getElementById('exportWorktimeTextBtn').addEventListener('click', exportWorktimeText);
+    document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
+}
+
+function exportWorktimeCsv() {
+    const csvContent = worktimes.map(entry => {
+        const start = new Date(entry.start);
+        const end = new Date(entry.end);
+        const duration = Math.round((end - start) / 60000);
+        return `${start.toLocaleDateString()},${start.toLocaleTimeString()},${duration},${entry.description},${entry.project},${end.toLocaleTimeString()}`;
+    }).join('\n');
+
+    const header = 'Date,Start Time,Duration (min),Description,Project,End Time\n';
+    const blob = new Blob([header + csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'worktime_export.csv';
+    a.click();
+}
+
+function exportWorktimeText() {
+    const textContent = worktimes.map(entry => {
+        const start = new Date(entry.start);
+        const end = new Date(entry.end);
+        const duration = Math.round((end - start) / 60000);
+        return `Date: ${start.toLocaleDateString()}\nStart: ${start.toLocaleTimeString()}\nDuration: ${duration} min\nDescription: ${entry.description}\nProject: ${entry.project}\nEnd: ${end.toLocaleTimeString()}\n---------------`;
+    }).join('\n');
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'worktime_export.txt';
+    a.click();
+}
+
+function clearWorktimeData() {
+    if (confirm('Are you sure you want to delete all worktime entries?')) {
+        worktimes = [];
+        localStorage.setItem('worktimes', JSON.stringify(worktimes));
+        drawWorktimes();
+    }
+}
