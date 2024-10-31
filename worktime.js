@@ -55,57 +55,118 @@ worktimeBtn.addEventListener("click", function () {
 
 // Function to draw worktime entries
 function drawWorktimes() {
-  // Clear the current list
-  worktimeList.innerHTML = "";
+  const worktimeList = document.getElementById('worktimeList');
+  worktimeList.innerHTML = '';
 
-  // Loop through worktime entries and create list items
-  worktimes.forEach((worktime, index) => {
-    const li = document.createElement("li");
-    li.className = "worktimeItem";
+  worktimes.forEach((entry, index) => {
+      const startDate = new Date(entry.start);
+      const endDate = new Date(entry.end);
+      const duration = Math.round((endDate - startDate) / 60000); // Convert to minutes
 
-    const workDescription = document.createElement("span");
-    workDescription.textContent = `${worktime.description} - Start: ${formatDateTimeForDisplay(worktime.start)} - End: ${formatDateTimeForDisplay(worktime.end)}`;
-    li.appendChild(workDescription);
+      const li = document.createElement('li');
+      li.className = "worktimeItem";
+      li.innerHTML = `
+          <span class="work-date">${startDate.toLocaleDateString()}</span>
+          <span class="work-time">${startDate.toLocaleTimeString()}</span>
+          <span class="work-duration">${duration} min</span>
+          <span class="work-description">${entry.description}</span>
+          <span class="work-project">${entry.project || 'No project'}</span>
+          <span class="work-end">${endDate.toLocaleTimeString()}</span>
+      `;
 
-    // Delete button for each worktime entry
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "Delete";
-    deleteBtn.className = "button-30";
-    deleteBtn.addEventListener("click", function () {
-      deleteWorktime(index);
-    });
-    li.appendChild(deleteBtn);
+      // Delete button for each worktime entry
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Delete";
+      deleteBtn.className = "button-30";
+      deleteBtn.addEventListener("click", function () {
+          deleteWorktime(index);
+      });
+      li.appendChild(deleteBtn);
 
-    worktimeList.appendChild(li);
+      worktimeList.appendChild(li);
   });
+}
+// Add event listeners for the worktime form inputs
+const workDuration = document.getElementById('workDuration');
+const workEnd = document.getElementById('workEnd');
+
+workDuration.addEventListener('input', function() {
+  if (this.value) {
+      workEnd.value = '';
+      workEnd.disabled = true;
+  } else {
+      workEnd.disabled = false;
+  }
+});
+
+workEnd.addEventListener('input', function() {
+  if (this.value) {
+      workDuration.value = '';
+      workDuration.disabled = true;
+  } else {
+      workDuration.disabled = false;
+  }
+});
+// Function to get unique project names from current year
+function getProjectNames() {
+    const currentYear = new Date().getFullYear();
+    return [...new Set(worktimes
+        .filter(entry => new Date(entry.start).getFullYear() === currentYear)
+        .map(entry => entry.project)
+        .filter(Boolean))];
+}
+
+// Function to update project datalist
+function updateProjectList() {
+    const projectList = document.getElementById('projectList');
+    projectList.innerHTML = '';
+    const projects = getProjectNames();
+    projects.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project;
+        projectList.appendChild(option);
+    });
 }
 
 // Function to add a new worktime entry
-worktimeForm.addEventListener("submit", function (event) {
-  event.preventDefault();
+worktimeForm.addEventListener("submit", function(e) {
+  e.preventDefault();
+  const description = document.getElementById('workDescription').value;
+  const project = document.getElementById('projectInput').value;
+  const start = new Date(document.getElementById('workStart').value);
+  let end;
 
-  const workDescription = document.getElementById("workDescription").value;
-  const workStart = document.getElementById("workStart").value;
-  const workEnd = document.getElementById("workEnd").value;
+  if (workDuration.value) {
+      // Calculate end time based on duration
+      end = new Date(start.getTime() + workDuration.value * 60000);
+  } else if (workEnd.value) {
+      // Use the provided end time
+      end = new Date(workEnd.value);
+  } else {
+      alert('Please provide either duration or end time');
+      return;
+  }
 
-  // Create new worktime object
-  const newWorktime = {
-    description: workDescription,
-    start: workStart,
-    end: workEnd,
+  // Add the worktime entry
+  const entry = {
+      id: Date.now(),
+      description,
+      project,
+      start: start.toISOString(),
+      end: end.toISOString()
   };
 
-  // Add to worktimes array and save to localStorage
-  worktimes.push(newWorktime);
-  localStorage.setItem("worktimes", JSON.stringify(worktimes));
-
-  // Redraw the worktime list
-  drawWorktimes();
-
-  // Clear the form
-  worktimeForm.reset();
+  worktimes.push(entry);
+  localStorage.setItem('worktimes', JSON.stringify(worktimes));
+  drawWorktimes(); // Assuming you have a function to display the entries
+  this.reset();
+  workEnd.disabled = false;
+  workDuration.disabled = false;
+  updateProjectList();
 });
 
+// Initialize project list when page loads
+updateProjectList();
 // Function to delete a worktime entry
 function deleteWorktime(index) {
   worktimes.splice(index, 1);
