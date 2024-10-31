@@ -48,6 +48,7 @@ worktimeBtn.addEventListener("click", function () {
   document.getElementById("workEnd").value = now;
   // Hide To-Do container and show Worktime container
   todoContainer.style.display = "none";
+  diaryContainer.style.display = "none";
   worktimeContainer.style.display = "block";
   drawWorktimes();
 });
@@ -136,6 +137,7 @@ drawWorktimes();
 todoBtn.addEventListener("click", function () {
   // Hide Worktime container and show To-Do container
   worktimeContainer.style.display = "none";
+  diaryContainer.style.display = "none";
   todoContainer.style.display = "block";
 
   worktimeBtn.classList.add('inactive');

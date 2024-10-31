@@ -1,3 +1,6 @@
+// Worktime entries array
+let diaryEntries = JSON.parse(localStorage.getItem("diaryEntries")) || [];
+
 // Event listener to toggle between To-Do list and Worktime diary
 diaryBtn.addEventListener("click", function () {
     //remove inactive class
@@ -6,6 +9,9 @@ diaryBtn.addEventListener("click", function () {
     todoBtn.classList.add('inactive');
 
     worktimeBtn.classList.add('inactive');
+    worktimeContainer.style.display = "none";
+    diaryContainer.style.display = "block";
+    todoContainer.style.display = "none";
 
 
 
@@ -26,23 +32,23 @@ function drawDiary() {
     diaryList.innerHTML = "Diary feature coming soon!";
   
     // Loop through worktime entries and create list items
-    worktimes.forEach((worktime, index) => {
+    diaryEntries.forEach((diaryentry, index) => {
       const li = document.createElement("li");
-      li.className = "worktimeItem";
+      li.className = "diaryItem";
   
-      const workDescription = document.createElement("span");
-      workDescription.textContent = `${worktime.description} - Start: ${formatDateTimeForDisplay(worktime.start)} - End: ${formatDateTimeForDisplay(worktime.end)}`;
-      li.appendChild(workDescription);
+      const diaryDescription = document.createElement("span");
+      diaryDescription.textContent = `${diaryentry.description} - Start: ${formatDateTimeForDisplay(worktime.start)} - End: ${formatDateTimeForDisplay(worktime.end)}`;
+      li.appendChild(diaryDescription);
   
       // Delete button for each worktime entry
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
       deleteBtn.className = "button-30";
       deleteBtn.addEventListener("click", function () {
-        deleteWorktime(index);
+        deleteDiaryEntry(index);
       });
       li.appendChild(deleteBtn);
   
-      worktimeList.appendChild(li);
+      diaryList.appendChild(li);
     });
   }

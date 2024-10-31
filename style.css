@@ -371,7 +371,8 @@ div#notificationWrap {
 
 /* little x to close stuff */
 span.close {
-font-size: 1.3rem;
+font-size: 2rem;
+vertical-align: middle;
 color: red;
 cursor: pointer;
 }
