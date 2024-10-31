@@ -26,13 +26,11 @@ diaryBtn.addEventListener("click", function () {
     todoBtn.classList.add('inactive');
     worktimeBtn.classList.add('inactive');
 
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById("diaryDate").value = today;
-
-    worktimeContainer.style.display = "none";
     diaryContainer.style.display = "block";
     todoContainer.style.display = "none";
+    worktimeContainer.style.display = "none";
 
+    createDiaryMenu();
     addCategoryFilter();
     drawDiary();
 });
@@ -163,4 +161,78 @@ function deleteDiaryEntry(id) {
     diaryEntries = diaryEntries.filter(item => item.id !== id);
     updateDiaryStorage();
     drawDiary();
+}
+
+function createDiaryMenu() {
+    const menu = document.querySelector('.menu');
+    const menuItems = [
+        { id: 'exportDiaryBtn', text: 'Export as TXT' },
+        { id: 'clearDiaryBtn', text: 'Delete all diary entries' },
+        { id: 'backupDiaryBtn', text: 'Backup' },
+        { id: 'restoreDiaryBtn', text: 'Restore' },
+        { id: 'loginDiaryBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
+    ];
+
+    menu.innerHTML = menuItems.map(item => `
+        <li>
+            <span class="checkmark">✔</span>
+            <a href="#" id="${item.id}">${item.text}</a>
+            ${item.note ? `<span class="note"> ${item.note}</span>` : ''}
+        </li>
+    `).join('');
+
+    // Add file input for restore functionality
+    const fileInput = document.createElement('li');
+    fileInput.innerHTML = '<input type="file" id="uploadDiaryInput" style="display: none" />';
+    menu.appendChild(fileInput);
+
+    attachDiaryMenuListeners();
+}
+
+function attachDiaryMenuListeners() {
+    document.getElementById('exportDiaryBtn').addEventListener('click', exportDiaryText);
+    document.getElementById('clearDiaryBtn').addEventListener('click', clearDiaryData);
+    document.getElementById('backupDiaryBtn').addEventListener('click', backupDiary);
+    document.getElementById('restoreDiaryBtn').addEventListener('click', restoreDiary);
+    document.getElementById('loginDiaryBtn').addEventListener('click', loginDiary);
+}
+
+function exportDiaryText() {
+    const textContent = diaryEntries.map(entry => {
+        const date = new Date(entry.date);
+        return `Date: ${date.toLocaleDateString()}\nCategory: ${entry.category}\nEntry: ${entry.description}\n---------------`;
+    }).join('\n');
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diary_export.txt';
+    a.click();
+}
+
+function clearDiaryData() {
+    if (confirm('Are you sure you want to delete all diary entries?')) {
+        diaryEntries = [];
+        updateDiaryStorage();
+        drawDiary();
+    }
+}
+
+function backupDiary() {
+    const data = JSON.stringify(diaryEntries);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diary_backup.json';
+    a.click();
+}
+
+function restoreDiary() {
+    document.getElementById('uploadDiaryInput').click();
+}
+
+function loginDiary() {
+    alert('Login functionality coming soon!');
 }
