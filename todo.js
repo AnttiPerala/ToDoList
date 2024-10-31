@@ -444,7 +444,9 @@ backupBtn.addEventListener('click', () => {
       // Serialize both todos and worktimes arrays to a JSON string
       const dataToExport = {
         todos: todos,
-        worktimes: worktimes
+        worktimes: worktimes,
+        diaryEntries: diaryEntries
+
       };
       const dataStr = JSON.stringify(dataToExport);
       // Create a Blob for the JSON data
@@ -505,7 +507,10 @@ uploadInput.addEventListener('change', () => {
                 let json = JSON.parse(contents);
 
                 // Validate that the JSON has the correct structure
-                if (json.todos && Array.isArray(json.todos) && json.worktimes && Array.isArray(json.worktimes)) {
+                if (json.todos && Array.isArray(json.todos) && 
+                    json.worktimes && Array.isArray(json.worktimes) &&
+                    json.diaryEntries && Array.isArray(json.diaryEntries)) {
+                    
                     // Restore todos
                     todos = json.todos.map(todo => {
                         if (todo.deadline) {
@@ -523,11 +528,18 @@ uploadInput.addEventListener('change', () => {
                         };
                     });
 
-                    updateLocalStorage(); // Update local storage for todos and worktimes
+                    // Restore diary entries
+                    diaryEntries = json.diaryEntries;
+
+                    // Update all storage
+                    updateLocalStorage();
                     localStorage.setItem("worktimes", JSON.stringify(worktimes));
+                    localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
                     
+                    // Refresh all views
                     drawTodos();
                     drawWorktimes();
+                    drawDiary();
                     alert("Data successfully restored!");
                 } else {
                     alert("Invalid file contents: JSON format is incorrect.");
@@ -540,6 +552,7 @@ uploadInput.addEventListener('change', () => {
         reader.readAsText(file);
     }
 });
+
 
 
 // Helper function to check if a date is today

@@ -224,14 +224,12 @@
         <!--  Diary Container -->
         <div id="diaryModeWrap" style="display: none;">
           <form id="diaryForm">
-              <input type="text" id="diaryDescription" placeholder="Enter diary description" required />
-              <input type="datetime-local" id="diaryStart" required />
-              <input type="datetime-local" id="diaryEnd" required />
-              <button type="submit" class="button-30">Add Diary Entry</button>
+              <input type="text" id="diaryInput" placeholder="Write your diary entry...">
+              <input type="date" id="diaryDate" required>
+              <button type="submit" class="button-30">Add Entry</button>
           </form>
-    
           <ul id="diaryList"></ul>
-        </div> <!-- end worktimeModeWrap -->
+      </div><!-- end diaryModeWrap -->
 
     <script src="todo.js?v=1.1"></script><!-- Query string for cache busting -->
     <script src="worktime.js"></script>
