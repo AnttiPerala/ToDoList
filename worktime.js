@@ -55,38 +55,47 @@ worktimeBtn.addEventListener("click", function () {
 
 // Function to draw worktime entries
 function drawWorktimes() {
-  const worktimeList = document.getElementById('worktimeList');
-  worktimeList.innerHTML = '';
+    const worktimeList = document.getElementById('worktimeList');
+    const table = document.createElement('div');
+    table.className = 'worktime-table';
+    
+    // Add headers including new columns
+    table.innerHTML = `
+        <div class="worktime-header">Date</div>
+        <div class="worktime-header">Start Time</div>
+        <div class="worktime-header">Duration</div>
+        <div class="worktime-header">Description</div>
+        <div class="worktime-header">Project</div>
+        <div class="worktime-header">End Time</div>
+        <div class="worktime-header">Edit</div>
+        <div class="worktime-header">Delete</div>
+    `;
 
-  worktimes.forEach((entry, index) => {
-      const startDate = new Date(entry.start);
-      const endDate = new Date(entry.end);
-      const duration = Math.round((endDate - startDate) / 60000); // Convert to minutes
+    worktimes.forEach(entry => {
+        const startDate = new Date(entry.start);
+        const endDate = new Date(entry.end);
+        const duration = Math.round((endDate - startDate) / 60000);
 
-      const li = document.createElement('li');
-      li.className = "worktimeItem";
-      li.innerHTML = `
-          <span class="work-date">${startDate.toLocaleDateString()}</span>
-          <span class="work-time">${startDate.toLocaleTimeString()}</span>
-          <span class="work-duration">${duration} min</span>
-          <span class="work-description">${entry.description}</span>
-          <span class="work-project">${entry.project || 'No project'}</span>
-          <span class="work-end">${endDate.toLocaleTimeString()}</span>
-      `;
+        // Add cells including action buttons
+        table.innerHTML += `
+            <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
+            <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
+            <div class="worktime-cell">${duration} min</div>
+            <div class="worktime-cell">${entry.description}</div>
+            <div class="worktime-cell">${entry.project || 'No project'}</div>
+            <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
+            <div class="worktime-cell">
+                <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
+            </div>
+            <div class="worktime-cell">
+                <button onclick="deleteWorktime(${entry.id})" class="btn-delete">Delete</button>
+            </div>
+        `;
+    });
 
-      // Delete button for each worktime entry
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "Delete";
-      deleteBtn.className = "button-30";
-      deleteBtn.addEventListener("click", function () {
-          deleteWorktime(index);
-      });
-      li.appendChild(deleteBtn);
-
-      worktimeList.appendChild(li);
-  });
-}
-// Add event listeners for the worktime form inputs
+    worktimeList.innerHTML = '';
+    worktimeList.appendChild(table);
+}// Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
 const workEnd = document.getElementById('workEnd');
 
