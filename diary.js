@@ -6,12 +6,13 @@ function updateDiaryStorage() {
     localStorage.setItem('diaryEntries', JSON.stringify(diaryEntries));
 }
 
-// Function to add new diary entry
-function addDiaryEntry(description, date) {
+
+function addDiaryEntry(description, date, category) {
     const entry = {
         id: Date.now(),
-        description: description,
-        date: new Date(date),
+        description: description.replace(/\n/g, '<br>'),
+        date: new Date(date).toISOString(),
+        category: category,
         color: selectedColor || bgColors[Math.floor(Math.random() * bgColors.length)]
     };
     diaryEntries.push(entry);
@@ -21,13 +22,10 @@ function addDiaryEntry(description, date) {
 
 // Event listener to toggle between To-Do list and Worktime diary
 diaryBtn.addEventListener("click", function () {
-    //remove inactive class
     diaryBtn.classList.remove('inactive');
-    //add inactive class
     todoBtn.classList.add('inactive');
     worktimeBtn.classList.add('inactive');
 
-    // Get today's date in YYYY-MM-DD format for the date input
     const today = new Date().toISOString().split('T')[0];
     document.getElementById("diaryDate").value = today;
 
@@ -132,18 +130,22 @@ function drawDiaryEntries(filterCategory) {
         
         diaryList.appendChild(li);
     });
-}// Update form submit handler
+}
+
+
+// Add form submit handler
 document.getElementById('diaryForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const description = document.getElementById('diaryInput').value.trim();
-    const date = document.getElementById('diaryDate').value;
-    const category = document.getElementById('diaryCategory').value;
-    
-    if (!description) {
-        alert("Please enter a diary entry!");
-        return;
-    }
-    
-    addDiaryEntry(description, date, category);
-    document.getElementById('diaryInput').value = '';
+  e.preventDefault();
+  
+  const textarea = document.getElementById('diaryInput');
+  const description = textarea.value.trim();
+  const date = document.getElementById('diaryDate').value;
+  const category = document.getElementById('diaryCategory').value;
+  
+  if (description !== '') {
+      addDiaryEntry(description, date, category);
+      textarea.value = '';
+  } else {
+      alert("Please enter a diary entry!");
+  }
 });
