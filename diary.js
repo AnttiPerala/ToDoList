@@ -119,7 +119,7 @@ diaryBtn.addEventListener("click", function () {
     diaryContainer.style.display = "block";
     todoContainer.style.display = "none";
 
-    document.getElementById('mainTitle').textContent = 'Diary Entries';
+    document.getElementById('mainTitle').textContent = 'Diary';
     createDiaryMenu();
     addCategoryFilter();
     drawDiary();

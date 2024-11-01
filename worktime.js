@@ -40,7 +40,7 @@ worktimeBtn.addEventListener("click", function () {
     diaryContainer.style.display = "none";
     todoContainer.style.display = "none";
 
-    document.getElementById('mainTitle').textContent = 'Worktime Tracker';
+    document.getElementById('mainTitle').textContent = 'Worktimes';
     createWorktimeMenu();
 });
 
