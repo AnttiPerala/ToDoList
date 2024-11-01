@@ -322,3 +322,5 @@ function clearWorktimeData() {
 }
 
 
+
+document.getElementById('workStart').value = new Date().toISOString().slice(0, 16);
