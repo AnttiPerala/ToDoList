@@ -415,31 +415,6 @@ const submitTodoButton = document.querySelector('.submitTodo');
 
 
 
-// Helper function to check if a date is today
-function isToday(date) {
-    let parsedDate;
-
-    if (!date) return false; // handle null or undefined dates
-
-    if (typeof date === 'string') {
-        parsedDate = new Date(date);
-    } else if (date instanceof Date) {
-        parsedDate = date;
-    } else {
-        console.error("Received invalid date:", date);
-        return false;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
-
-    parsedDate.setHours(0, 0, 0, 0); // Resetting the hours, minutes, seconds, and milliseconds to get the start of the day
-
-    return parsedDate.getTime() === today.getTime();
-}
-
-
-
 /* DOUBLE CLICK TO EDIT TEXT */
 
 
