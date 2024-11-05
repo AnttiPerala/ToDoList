@@ -199,8 +199,8 @@ function attachDiaryMenuListeners() {
     document.getElementById('exportDiaryBtn').addEventListener('click', exportDiaryText);
     document.getElementById('clearDiaryBtn').addEventListener('click', clearDiaryData);
     document.getElementById('backupBtn').addEventListener('click', handleBackup);
-    //document.getElementById('restoreBtn').addEventListener('click', restoreDiary);
-    //document.getElementById('loginBtn').addEventListener('click', loginDiary);
+    document.getElementById('restoreBtn').addEventListener('click', handleRestore);
+    document.getElementById('loginBtn').addEventListener('click', login);
     document.getElementById('copyLifeEventsBtn').addEventListener('click', () => copyEntriesByCategory('Life Event'));
     document.getElementById('copyPurchasesBtn').addEventListener('click', () => copyEntriesByCategory('Purchase'));
     document.getElementById('copyItemPlacementsBtn').addEventListener('click', () => copyEntriesByCategory('Item placement'));

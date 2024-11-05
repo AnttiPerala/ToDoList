@@ -376,8 +376,8 @@ function attachWorktimeMenuListeners() {
     document.getElementById('exportWorktimeTextBtn').addEventListener('click', exportWorktimeText);
     document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
     document.getElementById('backupBtn').addEventListener('click', handleBackup);
-    //document.getElementById('restoreBtn').addEventListener('click', restoreWorktime);
-    //document.getElementById('loginBtn').addEventListener('click', loginWorktime);
+    document.getElementById('restoreBtn').addEventListener('click', handleRestore);
+    document.getElementById('loginBtn').addEventListener('click', login);
 }
 
 function backupWorktime() {

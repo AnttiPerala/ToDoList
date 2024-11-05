@@ -799,12 +799,12 @@ backupBtn.addEventListener('click', handleBackup);
 let uploadInput = document.getElementById('uploadInput');
 let restoreBtn = document.getElementById('restoreBtn');
 
-restoreBtn.addEventListener('click', () => {
+function handleRestore() {
     console.log("click registered on restoreBtn");
     uploadInput.click();
-});
+}
 
-uploadInput.addEventListener('change', () => {
+function handleFileUpload() {
     let file = uploadInput.files[0];
     if (!file) {
         alert("No file selected");
@@ -815,12 +815,10 @@ uploadInput.addEventListener('change', () => {
                 let contents = e.target.result;
                 let json = JSON.parse(contents);
 
-                // Validate that the JSON has the correct structure
                 if (json.todos && Array.isArray(json.todos) && 
                     json.worktimes && Array.isArray(json.worktimes) &&
                     json.diaryEntries && Array.isArray(json.diaryEntries)) {
                     
-                    // Restore todos
                     todos = json.todos.map(todo => {
                         if (todo.deadline) {
                             todo.deadline = new Date(todo.deadline);
@@ -828,7 +826,6 @@ uploadInput.addEventListener('change', () => {
                         return todo;
                     });
 
-                    // Restore worktimes
                     worktimes = json.worktimes.map(worktime => {
                         return {
                             ...worktime,
@@ -837,15 +834,12 @@ uploadInput.addEventListener('change', () => {
                         };
                     });
 
-                    // Restore diary entries
                     diaryEntries = json.diaryEntries;
 
-                    // Update all storage
                     updateLocalStorage();
                     localStorage.setItem("worktimes", JSON.stringify(worktimes));
                     localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
                     
-                    // Refresh all views
                     drawTodos();
                     drawWorktimes();
                     drawDiary();
@@ -860,7 +854,11 @@ uploadInput.addEventListener('change', () => {
         };
         reader.readAsText(file);
     }
-});
+}
+
+restoreBtn.addEventListener('click', handleRestore);
+uploadInput.addEventListener('change', handleFileUpload);
+
 
 
 }
