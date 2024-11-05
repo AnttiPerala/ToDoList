@@ -42,11 +42,66 @@ worktimeBtn.addEventListener("click", function () {
 
     document.getElementById('mainTitle').textContent = 'Worktimes';
     createWorktimeMenu();
+    initializeWorktime();
 });
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'worktime-filters';
+    filterContainer.innerHTML = `
+        <button class="button-30 active" data-period="all">All</button>
+        <button class="button-30" data-period="thisMonth">This Month</button>
+        <button class="button-30" data-period="lastMonth">Last Month</button>
+        <button class="button-30" data-period="thisYear">This Year</button>
+        <button class="button-30" data-period="lastYear">Last Year</button>
+    `;
 
-// Function to draw worktime entries
-function drawWorktimes() {
-    const worktimeList = document.getElementById('worktimeList');
+    
+    worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
+
+    filterContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            // Update active button
+            filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            // Filter and redraw worktimes
+            drawWorktimes(e.target.dataset.period);
+        }
+    });
+
+
+function filterWorktimesByPeriod(period) {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    return worktimes.filter(entry => {
+        const entryDate = new Date(entry.start);
+        
+        switch(period) {
+            case 'thisMonth':
+                return entryDate.getFullYear() === currentYear && 
+                       entryDate.getMonth() === currentMonth;
+            
+            case 'lastMonth':
+                const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                return entryDate.getFullYear() === lastMonthYear && 
+                       entryDate.getMonth() === lastMonth;
+            
+            case 'thisYear':
+                return entryDate.getFullYear() === currentYear;
+            
+            case 'lastYear':
+                return entryDate.getFullYear() === currentYear - 1;
+            
+            default: // 'all'
+                return true;
+        }
+    });
+}
+
+function drawWorktimes(period = 'all') {
+    
     const table = document.createElement('div');
     table.className = 'worktime-table';
     
@@ -63,14 +118,14 @@ function drawWorktimes() {
     `;
 
     let totalMinutes = 0;
+    const filteredWorktimes = filterWorktimesByPeriod(period);
 
-    worktimes.forEach(entry => {
+    filteredWorktimes.forEach(entry => {
         const startDate = new Date(entry.start);
         const endDate = new Date(entry.end);
         const duration = Math.round((endDate - startDate) / 60000);
         totalMinutes += duration;
 
-        // Add cells including action buttons
         table.innerHTML += `
             <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
             <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
@@ -87,11 +142,9 @@ function drawWorktimes() {
         `;
     });
 
-    // Calculate hours and remaining minutes
     const hours = Math.floor(totalMinutes / 60);
     const remainingMinutes = totalMinutes % 60;
     
-    // Add totals row
     table.innerHTML += `
         <div class="worktime-cell total">Total:</div>
         <div class="worktime-cell total"></div>
@@ -105,6 +158,39 @@ function drawWorktimes() {
 
     worktimeList.innerHTML = '';
     worktimeList.appendChild(table);
+}
+
+function addWorktimeFilterButtons() {
+    // Check if filters already exist
+    if (document.querySelector('.worktime-filters')) {
+        return;
+    }
+
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'worktime-filters';
+    filterContainer.innerHTML = `
+        <button class="button-30 active" data-period="all">All</button>
+        <button class="button-30" data-period="thisMonth">This Month</button>
+        <button class="button-30" data-period="lastMonth">Last Month</button>
+        <button class="button-30" data-period="thisYear">This Year</button>
+        <button class="button-30" data-period="lastYear">Last Year</button>
+    `;
+
+    const worktimeList = document.getElementById('worktimeList');
+    worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
+
+    filterContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            drawWorktimes(e.target.dataset.period);
+        }
+    });
+}
+// Call this when initializing the worktime view
+function initializeWorktime() {
+    addWorktimeFilterButtons();
+    drawWorktimes();
 }
 // Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
