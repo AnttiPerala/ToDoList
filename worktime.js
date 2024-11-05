@@ -28,10 +28,6 @@ const diaryForm = document.getElementById("diaryForm");
 const diaryList = document.getElementById("diaryList");
 
 
-
-// Worktime entries array
-let worktimes = JSON.parse(localStorage.getItem("worktimes")) || [];
-
 const projects = getProjectsFromLastTwoYears();
 
 // Event listener to toggle between To-Do list and Worktime diary
@@ -377,7 +373,7 @@ function attachWorktimeMenuListeners() {
     document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
     document.getElementById('backupBtn').addEventListener('click', handleBackup);
     document.getElementById('restoreBtn').addEventListener('click', handleRestore);
-    document.getElementById('loginBtn').addEventListener('click', login);
+    //document.getElementById('loginBtn').addEventListener('click', login);
 }
 
 function backupWorktime() {

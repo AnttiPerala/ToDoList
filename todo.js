@@ -10,7 +10,7 @@ function rgbToHex(rgbStr) {
         return rgbStr; // Return original string if it's not in RGB format
     }
 }
-let todos = [];
+
 let filteredTodos = todos;  // GLOBAL VAR FOR CATEGORY FILTERING
 
 
@@ -799,62 +799,6 @@ backupBtn.addEventListener('click', handleBackup);
 let uploadInput = document.getElementById('uploadInput');
 let restoreBtn = document.getElementById('restoreBtn');
 
-function handleRestore() {
-    console.log("click registered on restoreBtn");
-    uploadInput.click();
-}
-
-function handleFileUpload() {
-    let file = uploadInput.files[0];
-    if (!file) {
-        alert("No file selected");
-    } else {
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                let contents = e.target.result;
-                let json = JSON.parse(contents);
-
-                if (json.todos && Array.isArray(json.todos) && 
-                    json.worktimes && Array.isArray(json.worktimes) &&
-                    json.diaryEntries && Array.isArray(json.diaryEntries)) {
-                    
-                    todos = json.todos.map(todo => {
-                        if (todo.deadline) {
-                            todo.deadline = new Date(todo.deadline);
-                        }
-                        return todo;
-                    });
-
-                    worktimes = json.worktimes.map(worktime => {
-                        return {
-                            ...worktime,
-                            start: new Date(worktime.start),
-                            end: new Date(worktime.end)
-                        };
-                    });
-
-                    diaryEntries = json.diaryEntries;
-
-                    updateLocalStorage();
-                    localStorage.setItem("worktimes", JSON.stringify(worktimes));
-                    localStorage.setItem("diaryEntries", JSON.stringify(diaryEntries));
-                    
-                    drawTodos();
-                    drawWorktimes();
-                    drawDiary();
-                    alert("Data successfully restored!");
-                } else {
-                    alert("Invalid file contents: JSON format is incorrect.");
-                }
-            } catch (error) {
-                console.error("Failed to parse the backup file: ", error);
-                alert("Invalid file contents: Failed to parse JSON.");
-            }
-        };
-        reader.readAsText(file);
-    }
-}
 
 restoreBtn.addEventListener('click', handleRestore);
 uploadInput.addEventListener('change', handleFileUpload);
