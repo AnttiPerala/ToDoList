@@ -746,6 +746,7 @@ white-space: nowrap;
 }
 .worktime-filters {
   margin-bottom: 20px;
+  margin-top: 20px;
   display: flex;
   gap: 10px;
 }
@@ -974,6 +975,20 @@ padding: 0.5rem;
     padding: 2px;
     width: 100%;
   }
+
+  .worktime-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.worktime-filters button, .worktime-filters select {
+  margin: 0.1rem;
+}
+
+.worktime-filters select {
+    grid-column: 1 / -1;  /* Makes the dropdown take full width */
+}
 
 }
 
