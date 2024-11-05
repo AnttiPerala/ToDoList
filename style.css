@@ -1015,10 +1015,16 @@ padding: 0.5rem;
     align-items: center;
     background-color: #e2e2ff;
     padding: 0.5rem;
-}
+  }
 
+  #worktimeForm input {
+    width: 100%;
+  }
 
-  
+  h1#mainTitle {
+    margin-left: 3rem;
+  }
+
 }
   /* End mobile */
 
