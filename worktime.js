@@ -44,7 +44,6 @@ worktimeBtn.addEventListener("click", function () {
     createWorktimeMenu();
 });
 
-
 // Function to draw worktime entries
 function drawWorktimes() {
     const worktimeList = document.getElementById('worktimeList');
@@ -63,10 +62,13 @@ function drawWorktimes() {
         <div class="worktime-header">Delete</div>
     `;
 
+    let totalMinutes = 0;
+
     worktimes.forEach(entry => {
         const startDate = new Date(entry.start);
         const endDate = new Date(entry.end);
         const duration = Math.round((endDate - startDate) / 60000);
+        totalMinutes += duration;
 
         // Add cells including action buttons
         table.innerHTML += `
@@ -85,9 +87,26 @@ function drawWorktimes() {
         `;
     });
 
+    // Calculate hours and remaining minutes
+    const hours = Math.floor(totalMinutes / 60);
+    const remainingMinutes = totalMinutes % 60;
+    
+    // Add totals row
+    table.innerHTML += `
+        <div class="worktime-cell total">Total:</div>
+        <div class="worktime-cell total"></div>
+        <div class="worktime-cell total">${totalMinutes} min (${hours}h ${remainingMinutes}min)</div>
+        <div class="worktime-cell total"></div>
+        <div class="worktime-cell total"></div>
+        <div class="worktime-cell total"></div>
+        <div class="worktime-cell total"></div>
+        <div class="worktime-cell total"></div>
+    `;
+
     worktimeList.innerHTML = '';
     worktimeList.appendChild(table);
-}// Add event listeners for the worktime form inputs
+}
+// Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
 const workEnd = document.getElementById('workEnd');
 
