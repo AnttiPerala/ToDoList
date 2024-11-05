@@ -759,6 +759,11 @@ white-space: nowrap;
   color: white;
 }
 
+.worktime-filters select.button-30 {
+  padding: 5px 15px;
+  cursor: pointer;
+}
+
 
 #worktimeForm input {
   height: 40px;

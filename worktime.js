@@ -27,8 +27,12 @@ const worktimeList = document.getElementById("worktimeList");
 const diaryForm = document.getElementById("diaryForm");
 const diaryList = document.getElementById("diaryList");
 
+
+
 // Worktime entries array
 let worktimes = JSON.parse(localStorage.getItem("worktimes")) || [];
+
+const projects = getProjectsFromLastTwoYears();
 
 // Event listener to toggle between To-Do list and Worktime diary
 worktimeBtn.addEventListener("click", function () {
@@ -42,17 +46,19 @@ worktimeBtn.addEventListener("click", function () {
 
     document.getElementById('mainTitle').textContent = 'Worktimes';
     createWorktimeMenu();
-    initializeWorktime();
-});
-    const filterContainer = document.createElement('div');
+    //addWorktimeFilterButtons();
+});    const filterContainer = document.createElement('div');
     filterContainer.className = 'worktime-filters';
     filterContainer.innerHTML = `
-        <button class="button-30 active" data-period="all">All</button>
-        <button class="button-30" data-period="thisMonth">This Month</button>
-        <button class="button-30" data-period="lastMonth">Last Month</button>
-        <button class="button-30" data-period="thisYear">This Year</button>
-        <button class="button-30" data-period="lastYear">Last Year</button>
-    `;
+    <select class="button-30" id="projectFilter">
+        ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
+    </select>
+    <button class="button-30 active" data-period="all">All times</button>
+    <button class="button-30" data-period="thisMonth">This Month</button>
+    <button class="button-30" data-period="lastMonth">Last Month</button>
+    <button class="button-30" data-period="thisYear">This Year</button>
+    <button class="button-30" data-period="lastYear">Last Year</button>
+`;
 
     
     worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
@@ -67,127 +73,133 @@ worktimeBtn.addEventListener("click", function () {
             drawWorktimes(e.target.dataset.period);
         }
     });
+  function getProjectsFromLastTwoYears() {
+      const now = new Date();
+      const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+    
+      return ['All projects', ...new Set(worktimes
+          .filter(entry => new Date(entry.start) >= twoYearsAgo)
+          .map(entry => entry.project)
+          .filter(Boolean))];
+  }
 
+  function filterWorktimesByPeriod(period, selectedProject = 'All projects') {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
 
-function filterWorktimesByPeriod(period) {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
+      return worktimes.filter(entry => {
+          const entryDate = new Date(entry.start);
+          const matchesPeriod = period === 'all' ? true : 
+              period === 'thisMonth' ? (entryDate.getFullYear() === currentYear && entryDate.getMonth() === currentMonth) :
+              period === 'lastMonth' ? (entryDate.getFullYear() === (currentMonth === 0 ? currentYear - 1 : currentYear) && 
+                                      entryDate.getMonth() === (currentMonth === 0 ? 11 : currentMonth - 1)) :
+              period === 'thisYear' ? (entryDate.getFullYear() === currentYear) :
+              period === 'lastYear' ? (entryDate.getFullYear() === currentYear - 1) : true;
 
-    return worktimes.filter(entry => {
-        const entryDate = new Date(entry.start);
+          const matchesProject = selectedProject === 'All projects' ? true : entry.project === selectedProject;
         
-        switch(period) {
-            case 'thisMonth':
-                return entryDate.getFullYear() === currentYear && 
-                       entryDate.getMonth() === currentMonth;
-            
-            case 'lastMonth':
-                const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-                const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-                return entryDate.getFullYear() === lastMonthYear && 
-                       entryDate.getMonth() === lastMonth;
-            
-            case 'thisYear':
-                return entryDate.getFullYear() === currentYear;
-            
-            case 'lastYear':
-                return entryDate.getFullYear() === currentYear - 1;
-            
-            default: // 'all'
-                return true;
-        }
-    });
-}
+          return matchesPeriod && matchesProject;
+      });
+  }
+  function drawWorktimes(period = 'all', selectedProject = 'All projects') {
+      const worktimeList = document.getElementById('worktimeList');
+      const table = document.createElement('div');
+      table.className = 'worktime-table';
+  
+      table.innerHTML = `
+          <div class="worktime-header">Date</div>
+          <div class="worktime-header">Start Time</div>
+          <div class="worktime-header">Duration</div>
+          <div class="worktime-header">Description</div>
+          <div class="worktime-header">Project</div>
+          <div class="worktime-header">End Time</div>
+          <div class="worktime-header">Edit</div>
+          <div class="worktime-header">Delete</div>
+      `;
 
-function drawWorktimes(period = 'all') {
+      let totalMinutes = 0;
+      const filteredWorktimes = filterWorktimesByPeriod(period, selectedProject);
+
+      filteredWorktimes.forEach(entry => {
+          const startDate = new Date(entry.start);
+          const endDate = new Date(entry.end);
+          const duration = Math.round((endDate - startDate) / 60000);
+          totalMinutes += duration;
+
+          table.innerHTML += `
+              <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
+              <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
+              <div class="worktime-cell">${duration} min</div>
+              <div class="worktime-cell">${entry.description}</div>
+              <div class="worktime-cell">${entry.project || 'No project'}</div>
+              <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
+              <div class="worktime-cell">
+                  <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
+              </div>
+              <div class="worktime-cell">
+                  <button onclick="deleteWorktime(${entry.id})" class="btn-delete">Delete</button>
+              </div>
+          `;
+      });
+
+      const hours = Math.floor(totalMinutes / 60);
+      const remainingMinutes = totalMinutes % 60;
+  
+      table.innerHTML += `
+          <div class="worktime-cell total">Total:</div>
+          <div class="worktime-cell total"></div>
+          <div class="worktime-cell total">${totalMinutes} min (${hours}h ${remainingMinutes}min)</div>
+          <div class="worktime-cell total"></div>
+          <div class="worktime-cell total"></div>
+          <div class="worktime-cell total"></div>
+          <div class="worktime-cell total"></div>
+          <div class="worktime-cell total"></div>
+      `;
+
+      worktimeList.innerHTML = '';
+      worktimeList.appendChild(table);
+  }
+
+  function addWorktimeFilterButtons() {
+      if (document.querySelector('.worktime-filters')) {
+          return;
+      }
+
+      const filterContainer = document.createElement('div');
+      filterContainer.className = 'worktime-filters';
     
-    const table = document.createElement('div');
-    table.className = 'worktime-table';
+      const projects = getProjectsFromLastTwoYears();
     
-    // Add headers including new columns
-    table.innerHTML = `
-        <div class="worktime-header">Date</div>
-        <div class="worktime-header">Start Time</div>
-        <div class="worktime-header">Duration</div>
-        <div class="worktime-header">Description</div>
-        <div class="worktime-header">Project</div>
-        <div class="worktime-header">End Time</div>
-        <div class="worktime-header">Edit</div>
-        <div class="worktime-header">Delete</div>
-    `;
+      filterContainer.innerHTML = `
+          <select class="button-30" id="projectFilter">
+              ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
+          </select>
+          <button class="button-30 active" data-period="all">All times</button>
+          <button class="button-30" data-period="thisMonth">This Month</button>
+          <button class="button-30" data-period="lastMonth">Last Month</button>
+          <button class="button-30" data-period="thisYear">This Year</button>
+          <button class="button-30" data-period="lastYear">Last Year</button>
+      `;
 
-    let totalMinutes = 0;
-    const filteredWorktimes = filterWorktimesByPeriod(period);
-
-    filteredWorktimes.forEach(entry => {
-        const startDate = new Date(entry.start);
-        const endDate = new Date(entry.end);
-        const duration = Math.round((endDate - startDate) / 60000);
-        totalMinutes += duration;
-
-        table.innerHTML += `
-            <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
-            <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
-            <div class="worktime-cell">${duration} min</div>
-            <div class="worktime-cell">${entry.description}</div>
-            <div class="worktime-cell">${entry.project || 'No project'}</div>
-            <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
-            <div class="worktime-cell">
-                <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
-            </div>
-            <div class="worktime-cell">
-                <button onclick="deleteWorktime(${entry.id})" class="btn-delete">Delete</button>
-            </div>
-        `;
-    });
-
-    const hours = Math.floor(totalMinutes / 60);
-    const remainingMinutes = totalMinutes % 60;
-    
-    table.innerHTML += `
-        <div class="worktime-cell total">Total:</div>
-        <div class="worktime-cell total"></div>
-        <div class="worktime-cell total">${totalMinutes} min (${hours}h ${remainingMinutes}min)</div>
-        <div class="worktime-cell total"></div>
-        <div class="worktime-cell total"></div>
-        <div class="worktime-cell total"></div>
-        <div class="worktime-cell total"></div>
-        <div class="worktime-cell total"></div>
-    `;
-
-    worktimeList.innerHTML = '';
-    worktimeList.appendChild(table);
-}
-
-function addWorktimeFilterButtons() {
-    // Check if filters already exist
-    if (document.querySelector('.worktime-filters')) {
-        return;
-    }
-
-    const filterContainer = document.createElement('div');
-    filterContainer.className = 'worktime-filters';
-    filterContainer.innerHTML = `
-        <button class="button-30 active" data-period="all">All</button>
-        <button class="button-30" data-period="thisMonth">This Month</button>
-        <button class="button-30" data-period="lastMonth">Last Month</button>
-        <button class="button-30" data-period="thisYear">This Year</button>
-        <button class="button-30" data-period="lastYear">Last Year</button>
-    `;
-
-    const worktimeList = document.getElementById('worktimeList');
+      // Rest of the function remains the same
+  }
     worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
 
     filterContainer.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
             filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             e.target.classList.add('active');
-            drawWorktimes(e.target.dataset.period);
+            drawWorktimes(e.target.dataset.period, document.getElementById('projectFilter').value);
         }
     });
-}
-// Call this when initializing the worktime view
+
+    document.getElementById('projectFilter').addEventListener('change', (e) => {
+        const activePeriod = filterContainer.querySelector('button.active').dataset.period;
+        drawWorktimes(activePeriod, e.target.value);
+    });
+
+  // Call this when initializing the worktime view
 function initializeWorktime() {
     addWorktimeFilterButtons();
     drawWorktimes();
