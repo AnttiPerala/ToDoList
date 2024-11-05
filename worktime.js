@@ -350,9 +350,9 @@ function createWorktimeMenu() {
         { id: 'exportWorktimeCsvBtn', text: 'Export CSV' },
         { id: 'exportWorktimeTextBtn', text: 'Export Text' },
         { id: 'clearWorktimeBtn', text: 'Delete all worktime items' },
-        { id: 'backupWorktimeBtn', text: 'Backup' },
-        { id: 'restoreWorktimeBtn', text: 'Restore' },
-        { id: 'loginWorktimeBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
+        { id: 'backupBtn', text: 'Backup App' },
+        { id: 'restoreBtn', text: 'Restore' },
+        { id: 'loginBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
     ];
 
     menu.innerHTML = menuItems.map(item => `
@@ -375,9 +375,9 @@ function attachWorktimeMenuListeners() {
     document.getElementById('exportWorktimeCsvBtn').addEventListener('click', exportWorktimeCsv);
     document.getElementById('exportWorktimeTextBtn').addEventListener('click', exportWorktimeText);
     document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
-    document.getElementById('backupWorktimeBtn').addEventListener('click', backupWorktime);
-    document.getElementById('restoreWorktimeBtn').addEventListener('click', restoreWorktime);
-    document.getElementById('loginWorktimeBtn').addEventListener('click', loginWorktime);
+    document.getElementById('backupBtn').addEventListener('click', handleBackup);
+    //document.getElementById('restoreBtn').addEventListener('click', restoreWorktime);
+    //document.getElementById('loginBtn').addEventListener('click', loginWorktime);
 }
 
 function backupWorktime() {

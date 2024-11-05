@@ -174,9 +174,9 @@ function createDiaryMenu() {
         { id: 'copyPurchasesBtn', text: 'Copy Purchases to Clipboard' },
         { id: 'copyItemPlacementsBtn', text: 'Copy Item Placements to Clipboard' },
         { id: 'copyDataLocationsBtn', text: 'Copy Data Locations to Clipboard' },
-        { id: 'backupDiaryBtn', text: 'Backup' },
-        { id: 'restoreDiaryBtn', text: 'Restore' },
-        { id: 'loginDiaryBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
+        { id: 'backupBtn', text: 'Backup App' },
+        { id: 'restoreBtn', text: 'Restore' },
+        { id: 'loginBtn', text: 'Login', note: '(In development. Only needed for syncing across devices)' }
     ];
 
     menu.innerHTML = menuItems.map(item => `
@@ -198,9 +198,9 @@ function createDiaryMenu() {
 function attachDiaryMenuListeners() {
     document.getElementById('exportDiaryBtn').addEventListener('click', exportDiaryText);
     document.getElementById('clearDiaryBtn').addEventListener('click', clearDiaryData);
-    document.getElementById('backupDiaryBtn').addEventListener('click', backupDiary);
-    document.getElementById('restoreDiaryBtn').addEventListener('click', restoreDiary);
-    document.getElementById('loginDiaryBtn').addEventListener('click', loginDiary);
+    document.getElementById('backupBtn').addEventListener('click', handleBackup);
+    //document.getElementById('restoreBtn').addEventListener('click', restoreDiary);
+    //document.getElementById('loginBtn').addEventListener('click', loginDiary);
     document.getElementById('copyLifeEventsBtn').addEventListener('click', () => copyEntriesByCategory('Life Event'));
     document.getElementById('copyPurchasesBtn').addEventListener('click', () => copyEntriesByCategory('Purchase'));
     document.getElementById('copyItemPlacementsBtn').addEventListener('click', () => copyEntriesByCategory('Item placement'));
