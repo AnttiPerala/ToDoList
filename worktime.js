@@ -242,6 +242,11 @@ function getProjectNames() {
 }
 // Function to update project datalist
 function updateProjectList() {
+    const existingContainer = document.querySelector('.project-input-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
     const container = document.createElement('div');
     container.className = 'project-input-container';
     
@@ -281,11 +286,19 @@ function updateProjectList() {
         }
     });
     
-    const oldInput = document.getElementById('projectInput');
     container.appendChild(select);
     container.appendChild(customInput);
-    oldInput.parentNode.replaceChild(container, oldInput);
-}let editingId = null;
+    
+    const workDescription = document.getElementById('workDescription');
+    workDescription.parentNode.insertBefore(container, workDescription.nextSibling);
+
+    // Remove any existing datalist
+    const existingDatalist = document.getElementById('projectList');
+    if (existingDatalist) {
+        existingDatalist.remove();
+    }
+}
+let editingId = null;
 function editWorktime(id) {
     const entry = worktimes.find(item => item.id === id);
     if (entry) {
@@ -311,7 +324,9 @@ function editWorktime(id) {
 worktimeForm.addEventListener('submit', function(e) {
     e.preventDefault();
     const description = document.getElementById('workDescription').value;
-    const project = document.getElementById('projectInput').value;
+    const projectInput = document.getElementById('projectInput');
+    const projectSelect = document.getElementById('projectSelect');
+    const project = projectInput.value || projectSelect.value;
     const start = new Date(document.getElementById('workStart').value);
     let end;
 
@@ -333,22 +348,35 @@ worktimeForm.addEventListener('submit', function(e) {
     };
 
     if (editingId) {
-        // Update existing entry
         const index = worktimes.findIndex(item => item.id === editingId);
         worktimes[index] = entry;
         editingId = null;
         worktimeForm.querySelector('button[type="submit"]').textContent = 'Add Worktime';
     } else {
-        // Add new entry
         worktimes.push(entry);
     }
 
     localStorage.setItem('worktimes', JSON.stringify(worktimes));
+    
+    // Force refresh of all project-related UI elements
+    const projectFilter = document.getElementById('projectFilter');
+    if (projectFilter) {
+        projectFilter.innerHTML = getProjectsFromLastTwoYears()
+            .map(p => `<option value="${p}">${p}</option>`)
+            .join('');
+    }
+    
     drawWorktimes();
+    updateProjectList();
+    
     this.reset();
     workEnd.disabled = false;
     workDuration.disabled = false;
-    updateProjectList();
+    
+    // Reset project select visibility
+    projectSelect.style.display = 'block';
+    projectSelect.value = '';
+    projectInput.style.display = 'none';
 });
 
 // Initialize project list when page loads
