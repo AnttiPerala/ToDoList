@@ -207,23 +207,28 @@ function initializeWorktime() {
 // Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
 const workEnd = document.getElementById('workEnd');
+const workStart = document.getElementById('workStart');
 
 workDuration.addEventListener('input', function() {
-  if (this.value) {
-      workEnd.value = '';
-      workEnd.disabled = true;
-  } else {
-      workEnd.disabled = false;
-  }
+    if (this.value) {
+        const startDate = new Date(workStart.value);
+        const endDate = new Date(startDate.getTime() + this.value * 60000);
+        const offset = endDate.getTimezoneOffset() * 60000;
+        workEnd.value = (new Date(endDate - offset)).toISOString().slice(0, 16);
+    } else {
+        workEnd.value = '';
+    }
 });
 
 workEnd.addEventListener('input', function() {
-  if (this.value) {
-      workDuration.value = '';
-      workDuration.disabled = true;
-  } else {
-      workDuration.disabled = false;
-  }
+    if (this.value) {
+        const startDate = new Date(workStart.value);
+        const endDate = new Date(this.value);
+        const durationMinutes = Math.round((endDate - startDate) / 60000);
+        workDuration.value = durationMinutes;
+    } else {
+        workDuration.value = '';
+    }
 });
 // Function to get unique project names from current year
 function getProjectNames() {
