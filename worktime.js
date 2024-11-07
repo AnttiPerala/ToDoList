@@ -41,10 +41,14 @@ worktimeBtn.addEventListener("click", function () {
     todoContainer.style.display = "none";
 
     document.getElementById('mainTitle').textContent = 'Worktimes';
+    
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+    document.getElementById('workStart').value = localISOTime;
+    
     createWorktimeMenu();
-    //addWorktimeFilterButtons();
-});    const filterContainer = document.createElement('div');
-    filterContainer.className = 'worktime-filters';
+});const filterContainer = document.createElement('div');    filterContainer.className = 'worktime-filters';
     filterContainer.innerHTML = `
     <select class="button-30" id="projectFilter">
         ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
@@ -232,13 +236,30 @@ function getProjectNames() {
 
 // Function to update project datalist
 function updateProjectList() {
-    const projectList = document.getElementById('projectList');
-    projectList.innerHTML = '';
+    const projectInput = document.getElementById('projectInput');
     const projects = getProjectNames();
+    
+    // Convert input to select if it isn't already
+    if (projectInput.tagName !== 'SELECT') {
+        const select = document.createElement('select');
+        select.id = 'projectInput';
+        select.className = projectInput.className;
+        projectInput.parentNode.replaceChild(select, projectInput);
+    }
+    
+    // Add empty option as default
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select Project';
+    projectInput.innerHTML = '';
+    projectInput.appendChild(defaultOption);
+    
+    // Add all project options
     projects.forEach(project => {
         const option = document.createElement('option');
         option.value = project;
-        projectList.appendChild(option);
+        option.textContent = project;
+        projectInput.appendChild(option);
     });
 }
 
@@ -247,24 +268,24 @@ let editingId = null;
 function editWorktime(id) {
     const entry = worktimes.find(item => item.id === id);
     if (entry) {
-        // Fill form with entry data
+        const startDate = new Date(entry.start);
+        const endDate = new Date(entry.end);
+        const startOffset = startDate.getTimezoneOffset() * 60000;
+        const endOffset = endDate.getTimezoneOffset() * 60000;
+        
         document.getElementById('workDescription').value = entry.description;
         document.getElementById('projectInput').value = entry.project || '';
-        document.getElementById('workStart').value = new Date(entry.start).toISOString().slice(0, 16);
-        document.getElementById('workEnd').value = new Date(entry.end).toISOString().slice(0, 16);
+        document.getElementById('workStart').value = (new Date(startDate - startOffset)).toISOString().slice(0, 16);
+        document.getElementById('workEnd').value = (new Date(endDate - endOffset)).toISOString().slice(0, 16);
         
-        // Clear duration field since we're showing end time
         document.getElementById('workDuration').value = '';
         
-        // Change submit button text
         const submitButton = worktimeForm.querySelector('button[type="submit"]');
         submitButton.textContent = 'Update Worktime';
         
-        // Store editing id
         editingId = id;
     }
 }
-
 // Modify the form submit handler to handle both new entries and updates
 worktimeForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -436,4 +457,7 @@ function clearWorktimeData() {
 
 
 
-document.getElementById('workStart').value = new Date().toISOString().slice(0, 16);
+const now = new Date();
+const offset = now.getTimezoneOffset() * 60000;
+const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+document.getElementById('workStart').value = localISOTime;
