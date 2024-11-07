@@ -242,14 +242,50 @@ function getProjectNames() {
 }
 // Function to update project datalist
 function updateProjectList() {
-    const projectInput = document.getElementById('projectInput');
-    const projects = getProjectsFromLastTwoYears();
+    const container = document.createElement('div');
+    container.className = 'project-input-container';
     
-    projectInput.innerHTML = projects.map(project => 
-        `<option value="${project}">${project}</option>`
-    ).join('');
-}let editingId = null;
+    const select = document.createElement('select');
+    select.id = 'projectSelect';
+    select.className = 'button-30';
+    
+    const projects = getProjectsFromLastTwoYears().filter(p => p !== 'All projects');
+    
+    select.innerHTML = `
+        <option value="">Select Project</option>
+        ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
+        <option value="custom">+ Add New Project</option>
+    `;
+    
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.id = 'projectInput';
+    customInput.className = 'button-30';
+    customInput.style.display = 'none';
+    
+    select.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+            select.style.display = 'none';
+            customInput.style.display = 'block';
+            customInput.focus();
+        } else {
+            customInput.value = e.target.value;
+        }
+    });
 
+    customInput.addEventListener('blur', () => {
+        if (customInput.value.trim() === '') {
+            select.value = '';
+            select.style.display = 'block';
+            customInput.style.display = 'none';
+        }
+    });
+    
+    const oldInput = document.getElementById('projectInput');
+    container.appendChild(select);
+    container.appendChild(customInput);
+    oldInput.parentNode.replaceChild(container, oldInput);
+}let editingId = null;
 function editWorktime(id) {
     const entry = worktimes.find(item => item.id === id);
     if (entry) {
