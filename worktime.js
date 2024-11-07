@@ -77,12 +77,14 @@ worktimeBtn.addEventListener("click", function () {
       const now = new Date();
       const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
     
-      return ['All projects', ...new Set(worktimes
+      const projects = ['All projects', ...new Set(worktimes
           .filter(entry => new Date(entry.start) >= twoYearsAgo)
           .map(entry => entry.project)
           .filter(Boolean))];
+    
+      console.log('Found projects:', projects);
+      return projects;
   }
-
   function filterWorktimesByPeriod(period, selectedProject = 'All projects') {
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -238,37 +240,15 @@ function getProjectNames() {
         .map(entry => entry.project)
         .filter(Boolean))];
 }
-
 // Function to update project datalist
 function updateProjectList() {
     const projectInput = document.getElementById('projectInput');
-    const projects = getProjectNames();
+    const projects = getProjectsFromLastTwoYears();
     
-    // Convert input to select if it isn't already
-    if (projectInput.tagName !== 'SELECT') {
-        const select = document.createElement('select');
-        select.id = 'projectInput';
-        select.className = projectInput.className;
-        projectInput.parentNode.replaceChild(select, projectInput);
-    }
-    
-    // Add empty option as default
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Select Project';
-    projectInput.innerHTML = '';
-    projectInput.appendChild(defaultOption);
-    
-    // Add all project options
-    projects.forEach(project => {
-        const option = document.createElement('option');
-        option.value = project;
-        option.textContent = project;
-        projectInput.appendChild(option);
-    });
-}
-
-let editingId = null;
+    projectInput.innerHTML = projects.map(project => 
+        `<option value="${project}">${project}</option>`
+    ).join('');
+}let editingId = null;
 
 function editWorktime(id) {
     const entry = worktimes.find(item => item.id === id);
