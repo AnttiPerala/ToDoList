@@ -89,7 +89,7 @@ function drawDiary(filterCategory = 'all') {
         const date = new Date(entry.date);
         
         table.innerHTML += `
-            <div class="diary-cell">${date.toLocaleDateString()}</div>
+            <div class="diary-cell">${date.toLocaleDateString('fi-FI')}</div>
             <div class="diary-cell">${entry.category}</div>
             <div class="diary-cell">${entry.description}</div>
             <div class="diary-cell">
@@ -103,6 +103,20 @@ function drawDiary(filterCategory = 'all') {
 
     diaryList.innerHTML = '';
     diaryList.appendChild(table);
+}
+
+function exportDiaryText() {
+    const textContent = diaryEntries.map(entry => {
+        const date = new Date(entry.date);
+        return `Date: ${date.toLocaleDateString('fi-FI')}\nCategory: ${entry.category}\nEntry: ${entry.description}\n---------------`;
+    }).join('\n');
+
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'diary_export.txt';
+    a.click();
 }
 
 // Call addCategoryFilter when switching to diary mode

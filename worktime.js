@@ -108,7 +108,7 @@ worktimeBtn.addEventListener("click", function () {
       const worktimeList = document.getElementById('worktimeList');
       const table = document.createElement('div');
       table.className = 'worktime-table';
-  
+
       table.innerHTML = `
           <div class="worktime-header">Date</div>
           <div class="worktime-header">Start Time</div>
@@ -128,11 +128,10 @@ worktimeBtn.addEventListener("click", function () {
           const endDate = new Date(entry.end);
           const duration = Math.round((endDate - startDate) / 60000);
           totalMinutes += duration;
-
           table.innerHTML += `
-              <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
+              <div class="worktime-cell">${startDate.toLocaleDateString('fi-FI')}</div>
               <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
-              <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h ${duration%60}min)` : ''}</div>
+              <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 === 0 ? '' : ` ${duration%60}min`})` : ''}</div>
               <div class="worktime-cell">${entry.description}</div>
               <div class="worktime-cell">${entry.project || 'No project'}</div>
               <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
@@ -147,11 +146,11 @@ worktimeBtn.addEventListener("click", function () {
 
       const hours = Math.floor(totalMinutes / 60);
       const remainingMinutes = totalMinutes % 60;
-  
+
       table.innerHTML += `
           <div class="worktime-cell total">Total:</div>
           <div class="worktime-cell total"></div>
-          <div class="worktime-cell total">${totalMinutes} min (${hours}h ${remainingMinutes}min)</div>
+          <div class="worktime-cell total">${totalMinutes} min ${totalMinutes > 59 ? `(${hours}h${remainingMinutes === 0 ? '' : ` ${remainingMinutes}min`})` : ''}</div>
           <div class="worktime-cell total"></div>
           <div class="worktime-cell total"></div>
           <div class="worktime-cell total"></div>
@@ -162,7 +161,6 @@ worktimeBtn.addEventListener("click", function () {
       worktimeList.innerHTML = '';
       worktimeList.appendChild(table);
   }
-
   function addWorktimeFilterButtons() {
       if (document.querySelector('.worktime-filters')) {
           return;
@@ -232,8 +230,11 @@ workEnd.addEventListener('input', function() {
         workDuration.value = '';
     }
     const duration = durationMinutes;
-    const durationDisplay = `${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 ? ` ${duration%60}min` : ''})` : ''}`;
-    document.querySelector('.worktime-cell').innerHTML = durationDisplay;    }
+    const durationDisplay = `<div class="worktime-cell">
+    ${duration} min 
+    ${duration > 59 ? `(${Math.floor(duration / 60)}h${duration % 60 === 0 ? '' : ` ${duration % 60 > 0 ? `${duration % 60}min` : ''}`})` : ''}
+  </div>`;
+      document.querySelector('.worktime-cell').innerHTML = durationDisplay;    }
 );
 // Function to get unique project names from current year
 function getProjectNames() {

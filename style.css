@@ -142,10 +142,10 @@ body {
     opacity: 0.3;
 }
 
-.toDoText{
-    font-size: 1.3rem;
-    color: darkblue;
-    grid-column: span 3;
+.toDoText {
+  font-size: 1rem;
+  color: #000000;
+  grid-column: span 3;
 }
 
 .votes{
