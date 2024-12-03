@@ -128,13 +128,14 @@ worktimeBtn.addEventListener("click", function () {
           const endDate = new Date(entry.end);
           const duration = Math.round((endDate - startDate) / 60000);
           totalMinutes += duration;
+
           table.innerHTML += `
               <div class="worktime-cell">${startDate.toLocaleDateString('fi-FI')}</div>
-              <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
+              <div class="worktime-cell">${startDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
               <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 === 0 ? '' : ` ${duration%60}min`})` : ''}</div>
               <div class="worktime-cell">${entry.description}</div>
               <div class="worktime-cell">${entry.project || 'No project'}</div>
-              <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
+              <div class="worktime-cell">${endDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
               <div class="worktime-cell">
                   <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
               </div>
@@ -160,8 +161,7 @@ worktimeBtn.addEventListener("click", function () {
 
       worktimeList.innerHTML = '';
       worktimeList.appendChild(table);
-  }
-  function addWorktimeFilterButtons() {
+  }    function addWorktimeFilterButtons() {
       if (document.querySelector('.worktime-filters')) {
           return;
       }
