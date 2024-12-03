@@ -132,7 +132,7 @@ worktimeBtn.addEventListener("click", function () {
           table.innerHTML += `
               <div class="worktime-cell">${startDate.toLocaleDateString()}</div>
               <div class="worktime-cell">${startDate.toLocaleTimeString()}</div>
-              <div class="worktime-cell">${duration} min</div>
+              <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h ${duration%60}min)` : ''}</div>
               <div class="worktime-cell">${entry.description}</div>
               <div class="worktime-cell">${entry.project || 'No project'}</div>
               <div class="worktime-cell">${endDate.toLocaleTimeString()}</div>
@@ -231,7 +231,10 @@ workEnd.addEventListener('input', function() {
     } else {
         workDuration.value = '';
     }
-});
+    const duration = durationMinutes;
+    const durationDisplay = `${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 ? ` ${duration%60}min` : ''})` : ''}`;
+    document.querySelector('.worktime-cell').innerHTML = durationDisplay;    }
+);
 // Function to get unique project names from current year
 function getProjectNames() {
     const currentYear = new Date().getFullYear();
