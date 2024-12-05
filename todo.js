@@ -330,34 +330,38 @@ if (todo.deadline) {
 
 function doneTodo(id) {
     let todo = todos.find(t => t.id === id);
-    todo.done = !todo.done; //toggle
-
-    // If it's marked as done, set the timeDone. Otherwise, set it to null
-    if (todo.done) {
-        todo.timeDone = new Date().toISOString();
-    } else {
-        todo.timeDone = null;
-    }
-
-    applyPreferredSorting();
-    updateLocalStorage();
-    drawTodos();
+    const listItem = document.getElementById(id);
+    
+    listItem.classList.add('slide-out');
+    
+    listItem.addEventListener('animationend', () => {
+        todo.done = !todo.done;
+        if (todo.done) {
+            todo.timeDone = new Date().toISOString();
+        } else {
+            todo.timeDone = null;
+        }
+        applyPreferredSorting();
+        updateLocalStorage();
+        drawTodos();
+    });
 }
 
 function deleteTodo(id) {
     let todo = todos.find(t => t.id === id);
-
-    // Ask for confirmation
     let isConfirmed = window.confirm(`Are you sure you want to delete the todo: "${todo.text}"?`);
 
     if (isConfirmed) {
-        console.log("Deleted todo with text: " + todo.text)
-        // Filter out the todo with the given id (which will delete it)
-        todos = todos.filter(todo => todo.id !== id);
-
-        applyPreferredSorting();
-        updateLocalStorage();
-        drawTodos();
+        const listItem = document.getElementById(id);
+        listItem.classList.add('scale-out');
+        
+        listItem.addEventListener('animationend', () => {
+            console.log("Deleted todo with text: " + todo.text);
+            todos = todos.filter(todo => todo.id !== id);
+            applyPreferredSorting();
+            updateLocalStorage();
+            drawTodos();
+        });
     }
 }
 

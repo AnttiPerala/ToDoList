@@ -11,9 +11,12 @@ body {
   top: 0;
   z-index: 100;
   background-color: gainsboro;
+  text-align: center;
 }
 
 #mainTitle{
+  display: inline-block;
+  cursor: pointer;
     font-size: 5rem;
     text-align: center;
     font-weight: 800;
@@ -812,7 +815,35 @@ padding: 0.5rem;
   border-bottom: 1px solid #ddd;
 }
 
+@keyframes slideOut {
+  from {
+      transform: translateX(0);
+      opacity: 1;
+  }
+  to {
+      transform: translateX(100%);
+      opacity: 0;
+  }
+}
 
+.slide-out {
+  animation: slideOut 0.5s ease-out forwards;
+}
+
+@keyframes scaleOut {
+  from {
+      transform: scaleX(1);
+      opacity: 1;
+  }
+  to {
+      transform: scaleX(0);
+      opacity: 0;
+  }
+}
+
+.scale-out {
+  animation: scaleOut 0.4s ease-in forwards;
+}
 
 
 
