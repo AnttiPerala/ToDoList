@@ -1,5 +1,8 @@
 const todoBtn = document.getElementById("btnTodoMode"); // Assuming there's a button for To-Do list with this ID
 
+document.getElementById('mainTitle').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 
 function rgbToHex(rgbStr) {

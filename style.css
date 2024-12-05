@@ -4,11 +4,14 @@ body {
     background-color: gainsboro;
 }
 
+
 #myHeader {
   padding: 0 0.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: gainsboro;
 }
-
-
 
 #mainTitle{
     font-size: 5rem;
