@@ -270,6 +270,9 @@ function drawTodos() {
 
       // Add a display for the deadline
 let deadlineDisplay = document.createElement('span');
+deadlineDisplay.classList.add('deadline');  // Add this line
+
+
 if (todo.deadline) {
     // Ensure that todo.deadline is a Date object
     if (!(todo.deadline instanceof Date)) {
@@ -372,21 +375,66 @@ drawTodos();
 
 function upvote(id) {
     let todo = todos.find(t => t.id === id);
+    const listItems = Array.from(document.querySelectorAll('.listItem'));
+    const positions = listItems.map(item => item.getBoundingClientRect());
+    
     todo.votes++;
     applyPreferredSorting();
-    updateLocalStorage();
     drawTodos();
+    
+    listItems.forEach((item, index) => {
+        const newPos = document.getElementById(item.id).getBoundingClientRect();
+        const oldPos = positions[index];
+        
+        if (oldPos && newPos) {
+            const deltaY = oldPos.top - newPos.top;
+            const element = document.getElementById(item.id);
+            
+            element.style.transform = `translateY(${deltaY}px)`;
+            element.style.transition = 'none';
+            
+            requestAnimationFrame(() => {
+                element.style.transition = 'transform 0.3s ease-out';
+                element.style.transform = '';
+            });
+        }
+    });
+    
+    updateLocalStorage();
 }
 
 
 
 function downvote(id) {
     let todo = todos.find(t => t.id === id);
+    const listItems = Array.from(document.querySelectorAll('.listItem'));
+    const positions = listItems.map(item => item.getBoundingClientRect());
+    
     todo.votes--;
     applyPreferredSorting();
-    updateLocalStorage();
     drawTodos();
+    
+    listItems.forEach((item, index) => {
+        const newPos = document.getElementById(item.id).getBoundingClientRect();
+        const oldPos = positions[index];
+        
+        if (oldPos && newPos) {
+            const deltaY = oldPos.top - newPos.top;
+            const element = document.getElementById(item.id);
+            
+            element.style.transform = `translateY(${deltaY}px)`;
+            element.style.transition = 'none';
+            
+            requestAnimationFrame(() => {
+                element.style.transition = 'transform 0.3s ease-out';
+                element.style.transform = '';
+            });
+        }
+    });
+    
+    updateLocalStorage();
 }
+
 
 list.addEventListener('dragover', (e) => {
     e.preventDefault();

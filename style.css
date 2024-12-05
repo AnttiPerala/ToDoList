@@ -12,6 +12,9 @@ body {
   z-index: 100;
   background-color: gainsboro;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #mainTitle{
@@ -155,7 +158,7 @@ body {
 }
 
 .votes{
-    color: darkolivegreen;
+    color: #0070f3;
 }
 
 ul#todoList {
@@ -318,6 +321,7 @@ div#notificationWrap {
 #priorityCheckWrap {
   align-items: center;
   text-align: center;
+  margin-top: 1rem;
 }
 
 #priorityCheckWrap label {
@@ -331,8 +335,31 @@ div#notificationWrap {
   position: relative;
   display: inline-block;
   text-align: center;
+  margin: 1rem;
 
 }
+
+.dropdown,
+.deadLineWrap {
+  display: inline-flex; /* Use flexbox for alignment */
+  align-items: center; /* Vertically align items inside */
+  margin-right: 10px; /* Add spacing between groups */
+}
+
+label,
+span,
+input,
+select {
+  vertical-align: middle; /* Ensure consistent vertical alignment */
+}
+
+.close {
+  margin-left: 5px; /* Adjust spacing around the "x" */
+  color: red;
+  cursor: pointer;
+  font-size: 16px; /* Ensure it visually aligns */
+}
+
 
 
 
@@ -354,6 +381,13 @@ div#notificationWrap {
 
 .dropdown-content div:hover {
   background-color: #f1f1f1;
+}
+
+div#extraInfoButtonContainer {
+
+    display: flex;
+    align-items: center;
+    margin: 1rem;
 }
 
 .color-option {
@@ -465,6 +499,9 @@ cursor: pointer;
 
     align-items: center;
     min-height: 50px;
+    left: 0;
+    display: flex;
+    align-items: center;
 }
 
 .menu>li {
@@ -576,14 +613,15 @@ cursor: pointer;
 
 .info-button {
       border-radius: 50%;        /* Make the button round */
-      width: 30px;               /* Set a fixed width */
-      height: 30px;              /* Set a fixed height */
+      width: 40px;               /* Set a fixed width */
+      height: 40px;              /* Set a fixed height */
       text-align: center;        /* Center the "i" horizontally */
       line-height: 30px;         /* Center the "i" vertically */
       border: none;              /* Remove default borders */
       background-color: #eee;   /* A light background color */
       cursor: pointer;           /* Change cursor to hand pointer on hover */
       margin: 0.5rem;
+      font-size: 1.2rem;
   }
   
 
@@ -845,6 +883,16 @@ padding: 0.5rem;
   animation: scaleOut 0.4s ease-in forwards;
 }
 
+.listItem {
+  transition: transform 0.3s ease-out;
+}
+
+.reorder-animation {
+  position: relative;
+  z-index: 1;
+}
+
+
 
 
 
@@ -939,6 +987,7 @@ padding: 0.5rem;
     button.submitTodo.btn {
       grid-column: span 2;
       position: relative;
+      min-width: 6rem;
   }
 
 
@@ -975,11 +1024,19 @@ padding: 0.5rem;
   div#extraInfoButtonContainer {
     text-align: center;
     margin-top: 0;
+      display: flex;
+      align-items: center;
+  
   }
 
   .deadLineWrap{
     margin: 1rem;
     text-align: center;
+  }
+
+  #priorityCheckWrap {
+    text-align: left;
+    margin: 0.5rem;
   }
 
   ul#diaryList {
@@ -1023,6 +1080,14 @@ padding: 0.5rem;
 .worktime-filters select {
     grid-column: 1 / -1;  /* Makes the dropdown take full width */
 }
+
+span.deadline {
+  padding: 0 0.5rem;
+  align-self: flex-start;
+}
+
+span.votes {
+  align-self: flex-start;
 
 }
 
