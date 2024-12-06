@@ -519,13 +519,14 @@ cursor: pointer;
 }
 
 .menuWrap {
-    position: absolute;
+  display: flex;
+  align-items: center;
+  left: 0;
+}
 
-    align-items: center;
-    min-height: 50px;
-    left: 0;
-    display: flex;
-    align-items: center;
+#menu-toggle:checked ~ .menu {
+  top: 50px; /* Same value to ensure alignment */
+  transition: top 0.3s ease; /* Optional: add a smooth transition for visual effect */
 }
 
 .menu>li {
@@ -552,7 +553,8 @@ cursor: pointer;
   flex-direction: column;
   z-index: 100;
   justify-content: center;
-  position: relative;
+  position: absolute;
+  left: 1rem;
 }
 
 #menu-toggle {
@@ -596,16 +598,16 @@ cursor: pointer;
 }
 
 .menu {
-  max-width: 40rem;
-  top: 1rem;
-  left: -1.5rem;
+  position: absolute;
+  top: 50px; /* Aligning below the hamburger button */
+  left: 0;
+  min-width: 30vw; /* Ensure a minimum width to fit all elements comfortably */
+  max-width: 90vw; /* Optional: ensure the menu doesn't take over the entire screen */
   flex-direction: column;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+  padding: 1rem; /* Add padding to make the elements inside the menu look better */
   z-index: 11;
-  position: relative;
 }
+
 
  #menu-toggle~.menu li {
    height: 0;
