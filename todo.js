@@ -49,6 +49,24 @@ const form = document.getElementById('todoForm');
 const input = document.getElementById('todoInput');
 const list = document.getElementById('todoList');
 
+/* Add x button to delete text */
+const clearButton = document.querySelector('.clear-input');
+const inputWrapper = document.querySelector('.input-wrapper');
+
+// Show/hide clear button based on input content
+input.addEventListener('input', () => {
+    clearButton.style.display = input.value ? 'block' : 'none';
+});
+
+// Clear input when button is clicked
+clearButton.addEventListener('click', () => {
+    input.value = '';
+    clearButton.style.display = 'none';
+    input.focus();
+    drawTodos();
+});
+
+
 //SUBMIT NEW TODO (ADDBTN)
 form.addEventListener('submit', (e) => {
 

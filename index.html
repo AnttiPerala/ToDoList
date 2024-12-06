@@ -37,6 +37,8 @@
     <div id="menuRow">
       <form id="todoForm">
         <input type="text" id="todoInput" placeholder="Add a new task" />
+        <button type="button" class="clear-input">×</button>
+
 
         <button class="collapsible-btn" type="button">Options</button>
 
@@ -117,7 +119,7 @@
           <div id="detailsContainer"></div>
         </div><!-- end collapsible content -->
 
-        <button class="submitTodo btn" type="submit">Add</button>
+        <button class="submitTodo button-30" type="submit">Add</button>
 
 
 
@@ -166,7 +168,9 @@
   <div id="diaryModeWrap" style="display: none;">
     <form id="diaryForm">
       <textarea id="diaryInput" placeholder="Write your diary entry..." rows="4" style="width: 100%; margin-bottom: 10px;"></textarea>
-  <div class="diaryEntryButtons">
+      <button type="button" class="clear-input">×</button>
+
+      <div class="diaryEntryButtons">
     <input type="date" id="diaryDate" required>
         <select id="diaryCategory" required>
           <option value="Life Event">Life Event</option>
