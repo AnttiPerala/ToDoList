@@ -137,6 +137,24 @@ diaryBtn.addEventListener("click", function () {
     addCategoryFilter();
     drawDiary();
 });
+
+/* Clear input btn */
+
+const diaryInput = document.querySelector('#diaryInput');
+const diaryClearButton = document.querySelector('.diary-clear-input');
+
+// Show/hide diary clear button based on input content
+diaryInput.addEventListener('input', () => {
+    diaryClearButton.style.display = diaryInput.value ? 'block' : 'none';
+});
+
+// Clear diary input when button is clicked
+diaryClearButton.addEventListener('click', () => {
+    diaryInput.value = '';
+    diaryClearButton.style.display = 'none';
+    diaryInput.focus();
+});
+
     
 
 // Add form submit handler

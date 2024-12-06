@@ -144,7 +144,8 @@ button.submitTodo.button-30 {
   grid-column: 1 / -1;
 }
 
-.clear-input {
+.clear-input,
+.diary-clear-input {
   position: absolute;
   right: 0.5rem;
   top: 0.5rem;
@@ -734,6 +735,10 @@ white-space: nowrap;
     transform: translate(-50%, -50%) scale(4); /* Adjust scale as needed */
     opacity: 0;
   }
+}
+
+#diaryForm {
+position: relative;
 }
 
 .diaryItem {
