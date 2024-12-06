@@ -737,6 +737,12 @@ white-space: nowrap;
   }
 }
 
+ul#diaryList {
+  padding: 0;
+  margin: 0;
+}
+
+
 #diaryForm {
 position: relative;
 }
@@ -787,13 +793,17 @@ position: relative;
   margin-bottom: 1rem;
 }
 
+ul#worktimeList {
+  padding: 0;
+  margin: 0;
+}
 
 
 .worktime-table {
   display: grid;
   grid-template-columns: auto auto auto auto auto auto auto auto;
   gap: 10px;
-  padding: 10px;
+  /* padding: 10px; */
   width: 100%;
 }
 .worktime-header {
@@ -866,8 +876,9 @@ padding: 0.5rem;
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   gap: 10px;
-  padding: 10px;
+ /*  padding: 10px; */
   width: 100%;
+  margin-top: 1rem;
 }
 
 .diary-header {
