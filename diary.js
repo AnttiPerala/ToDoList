@@ -31,6 +31,7 @@ diaryBtn.addEventListener("click", function () {
 
     createDiaryMenu();
     addCategoryFilter();
+    addSearchFilter(); // Add this line
     drawDiary();
 });
 function addCategoryFilter() {
@@ -63,13 +64,13 @@ function addCategoryFilter() {
     
     document.getElementById('diaryList').before(filterContainer);
     
-    document.getElementById('categoryFilter').addEventListener('change', function() {
-        drawDiary(this.value);
-    });
+    document.getElementById('categoryFilter').addEventListener('change', applyDiaryFilters);
 }
 
-function drawDiary(filterCategory = 'all') {
+function drawDiary(entries = diaryEntries) {
     const diaryList = document.getElementById('diaryList');
+    diaryList.innerHTML = '';
+    
     const table = document.createElement('div');
     table.className = 'diary-table';
     
@@ -81,11 +82,7 @@ function drawDiary(filterCategory = 'all') {
         <div class="diary-header">Delete</div>
     `;
 
-    const filteredEntries = filterCategory === 'all' 
-        ? diaryEntries 
-        : diaryEntries.filter(entry => entry.category === filterCategory);
-
-    filteredEntries.forEach(entry => {
+    entries.forEach(entry => {
         const date = new Date(entry.date);
         
         table.innerHTML += `
@@ -101,10 +98,8 @@ function drawDiary(filterCategory = 'all') {
         `;
     });
 
-    diaryList.innerHTML = '';
     diaryList.appendChild(table);
 }
-
 function exportDiaryText() {
     const textContent = diaryEntries.map(entry => {
         const date = new Date(entry.date);
@@ -291,4 +286,47 @@ function restoreDiary() {
 
 function loginDiary() {
     alert('Login functionality coming soon!');
+}
+function addSearchFilter() {
+    const existingSearch = document.querySelector('.diary-search');
+    if (existingSearch) {
+        existingSearch.remove();
+    }
+
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'diary-search';
+    searchContainer.innerHTML = `
+        <input type="text" id="diarySearch" placeholder="Search diary entries...">
+        <button class="clear-search">×</button>
+    `;
+    
+    document.getElementById('diaryList').before(searchContainer);
+
+    // Add search functionality
+    const searchInput = document.getElementById('diarySearch');
+    const clearSearch = document.querySelector('.clear-search');
+
+    searchInput.addEventListener('input', applyDiaryFilters);
+
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        applyDiaryFilters();
+    });
+}
+
+function applyDiaryFilters() {
+    const searchTerm = document.getElementById('diarySearch')?.value.toLowerCase() || '';
+    const selectedCategory = document.getElementById('categoryFilter')?.value || 'all';
+    
+    const filteredEntries = diaryEntries.filter(entry => {
+        const matchesSearch = entry.description.toLowerCase().includes(searchTerm) ||
+            new Date(entry.date).toLocaleDateString().includes(searchTerm) ||
+            entry.category.toLowerCase().includes(searchTerm);
+            
+        const matchesCategory = selectedCategory === 'all' || entry.category === selectedCategory;
+        
+        return matchesSearch && matchesCategory;
+    });
+    
+    drawDiary(filteredEntries);
 }
