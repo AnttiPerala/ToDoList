@@ -201,3 +201,9 @@ function handleFileUpload(e) {
     }
 }
 
+// Make the main title scroll to top when clicked
+const mainTitle = document.getElementById('mainTitle');
+mainTitle.style.cursor = 'pointer';  // ensure it shows as clickable
+mainTitle.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});

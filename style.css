@@ -12,8 +12,10 @@ body {
 
 #myHeader {
   padding: 0 0.5rem;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;  
   z-index: 100;
   background-color: gainsboro;
   text-align: center;
@@ -798,6 +800,7 @@ position: relative;
   justify-content: center;
   gap: 2rem;
   margin-bottom: 1rem;
+  padding-top: 6rem;
 }
 
 ul#worktimeList {
@@ -808,7 +811,7 @@ ul#worktimeList {
 
 .worktime-table {
   display: grid;
-  grid-template-columns: auto auto auto auto auto auto auto auto;
+  grid-template-columns: repeat(8, minmax(0, 1fr));  
   gap: 10px;
   /* padding: 10px; */
   width: 100%;
@@ -826,6 +829,31 @@ ul#worktimeList {
 .worktime-cell {
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  min-width: 0;
+    /* allow these grid items to shrink below their content’s “intrinsic” size */
+    word-wrap: break-word;
+    /* break long text rather than forcing the column wider */
+}
+
+.worktime-cell button {
+  /* Let the button fill at most the cell’s width, not exceed it */
+  max-width: 100%;
+
+  /* If you’d rather have them fill the cell, you could also do:
+     width: 100%;
+     box-sizing: border-box;
+  */
+
+  /* Optional: reduce default padding so they’re less “wide” */
+  padding: 4px 8px;
+
+  /* Optional: slightly smaller font so “Delete” / “Edit” never wrap */
+  font-size: 0.9rem;
+
+  /* Ensure the button text doesn’t create its own overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .worktime-cell.total {
