@@ -207,3 +207,18 @@ mainTitle.style.cursor = 'pointer';  // ensure it shows as clickable
 mainTitle.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+
+// Adjust the padding of the main content based on the height of the fixed element
+window.addEventListener("DOMContentLoaded", () => {
+  const fixedElement = document.querySelector("#myHeader");
+  const mainContent = document.querySelector("#modeSelect");
+
+  const updatePadding = () => {
+    const height = fixedElement.offsetHeight;
+    mainContent.style.paddingTop = `${height}px`;
+  };
+
+  updatePadding();
+  window.addEventListener("resize", updatePadding);
+});
