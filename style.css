@@ -24,6 +24,8 @@ body {
   justify-content: center;
 }
 
+
+
 #mainTitle{
   display: inline-block;
   cursor: pointer;
@@ -38,6 +40,7 @@ body {
     position:relative;
     text-align:center;
     letter-spacing: -4px;
+    padding: 0 0.5vw; 
     margin: 1rem;
     color: transparent;
   text-shadow: 2px 2px 3px rgba(255,255,255,0.5);
