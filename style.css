@@ -4,7 +4,6 @@ width: 100%;
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 2rem;
     background-color: gainsboro;
     width: 100%;
 }
@@ -621,7 +620,7 @@ cursor: pointer;
   z-index: 100;
   justify-content: center;
   position: absolute;
-  left: 1rem;
+  left: 1vw;
 }
 
 #menu-toggle {
@@ -876,6 +875,10 @@ position: relative;
   gap: 2rem;
   margin-bottom: 1rem;
   padding-top: 6rem;
+}
+
+#todoModeWrap {
+  padding: 1vw;
 }
 
 ul#worktimeList {
