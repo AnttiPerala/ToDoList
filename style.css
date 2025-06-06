@@ -222,6 +222,63 @@ li {
     min-height: 5rem;
 }
 
+/* 1) Make sure both fields use the same font/line-height/padding */
+input[type="text"],
+textarea {
+  font-family: inherit;
+  /* or your preferred font */
+  font-size: 1rem;
+  /* same size on both */
+  line-height: 1.5;
+  /* consistent line-height */
+  padding: 0.5rem;
+  /* same padding */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #333;
+  /* same text color */
+  background-color: white;
+}
+
+/* 2) Force textarea to vertically center its text if you want it exactly like input */
+textarea {
+  resize: vertical;
+  /* or whatever you choose */
+  /* If you want the placeholder to sit in the vertical center of the textarea (not top): */
+  display: flex;
+  align-items: center;
+  /* vertical centering of placeholder/text */
+}
+
+/* 3) Style the placeholder text the same way */
+input::placeholder,
+textarea::placeholder {
+  color: #999;
+  /* choose the same shade */
+  opacity: 1;
+  /* some browsers default to opacity: .5 for textarea */
+  font-style: italic;
+  /* or normal—just match them */
+  font-size: 1rem;
+}
+
+/* 4) Vendor prefixes for broader support */
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #999;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #999;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #999;
+}
+
 #categoryFilteringNotice{
   display: inline-block;
   margin-top: 1rem;
@@ -819,7 +876,8 @@ ul#worktimeList {
 .worktime-header {
   font-weight: bold;
   background-color: #f5f5f5;
-  padding: 8px;
+  padding: 0.5vw;
+  word-break: break-word;
 }
 
 .worktime-row {
@@ -827,7 +885,7 @@ ul#worktimeList {
 }
 
 .worktime-cell {
-  padding: 8px;
+  padding: 0.5vw;
   border-bottom: 1px solid #ddd;
   min-width: 0;
     /* allow these grid items to shrink below their content’s “intrinsic” size */
@@ -919,12 +977,38 @@ padding: 0.5rem;
 .diary-header {
   font-weight: bold;
   background-color: #f5f5f5;
-  padding: 8px;
+  padding: 0.5vw;
+  word-break: break-word;
 }
 
 .diary-cell {
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
+  padding: 0.5vw;
+    border-bottom: 1px solid #ddd;
+    min-width: 0;
+    /* allow these grid items to shrink below their content’s “intrinsic” size */
+    word-wrap: break-word;
+    /* break long text rather than forcing the column wider */
+}
+
+.diary-cell button {
+  /* Let the button fill at most the cell’s width, not exceed it */
+  max-width: 100%;
+
+  /* If you’d rather have them fill the cell, you could also do:
+     width: 100%;
+     box-sizing: border-box;
+  */
+
+  /* Optional: reduce default padding so they’re less “wide” */
+  padding: 4px 8px;
+
+  /* Optional: slightly smaller font so “Delete” / “Edit” never wrap */
+  font-size: 0.9rem;
+
+  /* Ensure the button text doesn’t create its own overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @keyframes slideOut {
@@ -979,6 +1063,7 @@ padding: 0.5rem;
 
     body{
         padding: 0;
+        margin: 0;
     }
 
     h1#mainTitle {
