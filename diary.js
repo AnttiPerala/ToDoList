@@ -54,6 +54,7 @@ function addCategoryFilter() {
     const filterContainer = document.createElement('div');
     filterContainer.className = 'diary-filter';
     filterContainer.innerHTML = `
+        <label for="categoryFilter">Display:</label>
         <select id="categoryFilter">
             <option value="all">All Categories</option>
             ${allCategories.map(category => 

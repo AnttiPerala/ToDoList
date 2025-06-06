@@ -852,6 +852,21 @@ position: relative;
   gap: 1rem;
 }
 
+.diary-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Adjust spacing between input and button */
+  margin: 0.5rem 0;
+}
+
+#diarySearch {
+  flex: 1;
+  /* Input takes remaining space */
+  width: 100%;
+  /* Ensure it fills its flex container */
+}
+
 #modeSelect {
   display: flex;
   justify-content: center;
