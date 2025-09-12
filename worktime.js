@@ -104,64 +104,136 @@ worktimeBtn.addEventListener("click", function () {
           return matchesPeriod && matchesProject;
       });
   }
-  function drawWorktimes(period = 'all', selectedProject = 'All projects') {
-      const worktimeList = document.getElementById('worktimeList');
-      const table = document.createElement('div');
-      table.className = 'worktime-table';
+  
+// --- Sorting state for Worktime table ---
+let worktimeSortKey = localStorage.getItem('worktimeSortKey') || 'date'; // 'date' | 'start' | 'duration' | 'description' | 'project' | 'end'
+let worktimeSortDir = localStorage.getItem('worktimeSortDir') || 'desc'; // 'asc' | 'desc'
 
-      table.innerHTML = `
-          <div class="worktime-header">Date</div>
-          <div class="worktime-header">Start Time</div>
-          <div class="worktime-header">Duration</div>
-          <div class="worktime-header">Description</div>
-          <div class="worktime-header">Project</div>
-          <div class="worktime-header">End Time</div>
-          <div class="worktime-header">Edit</div>
-          <div class="worktime-header">Delete</div>
-      `;
+function setWorktimeSort(key) {
+  if (worktimeSortKey === key) {
+    worktimeSortDir = (worktimeSortDir === 'asc') ? 'desc' : 'asc';
+  } else {
+    worktimeSortKey = key;
+    // sensible default direction per column
+    worktimeSortDir = (key === 'description' || key === 'project') ? 'asc' : 'desc';
+  }
+  localStorage.setItem('worktimeSortKey', worktimeSortKey);
+  localStorage.setItem('worktimeSortDir', worktimeSortDir);
 
-      let totalMinutes = 0;
-      const filteredWorktimes = filterWorktimesByPeriod(period, selectedProject);
+  const filterContainer = document.querySelector('.worktime-filters');
+  const period = filterContainer?.querySelector('button.active')?.dataset.period || 'all';
+  const selectedProject = document.getElementById('projectFilter')?.value || 'All projects';
+  drawWorktimes(period, selectedProject);
+}
 
-      filteredWorktimes.forEach(entry => {
-          const startDate = new Date(entry.start);
-          const endDate = new Date(entry.end);
-          const duration = Math.round((endDate - startDate) / 60000);
-          totalMinutes += duration;
+function worktimeHeaderLabel(label, key) {
+  const arrow = (worktimeSortKey === key) ? (worktimeSortDir === 'asc' ? ' ▲' : ' ▼') : '';
+  return `${label}${arrow}`;
+}
 
-          table.innerHTML += `
-              <div class="worktime-cell">${startDate.toLocaleDateString('fi-FI')}</div>
-              <div class="worktime-cell">${startDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
-              <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 === 0 ? '' : ` ${duration%60}min`})` : ''}</div>
-              <div class="worktime-cell">${entry.description}</div>
-              <div class="worktime-cell">${entry.project || 'No project'}</div>
-              <div class="worktime-cell">${endDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
-              <div class="worktime-cell">
-                  <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
-              </div>
-              <div class="worktime-cell">
-                  <button onclick="deleteWorktime(${entry.id})" class="btn-delete">Delete</button>
-              </div>
-          `;
-      });
+function sortWorktimeItems(items) {
+  const dir = worktimeSortDir === 'asc' ? 1 : -1;
+  return items.sort((a, b) => {
+    switch (worktimeSortKey) {
+      case 'date':
+      case 'start':
+        return (a.startDate - b.startDate) * dir;
+      case 'end':
+        return (a.endDate - b.endDate) * dir;
+      case 'duration':
+        return (a.duration - b.duration) * dir;
+      case 'description': {
+        const A = (a.entry.description || '').toString().toLowerCase();
+        const B = (b.entry.description || '').toString().toLowerCase();
+        return A.localeCompare(B) * dir;
+      }
+      case 'project': {
+        const A = (a.entry.project || '').toString().toLowerCase();
+        const B = (b.entry.project || '').toString().toLowerCase();
+        return A.localeCompare(B) * dir;
+      }
+      default:
+        return (a.startDate - b.startDate) * dir;
+    }
+  });
+}
 
-      const hours = Math.floor(totalMinutes / 60);
-      const remainingMinutes = totalMinutes % 60;
+function drawWorktimes(period = 'all', selectedProject = 'All projects') {
+  const listEl = document.getElementById('worktimeList');
+  const table = document.createElement('div');
+  table.className = 'worktime-table';
 
-      table.innerHTML += `
-          <div class="worktime-cell total">Total:</div>
-          <div class="worktime-cell total"></div>
-          <div class="worktime-cell total">${totalMinutes} min ${totalMinutes > 59 ? `(${hours}h${remainingMinutes === 0 ? '' : ` ${remainingMinutes}min`})` : ''}</div>
-          <div class="worktime-cell total"></div>
-          <div class="worktime-cell total"></div>
-          <div class="worktime-cell total"></div>
-          <div class="worktime-cell total"></div>
-          <div class="worktime-cell total"></div>
-      `;
+  // Build headers with sort indicators
+  table.innerHTML = `
+    <div class="worktime-header" data-sort="date">${worktimeHeaderLabel('Date', 'date')}</div>
+    <div class="worktime-header" data-sort="start">${worktimeHeaderLabel('Start Time', 'start')}</div>
+    <div class="worktime-header" data-sort="duration">${worktimeHeaderLabel('Duration', 'duration')}</div>
+    <div class="worktime-header" data-sort="description">${worktimeHeaderLabel('Description', 'description')}</div>
+    <div class="worktime-header" data-sort="project">${worktimeHeaderLabel('Project', 'project')}</div>
+    <div class="worktime-header" data-sort="end">${worktimeHeaderLabel('End Time', 'end')}</div>
+    <div class="worktime-header">Edit</div>
+    <div class="worktime-header">Delete</div>
+  `;
 
-      worktimeList.innerHTML = '';
-      worktimeList.appendChild(table);
-  }    function addWorktimeFilterButtons() {
+  // Prepare data
+  let totalMinutes = 0;
+  const filtered = filterWorktimesByPeriod(period, selectedProject);
+
+  const items = filtered.map(entry => {
+    const startDate = new Date(entry.start);
+    const endDate = new Date(entry.end);
+    const duration = Math.round((endDate - startDate) / 60000) || 0;
+    return { entry, startDate, endDate, duration };
+  });
+
+  // Apply sorting
+  sortWorktimeItems(items);
+
+  // Render rows
+  items.forEach(({ entry, startDate, endDate, duration }) => {
+    totalMinutes += duration;
+    table.innerHTML += `
+      <div class="worktime-cell">${startDate.toLocaleDateString('fi-FI')}</div>
+      <div class="worktime-cell">${startDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
+      <div class="worktime-cell">${duration} min ${duration > 59 ? `(${Math.floor(duration/60)}h${duration%60 === 0 ? '' : ` ${duration%60}min`})` : ''}</div>
+      <div class="worktime-cell">${entry.description || ''}</div>
+      <div class="worktime-cell">${entry.project || 'No project'}</div>
+      <div class="worktime-cell">${endDate.toLocaleTimeString('fi-FI', { hour12: false, hour: '2-digit', minute: '2-digit' })}</div>
+      <div class="worktime-cell">
+        <button onclick="editWorktime(${entry.id})" class="btn-edit">Edit</button>
+      </div>
+      <div class="worktime-cell">
+        <button onclick="deleteWorktime(${entry.id})" class="btn-delete">Delete</button>
+      </div>
+    `;
+  });
+
+  const hours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
+
+  table.innerHTML += `
+    <div class="worktime-cell total">Total:</div>
+    <div class="worktime-cell total"></div>
+    <div class="worktime-cell total">${totalMinutes} min ${totalMinutes > 59 ? `(${hours}h${remainingMinutes === 0 ? '' : ` ${remainingMinutes}min`})` : ''}</div>
+    <div class="worktime-cell total"></div>
+    <div class="worktime-cell total"></div>
+    <div class="worktime-cell total"></div>
+    <div class="worktime-cell total"></div>
+    <div class="worktime-cell total"></div>
+  `;
+
+  listEl.innerHTML = '';
+  listEl.appendChild(table);
+
+  // Attach click handlers for sorting
+  table.querySelectorAll('.worktime-header[data-sort]').forEach(h => {
+    h.style.cursor = 'pointer';
+    h.addEventListener('click', () => {
+      setWorktimeSort(h.getAttribute('data-sort'));
+    });
+  });
+}
+    function addWorktimeFilterButtons() {
       if (document.querySelector('.worktime-filters')) {
           return;
       }
