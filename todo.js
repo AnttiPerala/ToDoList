@@ -731,6 +731,7 @@ window.onload = function() {
             });
     
             saveDetailsBtn.textContent = "Save Changes";
+        __autosizeTextareas(document.getElementById("detailsContainer"));
         }
     
         isEditing = !isEditing;
@@ -962,11 +963,39 @@ document.querySelector('#todoInput').addEventListener('input', function() {
    
 });
 
+
+// --- Auto-grow helper for textareas in edit mode ---
+function __autosizeTextareas(root) {
+    const container = root || document;
+    container.querySelectorAll('textarea').forEach(tx => {
+        tx.style.height = 'auto';
+        tx.style.overflow = 'hidden';
+        tx.style.resize = 'none';
+        const resize = () => {
+            tx.style.height = 'auto';
+            tx.style.height = tx.scrollHeight + 'px';
+        };
+        tx.__autoResizeListener && tx.removeEventListener('input', tx.__autoResizeListener);
+        tx.__autoResizeListener = resize;
+        resize();
+        tx.addEventListener('input', resize);
+    });
+}
 /* CUSTOM MODAL */
 
 let modal = document.getElementById('detailsModal');
 let closeModal = document.querySelector('.modal-close');
 let detailsTextElem = document.getElementById('detailsText');
+
+// Keep newly inserted textareas auto-sized inside the modal
+if (typeof MutationObserver !== 'undefined') {
+    const _dc = document.getElementById('detailsContainer');
+    if (_dc) {
+        const __autoObs = new MutationObserver(() => __autosizeTextareas(_dc));
+        __autoObs.observe(_dc, { childList: true, subtree: true });
+    }
+}
+
 
 // Function to open the modal and set the details text
 function showDetails(todoId, detailsHTML) {

@@ -1322,3 +1322,7 @@ input#workDescription {
 }
   /* End mobile */
 
+
+
+/* Diary sort indicator style */
+.diary-header[aria-sort] { font-weight: 600; }

@@ -1,4 +1,49 @@
 
+// --- Diary sorting state ---
+let diarySort = { key: 'date', dir: 'desc' };
+
+function getSortedDiaryEntries(list) {
+    const arr = Array.from(list || diaryEntries);
+    const { key, dir } = diarySort;
+    const mult = dir === 'desc' ? -1 : 1;
+    return arr.sort((a,b) => {
+        let va, vb;
+        if (key === 'date') { va = new Date(a.date).getTime(); vb = new Date(b.date).getTime(); }
+        else if (key === 'category') { va = (a.category||'').toLowerCase(); vb = (b.category||'').toLowerCase(); }
+        else { // description
+            const sa = (a.description||'').replace(/<br\s*\/?>/gi,'\n').toLowerCase();
+            const sb = (b.description||'').replace(/<br\s*\/?>/gi,'\n').toLowerCase();
+            va = sa; vb = sb;
+        }
+        if (va < vb) return -1*mult; if (va > vb) return 1*mult; return 0;
+    });
+}
+
+
+// Render ▲/▼ indicators on sorted column headers
+function __renderDiarySortIndicators(container) {
+    const table = container || document;
+    const map = { date: 'Date', category: 'Category', description: 'Description' };
+    table.querySelectorAll('.diary-header[data-key]').forEach(h => {
+        const key = h.getAttribute('data-key');
+        const label = map[key] || key;
+        let arrow = '';
+        if (diarySort && diarySort.key === key) {
+            arrow = diarySort.dir === 'asc' ? ' \u25B2' : ' \u25BC'; // ▲ / ▼
+            h.setAttribute('aria-sort', diarySort.dir === 'asc' ? 'ascending' : 'descending');
+        } else {
+            h.removeAttribute('aria-sort');
+        }
+        h.textContent = label + arrow;
+    });
+}
+
+function setDiarySort(key) {
+    if (diarySort.key === key) diarySort.dir = (diarySort.dir === 'asc' ? 'desc' : 'asc');
+    else { diarySort.key = key; diarySort.dir = (key === 'date' ? 'desc' : 'asc'); }
+    drawDiary();
+}
+
 
 // Function to update localStorage for diary
 function updateDiaryStorage() {
@@ -47,7 +92,7 @@ function addCategoryFilter() {
         "Data location change"
     ];
     
-    const usedCategories = [...new Set(diaryEntries.map(entry => entry.category))];
+    const usedCategories = [...new Set(getSortedDiaryEntries(diaryEntries).map(entry => entry.category))];
     const allCategories = [...new Set([...defaultCategories, ...usedCategories])]
         .filter(category => category);
         
@@ -69,6 +114,8 @@ function addCategoryFilter() {
 }
 
 function drawDiary(entries = diaryEntries) {
+    const data = Array.isArray(entries) ? entries : diaryEntries;
+    const sorted = getSortedDiaryEntries(data);
     const diaryList = document.getElementById('diaryList');
     diaryList.innerHTML = '';
     
@@ -76,14 +123,14 @@ function drawDiary(entries = diaryEntries) {
     table.className = 'diary-table';
     
     table.innerHTML = `
-        <div class="diary-header">Date</div>
-        <div class="diary-header">Category</div>
-        <div class="diary-header">Description</div>
+        <div class="diary-header" data-key="date">Date</div>
+        <div class="diary-header" data-key="category">Category</div>
+        <div class="diary-header" data-key="description">Description</div>
         <div class="diary-header">Edit</div>
         <div class="diary-header">Delete</div>
     `;
 
-    entries.forEach(entry => {
+    sorted.forEach(entry => {
         const date = new Date(entry.date);
         
         table.innerHTML += `
@@ -100,9 +147,14 @@ function drawDiary(entries = diaryEntries) {
     });
 
     diaryList.appendChild(table);
+    __renderDiarySortIndicators(diaryList);
+    table.querySelectorAll('.diary-header[data-key]').forEach(h => {
+        h.style.cursor = 'pointer';
+        h.addEventListener('click', () => setDiarySort(h.getAttribute('data-key')));
+    });
 }
 function exportDiaryText() {
-    const textContent = diaryEntries.map(entry => {
+    const textContent = getSortedDiaryEntries(diaryEntries).map(entry => {
         const date = new Date(entry.date);
         return `Date: ${date.toLocaleDateString('fi-FI')}\nCategory: ${entry.category}\nEntry: ${entry.description}\n---------------`;
     }).join('\n');
@@ -235,7 +287,7 @@ function attachDiaryMenuListeners() {
 }
 
 function copyEntriesByCategory(category) {
-    const entries = diaryEntries
+    const entries = getSortedDiaryEntries(diaryEntries)
         .filter(entry => entry.category === category)
         .map(entry => {
             const date = new Date(entry.date);
@@ -250,7 +302,7 @@ function copyEntriesByCategory(category) {
 }
 
 function exportDiaryText() {
-    const textContent = diaryEntries.map(entry => {
+    const textContent = getSortedDiaryEntries(diaryEntries).map(entry => {
         const date = new Date(entry.date);
         return `Date: ${date.toLocaleDateString()}\nCategory: ${entry.category}\nEntry: ${entry.description}\n---------------`;
     }).join('\n');
