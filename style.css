@@ -1326,3 +1326,40 @@ input#workDescription {
 
 /* Diary sort indicator style */
 .diary-header[aria-sort] { font-weight: 600; }
+
+
+/* Ensure modal edit textareas auto-grow visibly */
+#detailsModal textarea {
+  overflow-y: hidden;
+  resize: none;
+  height: auto;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 3rem;
+}
+
+
+/* Strong override for modal edit fields: cancel global flex/text-area hacks */
+#detailsModal textarea {
+  display: block !important;
+  align-items: initial !important;
+  justify-content: initial !important;
+  line-height: 1.5;
+  width: 100%;
+  min-height: 4.5rem;
+  height: auto;
+  overflow-y: hidden;
+  resize: none;
+  box-sizing: border-box;
+}
+#detailsModal .value { display: block; }
+#detailsModal p { margin-bottom: 0.75rem; }
+
+
+/* Tiny stats under the main heading */
+.todo-stats { font-size: 0.9em; color: #666; margin: -6px 0 8px 0; }
+
+
+/* Header title + stats layout */
+.titleBlock { display: flex; flex-direction: column; align-items: center; }
+#myHeader .menuWrap { position: absolute; left: 0.5rem; }

@@ -14,7 +14,23 @@ function rgbToHex(rgbStr) {
     }
 }
 
-let filteredTodos = todos;  // GLOBAL VAR FOR CATEGORY FILTERING
+let filteredTodos = todos;
+
+/* --- Tiny stats below the main heading --- */
+function updateTodoStats() {
+    try {
+        const total = Array.isArray(todos) ? todos.length : 0;
+        const completed = Array.isArray(todos) ? todos.filter(t => t && t.done).length : 0;
+        const remaining = Math.max(0, total - completed);
+        const el = document.getElementById('todo-stats');
+        if (el) {
+            el.textContent = `${remaining} todos to do, ${completed} todos completed`;
+        }
+    } catch (e) {
+        console.warn('updateTodoStats failed:', e);
+    }
+}
+  // GLOBAL VAR FOR CATEGORY FILTERING
 
 
 // Function to update localStorage
@@ -347,6 +363,8 @@ if (todo.deadline) {
             updateLocalStorage();
         }
     }); /* end foreach todo */
+
+    updateTodoStats();
 }
 
 function doneTodo(id) {
@@ -603,6 +621,7 @@ document.querySelector("#testNotification").addEventListener('click', () => {
 /* ONLY SHOW THE NOTIFICATION OPTION IF RUNNING FROM A SERVER */
 
 window.onload = function() {
+    updateTodoStats();
     console.log("loaded");
 
     //filter to none
@@ -724,14 +743,15 @@ window.onload = function() {
                     const isoDateTime = span.getAttribute('data-iso') || "";
                     span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
                 } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) {
-                    span.innerHTML = `<textarea rows="1">${currentText}</textarea>`;
+                    span.innerHTML = `<textarea rows="1" style="overflow:hidden;resize:none;height:auto;box-sizing:border-box;">${currentText}</textarea>`;
+                    __autosizeTextareas(span);
                 } else {
                     span.innerHTML = `<input type="text" value="${currentText}">`;
                 }
             });
     
             saveDetailsBtn.textContent = "Save Changes";
-        __autosizeTextareas(document.getElementById("detailsContainer"));
+        __autosizeTextareas(document.getElementById("detailsText") || document.getElementById("detailsModal") || document);
         }
     
         isEditing = !isEditing;
@@ -989,10 +1009,10 @@ let detailsTextElem = document.getElementById('detailsText');
 
 // Keep newly inserted textareas auto-sized inside the modal
 if (typeof MutationObserver !== 'undefined') {
-    const _dc = document.getElementById('detailsContainer');
+    const _dc = document.getElementById('detailsText') || document.getElementById('detailsModal');
     if (_dc) {
         const __autoObs = new MutationObserver(() => __autosizeTextareas(_dc));
-        __autoObs.observe(_dc, { childList: true, subtree: true });
+        if (_dc) __autoObs.observe(_dc, { childList: true, subtree: true });
     }
 }
 
