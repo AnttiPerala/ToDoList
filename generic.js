@@ -11,6 +11,29 @@ todos = todos.map(todo => {
     return todo;
 });
 
+/* BACKFILL MISSING TIME FIELDS */
+todos = todos.map(todo => {
+    // Ensure timeAdded
+    if (!('timeAdded' in todo) || !todo.timeAdded) {
+        const idNum = Number(todo.id);
+        if (!Number.isNaN(idNum) && idNum > 0) {
+            todo.timeAdded = new Date(idNum).toISOString().split('.')[0];
+        } else {
+            todo.timeAdded = "unknown";
+        }
+    }
+
+    // Ensure timeDone
+    if (!('timeDone' in todo)) {
+        todo.timeDone = todo.done ? new Date().toISOString().split('.')[0] : "";
+    } else if (todo.timeDone === null) {
+        todo.timeDone = todo.done ? new Date().toISOString().split('.')[0] : "";
+    }
+    return todo;
+});
+
+
+
 worktimes = worktimes.map(worktime => ({
     ...worktime,
     start: new Date(worktime.start),

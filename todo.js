@@ -131,7 +131,9 @@ form.addEventListener('submit', (e) => {
         done: false,
         bgColor: selectedColor,
         details: detailsTextarea ? detailsTextarea.value : null,
-        category: categoryValue
+        category: categoryValue,
+        timeAdded: new Date().toISOString(),
+        timeDone: ""
     }
 
     todos.push(newTodo);
@@ -201,7 +203,7 @@ function drawTodos() {
         let listItem = document.createElement('li');
 
          // Check if the todo has a timeAdded property, and use it, otherwise use id
-        let timeAddedValue = todo.timeAdded ? new Date(todo.timeAdded).toLocaleString() : new Date(todo.id).toLocaleString();
+        let timeAddedValue = (todo.timeAdded && todo.timeAdded !== 'unknown') ? new Date(todo.timeAdded).toISOString().split('.')[0] : (!isNaN(Number(todo.id)) ? new Date(Number(todo.id)).toISOString().split('.')[0] : 'unknown');
     
 
         // Embed the time added as a data-attribute
