@@ -265,14 +265,22 @@ function drawTodos() {
         let formattedDeadline = todo.deadline ? formatDateToDateTimeLocal(todo.deadline) : "No deadline set";
 
         showDetails(todo.id,`
-        <p class="detailsMainText">Text: <span class="value">${toDoTextElement.textContent}</span></p>
-        <p class="detailsCategory">Category: <span class="value">${todo.category ? todo.category : "None"}</span></p>
-        <p class="detailsVotes">Votes: <span class="value">${todo.votes}</span></p>
-        <p class="detailsDate">Time Added: <span class="value" data-iso="${listItem.getAttribute('data-timeAdded')}">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></p>
-        <p class="detailsDeadline">Deadline: <span class="value" data-iso="${todo.deadline}">${formatDateTimeForDisplay(todo.deadline)}</span></p>
-        <p class="detailsTimeDone">Done: <span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></p> 
-        <p class="detailsBgColor">Background Color: <span class="value"><div class="colorBox" style="background-color: ${rgbToHex(todo.bgColor) || "#ffffff"}"; width: 20px; height: 20px;"></div></span></p>
-        <p class="detailsDetails">Additional details: <span class="value">${details ? details : "None"}</span></p>`);
+        <table class="detailsTable"><tbody>
+          <tr class="detailsMainText"><th>Text</th><td><span class="value">${toDoTextElement.textContent}</span></td></tr>
+          <tr class="detailsCategory"><th>Category</th><td><span class="value">${todo.category ? todo.category : "None"}</span></td></tr>
+          <tr class="detailsVotes"><th>Votes</th><td><span class="value">${todo.votes}</span></td></tr>
+          <tr class="detailsDate"><th>Time Added</th><td><span class="value">${formatDateTimeForDisplay(listItem.getAttribute('data-timeAdded'))}</span></td></tr>
+          <tr class="detailsDeadline"><th>Deadline</th><td data-iso="${todo.deadline}"><span class="value">${formatDateTimeForDisplay(todo.deadline)}</span></td></tr>
+          <tr class="detailsTimeDone"><th>Done</th><td><span class="value">${todo.timeDone ? formatDateToDateTimeLocal(todo.timeDone) : "Not done yet"}</span></td></tr>
+          <tr class="detailsBgColor"><th>Background Color</th><td><span class="value">${
+              (function(){
+                const hex = todo.bgColor ? rgbToHex(todo.bgColor) : "";
+                return hex ? '<span class="color-swatch" style="background:'+hex+'"></span><code class="color-hex">'+hex+'</code>' : '';
+              })()
+          }</span></td></tr>
+          <tr class="detailsDetails"><th>Additional details</th><td><span class="value">${details ? details : "None"}</span></td></tr>
+        </tbody></table>
+      `);
     
 
     
@@ -665,7 +673,7 @@ window.onload = function() {
         let todoToUpdate = todos.find(todo => todo.id === Number(todoId));
         console.log("Initial todoToUpdate:", todoToUpdate);
     
-        const colorBox = document.querySelector('.colorBox'); // Move this line outside the loop
+        // colorBox removed; no longer used
         if (isEditing) {
             // Save Changes logic
             valueSpans.forEach(span => {
@@ -673,7 +681,8 @@ window.onload = function() {
                 const input = span.querySelector('input');
                 const textarea = span.querySelector('textarea');
                 
-                const detailTypeClass = span.closest('p').classList[0];
+                const parentRow = span.closest('tr') || span.closest('p');
+                const detailTypeClass = parentRow ? parentRow.classList[0] : null;
                 const todoProp = classNameToObjectPropMap[detailTypeClass];
         
                 if (input) {
@@ -688,15 +697,16 @@ window.onload = function() {
                         todoToUpdate[todoProp] = Number(valueToUse);
                         span.textContent = valueToUse;  // Convert votes input back to text
                         break;
-                    case 'bgColor':
+                    case 'bgColor': {
                         const colorInput = span.querySelector('input[type="color"]');
                         if (colorInput) {
-                            todoToUpdate['bgColor'] = colorInput.value;
-                            span.innerHTML = ''; // Clear out the input field
-                            colorBox.style.backgroundColor = colorInput.value; // Set the colorBox's background to the chosen color
-                            colorBox.style.display = 'block'; // Display the colorBox
+                            const hex = colorInput.value.toUpperCase();
+                            todoToUpdate.bgColor = hex;
+                            // Update the cell with swatch + hex
+                            span.innerHTML = '<span class="color-swatch" style="background:'+hex+'"></span><code class="color-hex">'+hex+'</code>';
                         }
                         break;
+                    }
                         case 'category':
                             const categorySelect = span.querySelector('select');
                             if (categorySelect) {
@@ -707,26 +717,35 @@ window.onload = function() {
                             }
                         break;
                     default:
-                        todoToUpdate[todoProp] = valueToUse;
+                        if (todoProp === 'votes') {
+                            const num = parseInt(valueToUse, 10);
+                            todoToUpdate[todoProp] = Number.isFinite(num) ? num : (todoToUpdate[todoProp] || 0);
+                        } else {
+                            todoToUpdate[todoProp] = valueToUse;
+                        }
                         if (input && input.type !== 'color') {
                             span.textContent = valueToUse; // Convert input back to text
                         }
                 }
             });
     
+            updateLocalStorage();
+            drawTodos();
             saveDetailsBtn.textContent = "Edit Details";
         } else {
             // Edit Details logic
+            try { /* edit mode */
             valueSpans.forEach(span => {
-                const currentText = span.textContent;
-                const parentP = span.closest('p');
-    
-                if (parentP.classList.contains('detailsBgColor')) {
-                    colorBox.style.display = 'none'; // Hide colorBox when switching to edit mode
-                    const currentColor = todoToUpdate.bgColor || "#ffffff";
-                    span.innerHTML = `<input type="color" value="${rgbToHex(currentColor)}">`;
-                } else if (parentP.classList.contains('detailsCategory')) {
-                    const currentCategory = todoToUpdate.category || 'none';
+                const parentP = span.closest('tr') || span.closest('p');
+                const cls = parentP ? parentP.classList[0] : null;
+                const prop = classNameToObjectPropMap[cls];
+                const currentVal = prop ? todoToUpdate[prop] : undefined;
+
+                if (parentP && parentP.classList.contains('detailsBgColor')) {
+                    const currentColor = rgbToHex(currentVal || "#ffffff");
+                    span.innerHTML = `<input type="color" value="${currentColor}">`;
+                } else if (parentP && parentP.classList.contains('detailsCategory')) {
+                    const currentCategory = (currentVal || 'none');
                     span.innerHTML = `
                         <select>
                             <option value="none" ${currentCategory === 'none' ? 'selected' : ''}>None</option>
@@ -741,25 +760,31 @@ window.onload = function() {
                             <option value="fitness" ${currentCategory === 'fitness' ? 'selected' : ''}>Fitness</option>
                         </select>
                     `;
-                } else if (parentP.classList.contains('detailsDate') || parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone')) {
-                    const isoDateTime = span.getAttribute('data-iso') || "";
-                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(isoDateTime)}">`;
-                } else if (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails')) {
-                    span.innerHTML = `<textarea rows="1" style="overflow:hidden;resize:none;height:auto;box-sizing:border-box;">${currentText}</textarea>`;
+                } else if (parentP && (parentP.classList.contains('detailsDeadline') || parentP.classList.contains('detailsTimeDone'))) {
+                    const iso = currentVal || '';
+                    span.innerHTML = `<input type="datetime-local" value="${formatDateToDateTimeLocal(iso)}">`;
+                } else if (parentP && (parentP.classList.contains('detailsMainText') || parentP.classList.contains('detailsDetails'))) {
+                    const txt = (currentVal !== undefined && currentVal !== null) ? String(currentVal) : '';
+                    span.innerHTML = `<textarea rows="3" style="overflow:hidden;resize:none;height:auto;box-sizing:border-box;">${txt}</textarea>`;
                     __autosizeTextareas(span);
+                } else if (prop === 'votes') {
+                    const v = Number.isFinite(Number(currentVal)) ? Number(currentVal) : 0;
+                    span.innerHTML = `<input type="number" step="1" min="0" value="${v}">`;
                 } else {
-                    span.innerHTML = `<input type="text" value="${currentText}">`;
+                    const v = (currentVal !== undefined && currentVal !== null) ? String(currentVal) : '';
+                    span.innerHTML = `<input type="text" value="${v}">`;
                 }
             });
-    
+
             saveDetailsBtn.textContent = "Save Changes";
+            } catch (e) { console.warn("Edit mode error:", e); }
         __autosizeTextareas(document.getElementById("detailsText") || document.getElementById("detailsModal") || document);
         }
     
         isEditing = !isEditing;
     
         if (!isEditing) {
-            colorBox.style.display = 'block'; // Show colorBox when switching back to view mode
+            if (colorBox) { if (colorBox) if (colorBox) colorBox.style.display = 'block'; } // Show colorBox when switching back to view mode
         }
     
         applyPreferredSorting();
@@ -1032,20 +1057,27 @@ function showDetails(todoId, detailsHTML) {
 closeModal.onclick = function() {
     modal.style.display = 'none';
     isEditing = false;
-    saveDetailsBtn.textContent = "Edit Details";
+    updateLocalStorage();
+            drawTodos();
+            saveDetailsBtn.textContent = "Edit Details";
 
 }
 
 function resetModal() {
     isEditing = false;
-    saveDetailsBtn.textContent = "Edit Details";
+    updateLocalStorage();
+            drawTodos();
+            saveDetailsBtn.textContent = "Edit Details";
     // any other default state settings can go here
 }
 
 // Close the modal if clicked outside the modal content
 window.onclick = function(event) {
     if (event.target === modal) {
+        isEditing = false;
+        saveDetailsBtn.textContent = "Edit Details";
         modal.style.display = 'none';
+        try { drawTodos(); } catch (e) { console.warn('drawTodos on backdrop close failed', e); }
     }
 }
 
