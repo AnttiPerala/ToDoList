@@ -300,3 +300,14 @@ function setupStatsObservers() {
     updateHeaderStats();
 }
 window.addEventListener('load', setupStatsObservers);
+
+
+// Click header/title to scroll to top
+(function(){
+  function smoothTop(){ try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e){ window.scrollTo(0,0); } }
+  var t = document.getElementById('mainTitle');
+  if (t) t.addEventListener('click', smoothTop);
+  var tb = document.querySelector('#myHeader .titleBlock');
+  if (tb) tb.addEventListener('click', smoothTop);
+})();
+

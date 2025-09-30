@@ -1565,3 +1565,12 @@ body { padding-top: var(--header-height, 80px); }
   #modeSelect { padding-top: 0 !important; }
 }
 
+
+
+/* Restore header click (scroll-to-top) */
+#myHeader .titleBlock,
+#myHeader #mainTitle {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
