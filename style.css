@@ -51,6 +51,7 @@ body {
 
 p#todo-stats {
   margin: 0;
+  margin-top: -0.5rem;
   color: #948e8e;
   font-size: 0.8rem;
 }
@@ -881,7 +882,7 @@ position: relative;
   justify-content: center;
   gap: 2rem;
   margin-bottom: 1rem;
-  padding-top: 6rem;
+  
 }
 
 #todoModeWrap {
@@ -1459,3 +1460,108 @@ input#workDescription {
 
 /* Push content below the fixed header safely */
 body { padding-top: var(--header-height, 80px); }
+
+
+/* --- Mobile tap reliability fixes --- */
+/* Let touches pass through non-interactive header parts */
+#myHeader .titleBlock,
+#myHeader .todo-stats {
+  pointer-events: none;
+}
+/* Keep the menu clickable */
+#myHeader .menuWrap,
+#myHeader .menuWrap * {
+  pointer-events: auto;
+}
+
+/* Ensure mode buttons sit on top of any overlays */
+#btnTodoMode, #btnWorktimeMode, #btnDiaryMode {
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+
+/* If there's a container around them, raise that too */
+.modeButtons, #modeButtons {
+  position: relative;
+  z-index: 5;
+}
+
+/* Larger tap targets on small screens */
+@media (max-width: 640px) {
+  #btnTodoMode, #btnWorktimeMode, #btnDiaryMode {
+    min-height: 44px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
+
+
+/* --- Strong pass-through header fix --- */
+#myHeader { pointer-events: none; }
+#myHeader::before, #myHeader::after { pointer-events: none; }
+
+/* Re-enable pointer events on interactive pieces */
+#myHeader .menuWrap,
+#myHeader .menuWrap *,
+#myHeader .modeButtons,
+#myHeader .modeButtons *,
+#myHeader button,
+#btnTodoMode, #btnWorktimeMode, #btnDiaryMode {
+  pointer-events: auto;
+}
+
+/* Ensure mode buttons sit on top of any overlay and are easy to tap */
+#btnTodoMode, #btnWorktimeMode, #btnDiaryMode {
+  position: relative;
+  z-index: 200;
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+
+
+/* --- Mobile layout tweak: use sticky header and remove extra top padding --- */
+@media (max-width: 640px) {
+  #myHeader {
+    position: sticky;
+    top: 0;
+  }
+  body { padding-top: 0 !important; }
+  /* tighten spacing under header */
+  #myHeader .titleBlock { margin-bottom: 2px; }
+  #myHeader .todo-stats { margin: 2px 0 4px 0; }
+}
+
+
+
+/* --- Mobile centering + gap fix for mode buttons --- */
+@media (max-width: 640px) {
+  /* tighten header spacing */
+  #mainTitle { margin: 0; line-height: 1.1; }
+  #myHeader { padding-top: 4px; padding-bottom: 6px; }
+  #myHeader .todo-stats { margin: 2px 0 4px 0; }
+
+  /* bring buttons closer to the stats */
+  .modeButtons, #modeButtons { margin-top: 6px !important; }
+
+  /* reliably center text inside buttons */
+  #btnTodoMode, #btnWorktimeMode, #btnDiaryMode {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    min-height: 44px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+
+
+
+@media (max-width: 640px) {
+  #modeSelect { padding-top: 0 !important; }
+}
+
