@@ -42,6 +42,7 @@ function setDiarySort(key) {
     if (diarySort.key === key) diarySort.dir = (diarySort.dir === 'asc' ? 'desc' : 'asc');
     else { diarySort.key = key; diarySort.dir = (key === 'date' ? 'desc' : 'asc'); }
     drawDiary();
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
 }
 
 
@@ -62,6 +63,7 @@ function addDiaryEntry(description, date, category) {
     diaryEntries.push(entry);
     updateDiaryStorage();
     drawDiary();
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
 }
 
 // Event listener to toggle between To-Do list and Worktime diary

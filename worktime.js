@@ -41,6 +41,7 @@ worktimeBtn.addEventListener("click", function () {
     todoContainer.style.display = "none";
 
     document.getElementById('mainTitle').textContent = 'Worktimes';
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
     
     const now = new Date();
     const offset = now.getTimezoneOffset() * 60000;

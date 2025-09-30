@@ -1365,7 +1365,7 @@ input#workDescription {
 
 
 /* Tiny stats under the main heading */
-.todo-stats { font-size: 0.9em; color: #666; margin: -6px 0 8px 0; }
+.todo-stats { font-size: 0.9em; color: #666;    margin: 2px 0 6px 0; }
 
 
 /* Header title + stats layout */
@@ -1456,3 +1456,7 @@ input#workDescription {
   width: 100%;
   box-sizing: border-box;
 }
+
+
+/* Push content below the fixed header safely */
+body { padding-top: var(--header-height, 80px); }

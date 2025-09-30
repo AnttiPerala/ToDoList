@@ -18,6 +18,15 @@ let filteredTodos = todos;
 
 /* --- Tiny stats below the main heading --- */
 function updateTodoStats() {
+    // Only update in To Do mode
+    try {
+        var workWrap = document.getElementById('worktimeModeWrap');
+        var diaryWrap = document.getElementById('diaryModeWrap');
+        var isVisible = function(n){ if(!n) return false; var cs = getComputedStyle(n); if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0') return false; return (n.offsetWidth+n.offsetHeight)>0; };
+        if (isVisible(workWrap) || isVisible(diaryWrap)) { return; }
+    } catch (e) {}
+    // computed visibility
+
     try {
         const total = Array.isArray(todos) ? todos.length : 0;
         const completed = Array.isArray(todos) ? todos.filter(t => t && t.done).length : 0;
@@ -1191,7 +1200,10 @@ todoBtn.addEventListener("click", function () {
   
     document.getElementById('mainTitle').textContent = 'To Do List';
 
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
+
     drawTodos(); // Assuming there is a function drawTodos() for displaying to-do items
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
     createTodoMenu();
   
   });

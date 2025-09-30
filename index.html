@@ -194,6 +194,30 @@
   <script src="worktime.js?v=1.2"></script>
   <script src="diary.js"></script>
 
+
+<script>
+(function() {
+  function setHeaderPadding() {
+    var header = document.getElementById('myHeader');
+    if (!header) return;
+    var h = header.offsetHeight || 0;
+    document.documentElement.style.setProperty('--header-height', h + 'px');
+  }
+  window.addEventListener('load', setHeaderPadding, { once: true });
+  window.addEventListener('resize', setHeaderPadding);
+  // Recompute after fonts load (mobile often shifts)
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(setHeaderPadding).catch(function(){});
+  }
+  // Recompute after menu toggles (if any)
+  document.addEventListener('click', function(e){
+    if (e.target && (e.target.id === 'menu-toggle' || e.target.closest && e.target.closest('.menuWrap'))) {
+      setTimeout(setHeaderPadding, 50);
+    }
+  }, true);
+})();
+</script>
+
 </body>
 
 </html>

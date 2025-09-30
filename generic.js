@@ -245,3 +245,58 @@ window.addEventListener("DOMContentLoaded", () => {
   updatePadding();
   window.addEventListener("resize", updatePadding);
 });
+
+
+// ---- Header stats updater ----
+function updateHeaderStats() {
+    const el = document.getElementById('todo-stats');
+    if (!el) return;
+
+    const todoWrap = document.getElementById('todoModeWrap');
+    const workWrap = document.getElementById('worktimeModeWrap');
+    const diaryWrap = document.getElementById('diaryModeWrap');
+
+    const isVisible = (node) => {
+        if (!node) return false;
+        const cs = window.getComputedStyle(node);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false;
+        return (node.offsetWidth + node.offsetHeight) > 0;
+    };
+
+    if (isVisible(workWrap)) {
+        const n = (typeof worktimes !== 'undefined' && Array.isArray(worktimes)) ? worktimes.length : 0;
+        el.textContent = `total of ${n} worktimes recorded`;
+        return;
+    }
+    if (isVisible(diaryWrap)) {
+        const n = (typeof diaryEntries !== 'undefined' && Array.isArray(diaryEntries)) ? diaryEntries.length : 0;
+        el.textContent = `${n} diary entries written`;
+        return;
+    }
+
+    // default to To Do
+    const total = (typeof todos !== 'undefined' && Array.isArray(todos)) ? todos.length : 0;
+    const completed = (typeof todos !== 'undefined' && Array.isArray(todos)) ? todos.filter(t => t && t.done).length : 0;
+    const remaining = Math.max(0, total - completed);
+    el.textContent = `${remaining} todos to do, ${completed} todos completed`;
+}
+
+function setupStatsObservers() {
+    const targets = [
+        document.getElementById('todoModeWrap'),
+        document.getElementById('worktimeModeWrap'),
+        document.getElementById('diaryModeWrap')
+    ].filter(Boolean);
+
+    const mo = new MutationObserver(() => updateHeaderStats());
+    targets.forEach(t => mo.observe(t, { attributes: true, attributeFilter: ['style', 'class'] }));
+
+    ['btnTodoMode','btnWorktimeMode','btnDiaryMode'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.addEventListener('click', () => setTimeout(updateHeaderStats, 0));
+    });
+
+    window.addEventListener('storage', updateHeaderStats);
+    updateHeaderStats();
+}
+window.addEventListener('load', setupStatsObservers);
