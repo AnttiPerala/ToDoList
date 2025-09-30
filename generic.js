@@ -232,19 +232,6 @@ mainTitle.addEventListener('click', () => {
 });
 
 
-// Adjust the padding of the main content based on the height of the fixed element
-window.addEventListener("DOMContentLoaded", () => {
-  const fixedElement = document.querySelector("#myHeader");
-  const mainContent = document.querySelector("#modeSelect");
-
-  const updatePadding = () => {
-    const height = fixedElement.offsetHeight;
-    mainContent.style.paddingTop = `${height}px`;
-  };
-
-  updatePadding();
-  window.addEventListener("resize", updatePadding);
-});
 
 
 // ---- Header stats updater ----

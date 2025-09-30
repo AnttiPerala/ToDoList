@@ -882,7 +882,22 @@ position: relative;
   justify-content: center;
   gap: 2rem;
   margin-bottom: 1rem;
-  padding-top: 6rem;
+  padding-top: 1rem;
+}
+
+/* Prevent closed hamburger menu from blocking clicks below it */
+#menu-toggle:not(:checked) ~ .menu {
+  pointer-events: none;     /* ignore clicks when closed */
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+#menu-toggle:checked ~ .menu {
+  pointer-events: auto;     /* clickable only when open */
+  opacity: 1;
 }
 
 #todoModeWrap {
