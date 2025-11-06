@@ -157,12 +157,15 @@
       <input type="text" id="workDescription" placeholder="Enter work description" required />
 
       <datalist id="projectList"></datalist>
+      <input list="projectList" id="projectInput" placeholder="Project (optional)" />
       <input type="datetime-local" id="workStart" required />
       <input type="number" id="workDuration" placeholder="Duration in minutes (optional)" min="1" />
+<span id="durationHelper" class="duration-helper"></span>
       <input type="datetime-local" id="workEnd" />
       <button type="submit" class="button-30">Add Worktime</button>
     </form>
 
+    <div id="worktimeTotalsTop" class="worktime-totals-top"></div>
     <ul id="worktimeList"></ul>
   </div> <!-- end worktimeModeWrap -->
 
@@ -217,6 +220,22 @@
   }, true);
 })();
 </script>
+
+
+  <!-- Worktime Project Totals Modal -->
+  <div id="worktimeProjectTotalsModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="wptTitle">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      <div class="modal-header">
+        <strong id="wptTitle">Project totals</strong>
+        <button type="button" class="modal-close" id="wptCloseBtn" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body" id="wptBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="button-30" id="wptOkBtn">OK</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 
