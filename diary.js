@@ -1,14 +1,3 @@
-// Safe fallbacks for UI bindings (avoid TDZ/redeclarations)
-(function(){
-  try {
-    if (!('diaryBtn' in window)) window.diaryBtn = document.getElementById('btnDiaryMode');
-    if (!('todoBtn' in window)) window.todoBtn = document.getElementById('btnTodoMode');
-    if (!('worktimeBtn' in window)) window.worktimeBtn = document.getElementById('btnWorktimeMode');
-    if (!('diaryContainer' in window)) window.diaryContainer = document.getElementById('diaryModeWrap');
-    if (!('todoContainer' in window)) window.todoContainer = document.getElementById('todoModeWrap');
-    if (!('worktimeContainer' in window)) window.worktimeContainer = document.getElementById('worktimeModeWrap');
-  } catch(_) {}
-})();
 
 // --- Diary sorting state ---
 let diarySort = { key: 'date', dir: 'desc' };

@@ -1,4 +1,3 @@
-var worktimeSortKey, worktimeSortDir;
 // Assuming that the same JSON structure for the to-do list is used for worktime entries, 
 // let's add a new worktime functionality that allows users to switch to a worktime diary and record work sessions.
 
@@ -25,42 +24,7 @@ const diaryContainer = document.getElementById("diaryModeWrap");
 const todoContainer = document.getElementById("todoModeWrap"); // Assuming the to-do list container has this ID
 const worktimeForm = document.getElementById("worktimeForm");
 const worktimeList = document.getElementById("worktimeList");
-const durationHelper = document.getElementById('durationHelper');
-const worktimeTotalsTop = document.getElementById('worktimeTotalsTop');
 const diaryForm = document.getElementById("diaryForm");
-
-
-function setDurationHint(mins) {
-  if (!durationHelper) return;
-  const m = parseInt(mins, 10);
-  if (!Number.isFinite(m) || m <= 0) { durationHelper.textContent = ''; return; }
-  const h = Math.floor(m / 60), r = m % 60;
-  durationHelper.textContent = `= ${h > 0 ? `${h}h` : ''}${h > 0 && r > 0 ? ' ' : ''}${r > 0 ? `${r}min` : ''}`;
-}
-
-function recomputeFromStartEnd() {
-  const workStart = document.getElementById('workStart');
-  const workEnd = document.getElementById('workEnd');
-  const workDuration = document.getElementById('workDuration');
-  if (!workStart.value || !workEnd.value) { setDurationHint(''); return; }
-  const startDate = new Date(workStart.value);
-  const endDate = new Date(workEnd.value);
-  const mins = Math.max(0, Math.round((endDate - startDate) / 60000));
-  workDuration.value = mins || '';
-  setDurationHint(mins);
-}
-
-function recomputeEndFromStartAndDuration() {
-  const workStart = document.getElementById('workStart');
-  const workEnd = document.getElementById('workEnd');
-  const workDuration = document.getElementById('workDuration');
-  if (!workStart.value || !workDuration.value) { setDurationHint(''); return; }
-  const startDate = new Date(workStart.value);
-  const endDate = new Date(startDate.getTime() + parseInt(workDuration.value, 10) * 60000);
-  const offset = endDate.getTimezoneOffset() * 60000;
-  workEnd.value = (new Date(endDate - offset)).toISOString().slice(0, 16);
-  setDurationHint(parseInt(workDuration.value, 10));
-}
 const diaryList = document.getElementById("diaryList");
 
 
@@ -87,23 +51,18 @@ worktimeBtn.addEventListener("click", function () {
     createWorktimeMenu();
 });const filterContainer = document.createElement('div');    filterContainer.className = 'worktime-filters';
     filterContainer.innerHTML = `
-      <select class="button-30" id="projectFilter">
-          ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
-      </select>
-      <button class="button-30" data-period="all">All times</button>
-      <button class="button-30 active" data-period="thisMonth">This Month</button>
-      <button class="button-30" data-period="lastMonth">Last Month</button>
-      <button class="button-30" data-period="thisYear">This Year</button>
-      <button class="button-30" data-period="lastYear">Last Year</button>
-    `;
-    const storedProject = localStorage.getItem('worktimeSelectedProject');
-    const projectFilterEl = filterContainer.querySelector('#projectFilter');
-    if (storedProject && [...projectFilterEl.options].some(o => o.value === storedProject)) {
-      projectFilterEl.value = storedProject;
-    }
-worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
-    const initProject = filterContainer.querySelector('#projectFilter').value;
-    drawWorktimes('thisMonth', initProject);
+    <select class="button-30" id="projectFilter">
+        ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
+    </select>
+    <button class="button-30 active" data-period="all">All times</button>
+    <button class="button-30" data-period="thisMonth">This Month</button>
+    <button class="button-30" data-period="lastMonth">Last Month</button>
+    <button class="button-30" data-period="thisYear">This Year</button>
+    <button class="button-30" data-period="lastYear">Last Year</button>
+`;
+
+    
+    worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
 
     filterContainer.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
@@ -112,7 +71,7 @@ worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
             e.target.classList.add('active');
             
             // Filter and redraw worktimes
-            drawWorktimes(e.target.dataset.period, document.getElementById('projectFilter').value);
+            drawWorktimes(e.target.dataset.period);
         }
     });
   function getProjectsFromLastTwoYears() {
@@ -148,8 +107,8 @@ worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
   }
   
 // --- Sorting state for Worktime table ---
-worktimeSortKey = localStorage.getItem('worktimeSortKey') || 'date'; // 'date' | 'start' | 'duration' | 'description' | 'project' | 'end'
-worktimeSortDir = localStorage.getItem('worktimeSortDir') || 'desc'; // 'asc' | 'desc'
+let worktimeSortKey = localStorage.getItem('worktimeSortKey') || 'date'; // 'date' | 'start' | 'duration' | 'description' | 'project' | 'end'
+let worktimeSortDir = localStorage.getItem('worktimeSortDir') || 'desc'; // 'asc' | 'desc'
 
 function setWorktimeSort(key) {
   if (worktimeSortKey === key) {
@@ -252,7 +211,7 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
 
   const hours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
-  if (worktimeTotalsTop) { worktimeTotalsTop.innerHTML = `<span>Total:</span> <span>${totalMinutes} min</span> <span class=\"muted\">(${Math.floor(totalMinutes/60)}h${remainingMinutes === 0 ? '' : ' ' + remainingMinutes + 'min'})</span>`; }
+  try { const top=document.getElementById('worktimeTotalsTop'); if(top){ top.innerHTML = `<span>Total:</span> <span>${totalMinutes} min</span> <span class=\"muted\">(${hours}h${remainingMinutes? ' ' + remainingMinutes + 'min' : ''})</span>`; } } catch(e) {}
 
   table.innerHTML += `
     <div class="worktime-cell total">Total:</div>
@@ -290,8 +249,8 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
           <select class="button-30" id="projectFilter">
               ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
           </select>
-          <button class="button-30" data-period="all">All times</button>
-          <button class="button-30 active" data-period="thisMonth">This Month</button>
+          <button class="button-30 active" data-period="all">All times</button>
+          <button class="button-30" data-period="thisMonth">This Month</button>
           <button class="button-30" data-period="lastMonth">Last Month</button>
           <button class="button-30" data-period="thisYear">This Year</button>
           <button class="button-30" data-period="lastYear">Last Year</button>
@@ -300,7 +259,6 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
       // Rest of the function remains the same
   }
     worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
-    drawWorktimes('thisMonth', filterContainer.querySelector('#projectFilter').value);
 
     filterContainer.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
@@ -311,77 +269,159 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
     });
 
     document.getElementById('projectFilter').addEventListener('change', (e) => {
-      localStorage.setItem('worktimeSelectedProject', e.target.value);
-      const activePeriod = filterContainer.querySelector('button.active').dataset.period;
-      drawWorktimes(activePeriod, e.target.value);
+        const activePeriod = filterContainer.querySelector('button.active').dataset.period;
+        drawWorktimes(activePeriod, e.target.value);
     });
 
   // Call this when initializing the worktime view
+
+/* WT_HELPERS_MIN */
+(function(){
+  function wt_setDurationHint(mins){
+    var el = document.getElementById('durationHelper');
+    if (!el) return;
+    var m = parseInt(mins, 10);
+    if (!isFinite(m) || m <= 0){ el.textContent = ''; return; }
+    var h = Math.floor(m/60), r = m % 60;
+    el.textContent = '= ' + (h? (h+'h') : '') + (h && r ? ' ' : '') + (r? (r+'min') : '');
+  }
+  function wt_recomputeFromStartEnd(){
+    var s = document.getElementById('workStart');
+    var e = document.getElementById('workEnd');
+    var d = document.getElementById('workDuration');
+    if (!s || !e || !d) return;
+    if (!s.value || !e.value){ wt_setDurationHint(''); return; }
+    var mins = Math.max(0, Math.round((new Date(e.value) - new Date(s.value))/60000));
+    d.value = mins || '';
+    wt_setDurationHint(mins);
+  }
+  function wt_recomputeEndFromStartAndDuration(){
+    var s = document.getElementById('workStart');
+    var e = document.getElementById('workEnd');
+    var d = document.getElementById('workDuration');
+    if (!s || !e || !d) return;
+    var mins = parseInt(d.value, 10) || 0;
+    if (!s.value || mins <= 0){ wt_setDurationHint(''); return; }
+    var end = new Date(new Date(s.value).getTime() + mins*60000);
+    var off = end.getTimezoneOffset()*60000;
+    e.value = (new Date(end - off)).toISOString().slice(0,16);
+    wt_setDurationHint(mins);
+  }
+  function wt_wireDuration(){
+    var d = document.getElementById('workDuration');
+    var s = document.getElementById('workStart');
+    var e = document.getElementById('workEnd');
+    if (d && !d.__wt_wired){ d.__wt_wired = true; d.addEventListener('input', function(){ if (this.value) wt_recomputeEndFromStartAndDuration(); else wt_setDurationHint(''); }); }
+    if (e && !e.__wt_wired){ e.__wt_wired = true; e.addEventListener('input', function(){ if (this.value) wt_recomputeFromStartEnd(); else wt_setDurationHint(''); }); }
+    if (s && !s.__wt_wired){ s.__wt_wired = true; s.addEventListener('input', function(){ var dEl=document.getElementById('workDuration'); var eEl=document.getElementById('workEnd'); if (dEl && dEl.value) wt_recomputeEndFromStartAndDuration(); else if (eEl && eEl.value) wt_recomputeFromStartEnd(); else wt_setDurationHint(''); }); }
+    if (d && d.value) wt_setDurationHint(d.value);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wt_wireDuration, {once:true}); else wt_wireDuration();
+  window.__wt_setDurationHint = wt_setDurationHint;
+  window.__wt_wireDuration = wt_wireDuration;
+})();
 function initializeWorktime() {
     addWorktimeFilterButtons();
-    const fc = document.querySelector('.worktime-filters');
-    const period = fc ? (fc.querySelector('button.active')?.dataset.period || 'thisMonth') : 'thisMonth';
-    const project = document.getElementById('projectFilter')?.value || 'All projects';
-    drawWorktimes(period, project);
+    (function(){ const pf=document.getElementById('projectFilter'); drawWorktimes('thisMonth', pf ? pf.value : 'All projects'); })();
 }
 // Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
 const workEnd = document.getElementById('workEnd');
 const workStart = document.getElementById('workStart');
 
-workDuration.addEventListener('input', function () {
-  if (this.value) {
-    recomputeEndFromStartAndDuration();
-  } else {
-    document.getElementById('workEnd').value = '';
-    setDurationHint('');
-  }
+workDuration.addEventListener('input', function() {
+    if (this.value) {
+        const startDate = new Date(workStart.value);
+        const endDate = new Date(startDate.getTime() + this.value * 60000);
+        const offset = endDate.getTimezoneOffset() * 60000;
+        workEnd.value = (new Date(endDate - offset)).toISOString().slice(0, 16);
+    } else {
+        workEnd.value = '';
+    }
 });
 
-workEnd.addEventListener('input', function () {
-});
-workStart.addEventListener('input', function () {
-  const workDuration = document.getElementById('workDuration');
-  const workEnd = document.getElementById('workEnd');
-  if (workDuration.value) {
-    recomputeEndFromStartAndDuration();
-  } else if (workEnd.value) {
-    recomputeFromStartEnd();
-  } else {
-    setDurationHint('');
-  }
-});
-
-workEnd.addEventListener('input', function () {
-  if (this.value) {
-    recomputeFromStartEnd();
-  } else {
-    document.getElementById('workDuration').value = '';
-    setDurationHint('');
-  }
-});
-
-    // Safe project input handler (guarded to avoid undefined refs)
-    (function(){
-      const customInput = document.getElementById('projectInput');
-      const select = document.getElementById('projectFilter');
-      if (!customInput || !select) return;
-      customInput.addEventListener('blur', () => {
-        if (customInput.value.trim() === '') {
-          select.value = '';
-          select.style.display = 'block';
-          customInput.style.display = 'none';
+workEnd.addEventListener('input', function() {
+    if (this.value) {
+        const startDate = new Date(workStart.value);
+        const endDate = new Date(this.value);
+        const durationMinutes = Math.round((endDate - startDate) / 60000);
+        workDuration.value = durationMinutes;
+    } else {
+        workDuration.value = '';
+    }
+    const duration = durationMinutes;
+    const durationDisplay = `<div class="worktime-cell">
+    ${duration} min 
+    ${duration > 59 ? `(${Math.floor(duration / 60)}h${duration % 60 === 0 ? '' : ` ${duration % 60 > 0 ? `${duration % 60}min` : ''}`})` : ''}
+  </div>`;
+      document.querySelector('.worktime-cell').innerHTML = durationDisplay;    }
+);
+// Function to get unique project names from current year
+function getProjectNames() {
+    const currentYear = new Date().getFullYear();
+    return [...new Set(worktimes
+        .filter(entry => new Date(entry.start).getFullYear() === currentYear)
+        .map(entry => entry.project)
+        .filter(Boolean))];
+}
+// Function to update project datalist
+function updateProjectList() {
+    const existingContainer = document.querySelector('.project-input-container');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    const container = document.createElement('div');
+    container.className = 'project-input-container';
+    
+    const select = document.createElement('select');
+    select.id = 'projectSelect';
+    select.className = 'button-30';
+    
+    const projects = getProjectsFromLastTwoYears().filter(p => p !== 'All projects');
+    
+    select.innerHTML = `
+        <option value="">Select Project</option>
+        ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
+        <option value="custom">+ Add New Project</option>
+    `;
+    
+    const customInput = document.createElement('input');
+    customInput.type = 'text';
+    customInput.id = 'projectInput';
+    customInput.className = 'button-30';
+    customInput.style.display = 'none';
+    
+    select.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+            select.style.display = 'none';
+            customInput.style.display = 'block';
+            customInput.focus();
+        } else {
+            customInput.value = e.target.value;
         }
-      });
-    })();
+    });
 
-    // Populate the datalist with projects
-    (function(){
-      const dl = document.getElementById('projectList');
-      if (!dl) return;
-      const opts = getProjectsFromLastTwoYears().map(p => `<option value="${p}"></option>`).join('');
-      dl.innerHTML = opts;
-    })();
+    customInput.addEventListener('blur', () => {
+        if (customInput.value.trim() === '') {
+            select.value = '';
+            select.style.display = 'block';
+            customInput.style.display = 'none';
+        }
+    });
+    
+    container.appendChild(select);
+    container.appendChild(customInput);
+    
+    const workDescription = document.getElementById('workDescription');
+    workDescription.parentNode.insertBefore(container, workDescription.nextSibling);
+
+    // Remove any existing datalist
+    const existingDatalist = document.getElementById('projectList');
+    if (existingDatalist) {
+        existingDatalist.remove();
+    }
+}
 let editingId = null;
 function editWorktime(id) {
     const entry = worktimes.find(item => item.id === id);
@@ -450,22 +490,17 @@ worktimeForm.addEventListener('submit', function(e) {
             .join('');
     }
     
-    drawWorktimes((document.querySelector('.worktime-filters button.active')||{}).dataset?.period || 'thisMonth', document.getElementById('projectFilter')?.value || 'All projects');
+    drawWorktimes();
     updateProjectList();
     
     this.reset();
     workEnd.disabled = false;
     workDuration.disabled = false;
     
-    // Keep project input visible (no auto-hiding)
-    if (projectSelect) {
-      projectSelect.style.display = 'none';
-      projectSelect.value = '';
-    }
-    const projectInputEl = document.getElementById('projectInput');
-    if (projectInputEl) {
-      projectInputEl.style.display = 'block';
-    }
+    // Reset project select visibility
+    projectSelect.style.display = 'block';
+    projectSelect.value = '';
+    projectInput.style.display = 'none';
 });
 
 // Initialize project list when page loads
@@ -474,7 +509,7 @@ updateProjectList();
 function deleteWorktime(index) {
   worktimes.splice(index, 1);
   localStorage.setItem("worktimes", JSON.stringify(worktimes));
-  drawWorktimes((document.querySelector('.worktime-filters button.active')||{}).dataset?.period || 'thisMonth', document.getElementById('projectFilter')?.value || 'All projects');
+  drawWorktimes();
 }
 
 // Utility function to format date-time for display (reusing the function from todo.js)
@@ -492,36 +527,8 @@ function formatDateTimeForDisplay(isoString) {
   return dateObj.toLocaleString(undefined, options);
 }
 
-
-// Refresh the project datalist based on existing entries
-function updateProjectList() {
-  try {
-    const listId = 'projectList';
-    const inputEl = document.getElementById('projectInput');
-    const datalist = document.getElementById(listId) || (function(){
-      const dl = document.createElement('datalist');
-      dl.id = listId;
-      document.body.appendChild(dl);
-      return dl;
-    })();
-
-    const projects = (typeof getProjectsFromLastTwoYears === 'function')
-      ? getProjectsFromLastTwoYears()
-      : Array.from(new Set((worktimes || []).map(e => (e.project || 'No project'))));
-
-    datalist.innerHTML = projects.map(p => `<option value="${p}"></option>`).join('');
-
-    // Ensure the input is wired to the datalist
-    if (inputEl && inputEl.getAttribute('list') !== listId) {
-      inputEl.setAttribute('list', listId);
-    }
-  } catch (e) {
-    console.warn('updateProjectList() failed:', e);
-  }
-}
-
 // Initial draw of worktime entries when page loads
-drawWorktimes((document.querySelector('.worktime-filters button.active')||{}).dataset?.period || 'thisMonth', document.getElementById('projectFilter')?.value || 'All projects');
+drawWorktimes();
 
 
 
@@ -617,7 +624,7 @@ function clearWorktimeData() {
     if (confirm('Are you sure you want to delete all worktime entries?')) {
         worktimes = [];
         localStorage.setItem('worktimes', JSON.stringify(worktimes));
-        drawWorktimes((document.querySelector('.worktime-filters button.active')||{}).dataset?.period || 'thisMonth', document.getElementById('projectFilter')?.value || 'All projects');
+        drawWorktimes();
     }
 }
 
@@ -629,71 +636,30 @@ const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
 document.getElementById('workStart').value = localISOTime;
 
 
-
-// ---- Project totals helpers & modal ----
-function minutesToHM(mins) {
-  const m = Math.max(0, Math.round(mins||0));
-  const h = Math.floor(m/60), r = m%60;
-  return {h, r, label: `${h}h${r? ' ' + r + 'min' : ''}`};
+// -- Project totals modal (2s auto-fade) --
+function wt_minutesForProjectThisMonth(project){
+  try {
+    if (!Array.isArray(worktimes)) return 0;
+    const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
+    return worktimes
+      .filter(w => (w.project || 'No project') === project)
+      .filter(w => { const d = new Date(w.start); return d.getFullYear() === y && d.getMonth() === m; })
+      .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+  } catch(_) { return 0; }
 }
-
-function totalMinutesForProject(project) {
-  return (worktimes || []).filter(e => (e.project || 'No project') === project)
-    .reduce((acc, e) => acc + Math.max(0, Math.round((new Date(e.end) - new Date(e.start))/60000)), 0);
-}
-
-function totalMinutesForProjectThisMonth(project) {
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth();
-  return (worktimes || []).filter(e => (e.project || 'No project') === project)
-    .filter(e => { const d = new Date(e.start); return d.getFullYear()===y && d.getMonth()===m; })
-    .reduce((acc, e) => acc + Math.max(0, Math.round((new Date(e.end) - new Date(e.start))/60000)), 0);
-}
-
-function showWorktimeProjectTotalsModal(project) {
-  const modal = document.getElementById('worktimeProjectTotalsModal');
-  const body = document.getElementById('wptBody');
-  const title = document.getElementById('wptTitle');
-  const closeBtn = document.getElementById('wptCloseBtn');
-  const okBtn = document.getElementById('wptOkBtn');
-  if (!modal || !body) return;
-
-  const totalAll = minutesToHM(totalMinutesForProject(project));
-  const totalMonth = minutesToHM(totalMinutesForProjectThisMonth(project));
-
-  title.textContent = `Project totals — ${project || 'No project'}`;
-  body.innerHTML = `
-    <div class="big">${totalAll.label} total on this project</div>
-    <div class="muted" style="margin-top:6px;">This month: ${totalMonth.label}</div>
-  `;
-
-  function close() {
-    modal.classList.add('hidden');
-    modal.setAttribute('aria-hidden', 'true');
-    modal.classList.remove('fade-out');
-    closeBtn?.removeEventListener('click', close);
-    okBtn?.removeEventListener('click', close);
-    modal.removeEventListener('click', onBackdrop);
-  }
-  function onBackdrop(e) {
-    if (e.target === modal || e.target.classList.contains('modal-backdrop')) close();
-  }
-
-  closeBtn?.addEventListener('click', close);
-  okBtn?.addEventListener('click', close);
-  modal.addEventListener('click', onBackdrop);
-
-  modal.classList.remove('hidden');
-  modal.setAttribute('aria-hidden', 'false');
-
-  // Auto fade out after 2 seconds
+function wt_hm(mins){ const mm=Math.max(0,Math.round(mins||0)); const h=Math.floor(mm/60), r=mm%60; return (h+'h' + (r? ' '+r+'min':'')); }
+function wt_showProjectThisMonthModal(project){
+  const el = document.getElementById('worktimeProjectTotalsModal');
+  if (!el) return;
+  project = (project || 'No project'); if (typeof project === 'string') project = project.trim() || 'No project';
+  const minutes = wt_minutesForProjectThisMonth(project);
+  el.textContent = `${wt_hm(minutes)} this month · ${project}`;
+  el.style.opacity = '1';
+  el.style.pointerEvents = 'auto';
+  el.setAttribute('aria-hidden', 'false');
   setTimeout(() => {
-    modal.classList.add('fade-out');
-    setTimeout(() => {
-      modal.classList.remove('fade-out');
-      if (!modal.classList.contains('hidden')) {
-        try { close(); } catch(e) { modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); }
-      }
-    }, 350);
+    el.style.opacity = '0';
+    el.style.pointerEvents = 'none';
+    el.setAttribute('aria-hidden', 'true');
   }, 2000);
 }
