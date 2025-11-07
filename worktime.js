@@ -27,6 +27,10 @@ const worktimeList = document.getElementById("worktimeList");
 const diaryForm = document.getElementById("diaryForm");
 const diaryList = document.getElementById("diaryList");
 
+// --- Sorting state for Worktime table ---
+let worktimeSortKey = localStorage.getItem('worktimeSortKey') || 'date'; // 'date' | 'start' | 'duration' | 'description' | 'project' | 'end'
+let worktimeSortDir = localStorage.getItem('worktimeSortDir') || 'desc'; // 'asc' | 'desc'
+
 
 const projects = getProjectsFromLastTwoYears();
 
@@ -49,7 +53,48 @@ worktimeBtn.addEventListener("click", function () {
     document.getElementById('workStart').value = localISOTime;
     
     createWorktimeMenu();
-});const filterContainer = document.createElement('div');    filterContainer.className = 'worktime-filters';
+});
+
+// --- Project totals modal helpers ---
+function wt_minutesForProjectAllTime(project){
+  try {
+    if (!Array.isArray(worktimes)) return 0;
+    project = (project || 'No project'); if (typeof project === 'string') project = project.trim() || 'No project';
+    return worktimes
+      .filter(w => (w.project || 'No project') === project)
+      .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+  } catch(_) { return 0; }
+}
+
+function wt_minutesAllProjectsThisMonth(){
+  try {
+    if (!Array.isArray(worktimes)) return 0;
+    const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
+    return worktimes
+      .filter(w => { const d = new Date(w.start); return d.getFullYear() === y && d.getMonth() === m; })
+      .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+  } catch(_) { return 0; }
+}
+
+function wt_showProjectTotalsModal(project){
+  const el = document.getElementById('worktimeProjectTotalsModal');
+  if (!el) return;
+  project = (project || 'No project'); if (typeof project === 'string') project = project.trim() || 'No project';
+  const projAll = wt_minutesForProjectAllTime(project);
+  const projMonth = wt_minutesForProjectThisMonth(project);
+  const allMonth = wt_minutesAllProjectsThisMonth();
+  el.innerHTML = `<strong>${project}</strong>: <br> ${wt_hm(projAll)} total  <br> ${wt_hm(projMonth)} this month<br><span class="muted">All projects this month: ${wt_hm(allMonth)}</span>`;
+  el.style.opacity = '1';
+  el.style.pointerEvents = 'auto';
+  el.setAttribute('aria-hidden', 'false');
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.pointerEvents = 'none';
+    el.setAttribute('aria-hidden', 'true');
+  }, 8000);
+};
+
+const filterContainer = document.createElement('div');    filterContainer.className = 'worktime-filters';
     filterContainer.innerHTML = `
     <select class="button-30" id="projectFilter">
         ${projects.map(project => `<option value="${project}">${project}</option>`).join('')}
@@ -63,6 +108,17 @@ worktimeBtn.addEventListener("click", function () {
 
     
     worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
+
+// Default to "This Month" on load
+(function(){
+    const btnAll = filterContainer.querySelector('[data-period="all"]');
+    const btnThis = filterContainer.querySelector('[data-period="thisMonth"]');
+    if (btnAll) btnAll.classList.remove('active');
+    if (btnThis) btnThis.classList.add('active');
+    const pf = document.getElementById('projectFilter');
+    drawWorktimes('thisMonth', pf ? pf.value : 'All projects');
+})();
+
 
     filterContainer.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
@@ -106,9 +162,7 @@ worktimeBtn.addEventListener("click", function () {
       });
   }
   
-// --- Sorting state for Worktime table ---
-let worktimeSortKey = localStorage.getItem('worktimeSortKey') || 'date'; // 'date' | 'start' | 'duration' | 'description' | 'project' | 'end'
-let worktimeSortDir = localStorage.getItem('worktimeSortDir') || 'desc'; // 'asc' | 'desc'
+
 
 function setWorktimeSort(key) {
   if (worktimeSortKey === key) {
@@ -260,6 +314,17 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
   }
     worktimeList.parentNode.insertBefore(filterContainer, worktimeList);
 
+// Default to "This Month" on load
+(function(){
+    const btnAll = filterContainer.querySelector('[data-period="all"]');
+    const btnThis = filterContainer.querySelector('[data-period="thisMonth"]');
+    if (btnAll) btnAll.classList.remove('active');
+    if (btnThis) btnThis.classList.add('active');
+    const pf = document.getElementById('projectFilter');
+    drawWorktimes('thisMonth', pf ? pf.value : 'All projects');
+})();
+
+
     filterContainer.addEventListener('click', (e) => {
         if (e.target.tagName === 'BUTTON') {
             filterContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
@@ -322,6 +387,7 @@ function drawWorktimes(period = 'all', selectedProject = 'All projects') {
 })();
 function initializeWorktime() {
     addWorktimeFilterButtons();
+    wt_setDefaultPeriodThisMonth();
     (function(){ const pf=document.getElementById('projectFilter'); drawWorktimes('thisMonth', pf ? pf.value : 'All projects'); })();
 }
 // Add event listeners for the worktime form inputs
@@ -490,7 +556,18 @@ worktimeForm.addEventListener('submit', function(e) {
             .join('');
     }
     
-    drawWorktimes();
+    
+    // Redraw with the currently active period and selected project
+    (function(){
+      const fc = document.querySelector('.worktime-filters');
+      const period = fc?.querySelector('button.active')?.dataset.period || 'thisMonth';
+      const selProj = document.getElementById('projectFilter')?.value || 'All projects';
+      drawWorktimes(period, selProj);
+    })();
+
+    // Show quick totals modal for the submitted project's hours
+    try { wt_showProjectTotalsModal(project); } catch(_) {}
+    
     updateProjectList();
     
     this.reset();
@@ -661,5 +738,15 @@ function wt_showProjectThisMonthModal(project){
     el.style.opacity = '0';
     el.style.pointerEvents = 'none';
     el.setAttribute('aria-hidden', 'true');
-  }, 2000);
+  }, 5000);
+}
+
+function wt_setDefaultPeriodThisMonth(){
+  const fc = document.querySelector('.worktime-filters');
+  if (!fc) return;
+  fc.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+  const btn = fc.querySelector('[data-period="thisMonth"]');
+  if (btn) btn.classList.add('active');
+  const pf = document.getElementById('projectFilter');
+  drawWorktimes('thisMonth', pf ? pf.value : 'All projects');
 }
