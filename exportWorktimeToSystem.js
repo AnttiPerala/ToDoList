@@ -235,6 +235,24 @@ if (!rebalanceResult.ok){
     });
   });
 
+    // --- Monthly totals per project ---
+  const projectTotals = new Map(); // project → total minutes
+  for (const [key, data] of dayProject.entries()) {
+    const project = key.split('|')[1];
+    projectTotals.set(project, (projectTotals.get(project) || 0) + data.minutes);
+  }
+
+  out += `\n=== Monthly Totals ===\n`;
+  Array.from(projectTotals.entries())
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .forEach(([project, minutes]) => {
+      out += `${project}: ${minsToHours(minutes)} hours\n`;
+    });
+
+  const grandMinutes = Array.from(projectTotals.values()).reduce((a,b)=>a+b,0);
+  out += `\nGrand total: ${minsToHours(grandMinutes)} hours\n`;
+
+
   // Add adjustment report
   out += `\n=== Adjustment report ===\n`;
   out += audit.join(`\n`) + `\n`;
