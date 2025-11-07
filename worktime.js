@@ -361,8 +361,17 @@ if (pfSel) {
 })();
 function initializeWorktime() {
     addWorktimeFilterButtons();
+    wt_syncActivePeriodUI('thisMonth'); // keep both toolbars in sync
     (function(){ const pf=document.getElementById('projectFilter'); drawWorktimes('thisMonth', pf ? pf.value : 'All projects'); })();
 }
+
+
+function wt_syncActivePeriodUI(period){
+  document.querySelectorAll('.worktime-filters button[data-period]')
+    .forEach(b => b.classList.toggle('active', b.dataset.period === period));
+}
+
+
 // Add event listeners for the worktime form inputs
 const workDuration = document.getElementById('workDuration');
 const workEnd = document.getElementById('workEnd');
