@@ -590,6 +590,7 @@ function createWorktimeMenu() {
     const menuItems = [
         { id: 'exportWorktimeCsvBtn', text: 'Export CSV' },
         { id: 'exportWorktimeTextBtn', text: 'Export Text' },
+        { id: 'exportWorktimeSystemBtn', text: 'Export for Worktime System'},
         { id: 'clearWorktimeBtn', text: 'Delete all worktime items' },
         { id: 'backupBtn', text: 'Backup App' },
         { id: 'restoreBtn', text: 'Restore' },
@@ -618,6 +619,7 @@ function attachWorktimeMenuListeners() {
     document.getElementById('clearWorktimeBtn').addEventListener('click', clearWorktimeData);
     document.getElementById('backupBtn').addEventListener('click', handleBackup);
     document.getElementById('restoreBtn').addEventListener('click', handleRestore);
+    document.getElementById('exportWorktimeSystemBtn').addEventListener('click', exportWorktimeForSystem);
     //document.getElementById('loginBtn').addEventListener('click', login);
 }
 
