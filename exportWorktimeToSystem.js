@@ -10,13 +10,81 @@ function endOfMonth(d){
   return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
 }
 
-
-
 function exportWorktimeForSystem() {
   // Use current filters
   const fc = document.querySelector('.worktime-filters');
   const period = fc?.querySelector('button.active')?.dataset.period || 'thisMonth';
   const selectedProject = document.getElementById('projectFilter')?.value || 'All projects';
+
+  // --- INTERNAL HELPER FUNCTIONS (Hoisted for use in initialization) ---
+
+  // stay inside the same month
+  function stepDayWithinMonth(d, dir, mStart, mEnd){
+    const nd = new Date(d);
+    nd.setDate(nd.getDate() + dir);
+    if (nd < mStart || nd > mEnd) return null;
+    return nd;
+  }
+
+  function nextWeekdayWithinMonth(d, dir, mStart, mEnd){
+    let cur = new Date(d);
+    for (let i=0; i<40; i++){
+      cur = stepDayWithinMonth(cur, dir, mStart, mEnd);
+      if (!cur) return null;
+      if (!isWeekend(cur)) return cur;
+    }
+    return null;
+  }
+
+  function findNextDayWithSpaceWithinMonth(fromDate, mStart, mEnd, getDayUsed, DAY_CAP){
+    // forward first
+    {
+      let cur = new Date(fromDate);
+      for (let i=0; i<60; i++){
+        const nwd = nextWeekdayWithinMonth(cur, +1, mStart, mEnd);
+        if (!nwd) break;
+        const free = Math.max(0, DAY_CAP - (getDayUsed(ymd(nwd)) || 0));
+        if (free > 0) return { date: nwd, dir: +1 };
+        cur = nwd;
+      }
+    }
+    // then backward
+    {
+      let cur = new Date(fromDate);
+      for (let i=0; i<60; i++){
+        const pwd = nextWeekdayWithinMonth(cur, -1, mStart, mEnd);
+        if (!pwd) break;
+        const free = Math.max(0, DAY_CAP - (getDayUsed(ymd(pwd)) || 0));
+        if (free > 0) return { date: pwd, dir: -1 };
+        cur = pwd;
+      }
+    }
+    return null; // no capacity in this month
+  }
+
+  // weekend jam but keep same month
+  function adjustWeekendInMonth(d, mStart, mEnd){
+    const base = new Date(d);
+    const day = base.getDay(); // 0=Sun, 6=Sat
+    if (day === 6){            // Saturday
+      // Try Friday first
+      const fri = new Date(base); fri.setDate(fri.getDate()-1);
+      if (fri >= mStart && fri <= mEnd) return fri;
+      // If Friday is prev month, try Monday
+      const mon = new Date(base); mon.setDate(mon.getDate()+2);
+      if (mon >= mStart && mon <= mEnd) return mon;
+    } else if (day === 0){      // Sunday
+      // Try Monday first
+      const mon = new Date(base); mon.setDate(mon.getDate()+1);
+      if (mon >= mStart && mon <= mEnd) return mon;
+      // If Monday is next month, try Friday
+      const fri = new Date(base); fri.setDate(fri.getDate()-2);
+      if (fri >= mStart && fri <= mEnd) return fri;
+    }
+    return base; // already weekday or fallback
+  }
+
+  // --- END HELPERS ---
 
   // Collect filtered entries (source of truth = your filter function)
   const items = filterWorktimesByPeriod(period, selectedProject)
@@ -32,16 +100,6 @@ function exportWorktimeForSystem() {
     .filter(e => e.minutes > 0)
     // Sort stable by start time
     .sort((a,b) => a.start - b.start);
-
-  // Build per-entry “original day” (local date at start)
-  items.forEach(it => {
-    it.originalDate = ymd(it.start);
-    it.targetDate = adjustWeekend(new Date(it.start)); // weekend shift (Sat→Fri, Sun→Mon)
-    it.adjustLog = [];
-    if (isWeekend(new Date(it.start))) {
-      it.adjustLog.push(`${fmtDMY(it.originalDate)} fell on weekend → moved to ${fmtDMY(ymd(it.targetDate))}`);
-    }
-  });
 
   // Allocate minutes into weekdays with an 8h (480 min) per-day cap (total across all projects)
   const DAY_CAP = 480;
@@ -59,162 +117,106 @@ function exportWorktimeForSystem() {
     if (desc) entry.descriptions.add(desc);
   }
 
-  // Helper: find the next weekday with free capacity (>=1 min). We go forward in time.
-  function findNextDayWithSpace(fromDate) {
-    let d = new Date(fromDate);
-    for (let i=0; i<365; i++) {
-      d = nextDay(d);
-      const dd = adjustWeekend(d); // ensure weekday
-      const y = ymd(dd);
-      const free = Math.max(0, DAY_CAP - getDayUsed(y));
-      if (free > 0) return dd;
+  // Build per-entry "original day" and "target day"
+  items.forEach(it => {
+    it.originalDate = ymd(it.start);
+    it.adjustLog = [];
+    
+    // Calculate Month bounds for THIS ENTRY
+    const mStart = startOfMonth(it.start);
+    const mEnd = endOfMonth(it.start);
+
+    const rawStart = new Date(it.start);
+
+    // Initial placement logic:
+    // If it's a weekend, move it to a valid weekday *within* the month bounds immediately.
+    if (isWeekend(rawStart)) {
+      const safeTarget = adjustWeekendInMonth(rawStart, mStart, mEnd);
+      it.targetDate = safeTarget;
+      it.adjustLog.push(`${fmtDMY(it.originalDate)} fell on weekend → moved to ${fmtDMY(ymd(safeTarget))}`);
+    } else {
+      it.targetDate = rawStart;
     }
-    // fallback: return fromDate to avoid infinite loop
-    return new Date(fromDate);
-  }
+  });
 
-  // Allocate each original item
-items.forEach(it => {
-  // Month bounds for THIS ENTRY — all movement must stay inside this month
-  const mStart = startOfMonth(it.start);
-  const mEnd = endOfMonth(it.start);
+  // Allocate each item
+  items.forEach(it => {
+    // Re-establish bounds for processing
+    const mStart = startOfMonth(it.start);
+    const mEnd = endOfMonth(it.start);
 
-  it.originalDate = ymd(it.start);
+    let remaining = it.minutes;
+    let currentDate = it.targetDate;
 
-  // weekend jam inside month
-// stay inside the same month
-function stepDayWithinMonth(d, dir, mStart, mEnd){
-  const nd = new Date(d);
-  nd.setDate(nd.getDate() + dir);
-  if (nd < mStart || nd > mEnd) return null;
-  return nd;
-}
-function nextWeekdayWithinMonth(d, dir, mStart, mEnd){
-  let cur = new Date(d);
-  for (let i=0; i<40; i++){
-    cur = stepDayWithinMonth(cur, dir, mStart, mEnd);
-    if (!cur) return null;
-    if (!isWeekend(cur)) return cur;
-  }
-  return null;
-}
-function findNextDayWithSpaceWithinMonth(fromDate, mStart, mEnd, getDayUsed, DAY_CAP){
-  // forward first
-  {
-    let cur = new Date(fromDate);
-    for (let i=0; i<60; i++){
-      const nwd = nextWeekdayWithinMonth(cur, +1, mStart, mEnd);
-      if (!nwd) break;
-      const free = Math.max(0, DAY_CAP - (getDayUsed(ymd(nwd)) || 0));
-      if (free > 0) return { date: nwd, dir: +1 };
-      cur = nwd;
-    }
-  }
-  // then backward
-  {
-    let cur = new Date(fromDate);
-    for (let i=0; i<60; i++){
-      const pwd = nextWeekdayWithinMonth(cur, -1, mStart, mEnd);
-      if (!pwd) break;
-      const free = Math.max(0, DAY_CAP - (getDayUsed(ymd(pwd)) || 0));
-      if (free > 0) return { date: pwd, dir: -1 };
-      cur = pwd;
-    }
-  }
-  return null; // no capacity in this month
-}
+    // Safety clamp (should be unnecessary with fix, but good for robustness)
+    if (currentDate < mStart) currentDate = new Date(mStart);
+    if (currentDate > mEnd)   currentDate = new Date(mEnd);
 
-// weekend jam but keep same month
-function adjustWeekendInMonth(d, mStart, mEnd){
-  const base = new Date(d);
-  const day = base.getDay(); // 0=Sun, 6=Sat
-  if (day === 6){            // Saturday
-    const fri = new Date(base); fri.setDate(fri.getDate()-1);
-    if (fri >= mStart && fri <= mEnd) return fri;
-    const mon = new Date(base); mon.setDate(mon.getDate()+2);
-    if (mon >= mStart && mon <= mEnd) return mon;
-  }else if (day === 0){      // Sunday
-    const mon = new Date(base); mon.setDate(mon.getDate()+1);
-    if (mon >= mStart && mon <= mEnd) return mon;
-    const fri = new Date(base); fri.setDate(fri.getDate()-2);
-    if (fri >= mStart && fri <= mEnd) return fri;
-  }
-  return base; // already weekday or fallback
-}
+    while (remaining > 0) {
+      const dayKey = ymd(currentDate);
+      const used = getDayUsed(dayKey);
+      const free = Math.max(0, DAY_CAP - used);
 
-
-  let remaining = it.minutes;
-  let currentDate = it.targetDate;
-
-  // Ensure currentDate is weekday & within month (safety)
-  if (isWeekend(currentDate)) {
-    currentDate = adjustWeekendInMonth(currentDate, mStart, mEnd);
-  }
-  if (currentDate < mStart) currentDate = new Date(mStart);
-  if (currentDate > mEnd)   currentDate = new Date(mEnd);
-
-  while (remaining > 0) {
-    const dayKey = ymd(currentDate);
-    const used = getDayUsed(dayKey);
-    const free = Math.max(0, DAY_CAP - used);
-
-    if (free > 0) {
-      const take = Math.min(remaining, free);
-      addDayUsage(dayKey, take);
-      addDayProject(dayKey, it.project, take, it.description);
-      if (take === remaining) {
-        if (dayKey !== it.originalDate) {
-          it.adjustLog.push(`${minsToHours(take)}h allocated to ${fmtDMY(dayKey)} (cap ${DAY_CAP/60}h/day)`);
+      if (free > 0) {
+        const take = Math.min(remaining, free);
+        addDayUsage(dayKey, take);
+        addDayProject(dayKey, it.project, take, it.description);
+        if (take === remaining) {
+          if (dayKey !== it.originalDate) {
+             // Only add to log if we haven't already logged a weekend move that covers this
+             // OR if this is a split/overflow
+             const isWeekendMove = isWeekend(new Date(it.start)) && ymd(it.targetDate) === dayKey;
+             if (!isWeekendMove) {
+                it.adjustLog.push(`${minsToHours(take)}h allocated to ${fmtDMY(dayKey)} (cap ${DAY_CAP/60}h/day)`);
+             }
+          }
+          remaining = 0;
+        } else {
+          it.adjustLog.push(`Split: ${minsToHours(take)}h to ${fmtDMY(dayKey)} (day full)`);
+          remaining -= take;
         }
-        remaining = 0;
-      } else {
-        it.adjustLog.push(`Split: ${minsToHours(take)}h to ${fmtDMY(dayKey)} (day full)`);
-        remaining -= take;
+      }
+
+      if (remaining > 0) {
+        // find next free day within this month (forward, then backward)
+        const found = findNextDayWithSpaceWithinMonth(currentDate, mStart, mEnd, getDayUsed, DAY_CAP);
+        if (!found) {
+          // Month is saturated: force remainder onto the calculated target day (exceeds cap)
+          addDayUsage(dayKey, remaining);
+          addDayProject(dayKey, it.project, remaining, it.description);
+          it.adjustLog.push(`Forced ${minsToHours(remaining)}h into ${fmtDMY(dayKey)} (no free weekdays left in month)`);
+          remaining = 0;
+        } else {
+          const from = fmtDMY(dayKey);
+          const to = fmtDMY(ymd(found.date));
+          it.adjustLog.push(`Overflow → ${from} → ${to}`);
+          currentDate = found.date;
+        }
       }
     }
 
-    if (remaining > 0) {
-      // find next free day within this month (forward, then backward)
-      const found = findNextDayWithSpaceWithinMonth(currentDate, mStart, mEnd, getDayUsed, DAY_CAP);
-      if (!found) {
-        // Month is saturated: force remainder onto the original target day (exceeds cap)
-        addDayUsage(dayKey, remaining);
-        addDayProject(dayKey, it.project, remaining, it.description);
-        it.adjustLog.push(`Forced ${minsToHours(remaining)}h into ${fmtDMY(dayKey)} (no free weekdays left in month)`);
-        remaining = 0;
-      } else {
-        const from = fmtDMY(dayKey);
-        const to = fmtDMY(ymd(found.date));
-        it.adjustLog.push(`Overflow → ${from} → ${to}`);
-        currentDate = found.date;
-      }
+    // write per-entry audit line
+    if (it.adjustLog.length) {
+      audit.push(`• #${it.id} ${it.project} ${minsToHours(it.minutes)}h from ${fmtDMY(it.originalDate)}:\n  - ` + it.adjustLog.join('\n  - '));
+    } else {
+      audit.push(`• #${it.id} ${it.project} ${minsToHours(it.minutes)}h kept on ${fmtDMY(it.originalDate)}`);
     }
-  }
-
-  // write per-entry audit line
-  if (it.adjustLog.length) {
-    audit.push(`• #${it.id} ${it.project} ${minsToHours(it.minutes)}h from ${fmtDMY(it.originalDate)}:\n  - ` + it.adjustLog.join('\n  - '));
-  } else {
-    audit.push(`• #${it.id} ${it.project} ${minsToHours(it.minutes)}h kept on ${fmtDMY(it.originalDate)}`);
-  }
-});
-
+  });
 
   // Build the final text in the requested structure: day → project blocks
   const days = Array.from(dayProject.keys()).map(k => k.split('|')[0]);
   const uniqueDays = Array.from(new Set(days)).sort((a,b) => new Date(a) - new Date(b));
 
   // FINAL GUARD: ensure no day exceeds 8h by rebalancing within month
-const rebalanceResult = redistributeOverCapWithinMonth(dayUsage, dayProject, DAY_CAP, audit);
-if (!rebalanceResult.ok){
-  alert(
-    'Export aborted: cannot redistribute to keep all weekdays ≤ 8 hours within this month. ' +
-    `Problem day: ${fmtDMY(rebalanceResult.problemDay)}. ` +
-    'Please reduce total hours or adjust entries.'
-  );
-  return;
-}
-
+  const rebalanceResult = redistributeOverCapWithinMonth(dayUsage, dayProject, DAY_CAP, audit);
+  if (!rebalanceResult.ok){
+    alert(
+      'Export aborted: cannot redistribute to keep all weekdays ≤ 8 hours within this month. ' +
+      `Problem day: ${fmtDMY(rebalanceResult.problemDay)}. ` +
+      'Please reduce total hours or adjust entries.'
+    );
+    return;
+  }
 
   let out = '';
   uniqueDays.forEach(d => {
@@ -235,7 +237,7 @@ if (!rebalanceResult.ok){
     });
   });
 
-    // --- Monthly totals per project ---
+  // --- Monthly Totals per project ---
   const projectTotals = new Map(); // project → total minutes
   for (const [key, data] of dayProject.entries()) {
     const project = key.split('|')[1];
@@ -275,24 +277,6 @@ function isWeekend(d){
   return day === 0 || day === 6;
 }
 
-function adjustWeekend(d){
-  const day = new Date(d).getDay();
-  const base = new Date(d);
-  if (day === 6) { // Saturday → Friday
-    base.setDate(base.getDate() - 1);
-  } else if (day === 0) { // Sunday → Monday
-    base.setDate(base.getDate() + 1);
-  }
-  return base;
-}
-
-function nextDay(d){
-  const nd = new Date(d);
-  nd.setDate(nd.getDate() + 1);
-  // skip weekends automatically
-  return isWeekend(nd) ? adjustWeekend(nd) : nd;
-}
-
 function ymd(d){
   const dt = new Date(d);
   return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
@@ -319,10 +303,19 @@ function monthBoundsFromYMD(ymdStr){
 }
 
 function nthWeekdayWithinMonth(origin, dir, steps, mStart, mEnd){
+  // Use the internal step function logic here or duplicate slightly since scope issue
+  // We'll duplicate the simple stepper for this standalone helper
+  function _step(d, dDir) {
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() + dDir);
+      if (nd < mStart || nd > mEnd) return null;
+      return nd;
+  }
+  
   let cur = new Date(origin);
   let count = 0;
   while (count < steps){
-    cur = stepDayWithinMonth(cur, dir, mStart, mEnd);
+    cur = _step(cur, dir);
     if (!cur) return null;
     if (!isWeekend(cur)) count++;
   }
