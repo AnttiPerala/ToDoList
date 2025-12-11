@@ -1,0 +1,1487 @@
+html {
+width: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: gainsboro;
+    width: 100%;
+}
+
+
+#myHeader {
+  padding: 0 0.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;  
+  z-index: 100;
+  background-color: gainsboro;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+#mainTitle{
+  display: inline-block;
+  cursor: pointer;
+    font-size: 5rem;
+    text-align: center;
+    font-weight: 800;
+    color: transparent;
+    font-size:6rem;
+    background: url("img/universe-7325913_1920.jpg");
+    background-position: 40% 50%;
+    -webkit-background-clip: text;
+    position:relative;
+    text-align:center;
+    letter-spacing: -4px;
+    padding: 0 0.5vw; 
+    margin: 1rem;
+    margin-bottom: 0;
+    color: transparent;
+  text-shadow: 2px 2px 3px rgba(255,255,255,0.5);
+  -webkit-background-clip: text;
+     -moz-background-clip: text;
+          background-clip: text;
+}
+
+p#todo-stats {
+  margin: 0;
+  margin-top: -0.5rem;
+  color: #948e8e;
+  font-size: 0.8rem;
+}
+
+@keyframes animateBackground {
+    from {background-position: 0 0;}
+    to {background-position: 100% 100%;}
+  }
+  
+  #mainTitle {
+    background-image: url('img/universe-7325913_1920.jpg');
+    animation: animateBackground 200s linear infinite;
+  }
+
+.listItem{
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 2fr 1fr 0.5fr 1fr 1fr 1fr 1fr;
+    align-items: center;
+    padding: 1rem;
+}
+
+#menuRow{
+    display: grid;
+/*     grid-template-columns: 8fr 1fr; */
+    align-items: center;
+}
+
+#todoForm {
+  display: grid;
+  /* grid-template-columns: 5.5fr 2fr 1fr 1fr 1fr; */
+  align-items: center;
+  justify-items: center;
+  position: relative;
+
+}
+
+.collapsible-content {
+  display: none;
+  /* any other styling you want for the content */
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  background: #e2e2ff;
+  padding: 1rem;
+  width: 100%;
+}
+
+.collapsible-btn {
+  display: block; /* Ensures the button takes up full width of its container */
+  width: 100%; 
+  height: 40px; /* You can adjust this */
+  background-color: #e2e2ff; /* Gray background */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  position: relative; /* Sets a context for the triangle */
+  text-align: center; /* Centers any text or content in the button */
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.collapsible-btn:after {
+  content: ''; /* This creates a triangle using borders */
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #333; /* This creates the triangle */
+  position: absolute; /* Absolute positioning relative to the button */
+  top: 50%;
+  right: 20px; /* This positions the triangle to the right with 20px margin */
+  transform: translateY(-50%); /* Centers the triangle vertically */
+}
+
+.collapsible-btn.active:after {
+  border-top: none;
+  border-bottom: 8px solid #333; /* Changes the triangle to point upwards when active */
+}
+
+ button.btn.inactive {
+  background-color: #eee;
+  color: gray;
+}
+
+
+
+/* this puts the main add button to the left side of the second row */
+#todoForm > :nth-child(n+6):nth-child(-n+10) {
+  justify-self: start;
+}
+
+#todoInput, .submitTodo {
+    font-size: 1.3rem;
+}
+
+button.submitTodo.button-30 {
+  margin: 1rem;
+  min-width: 6rem;
+}
+
+#todoInput{
+  width:100%;
+  min-height: 40px;
+  padding: 0.5rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: grid;
+  grid-column: 1 / -1;
+}
+
+.clear-input,
+.diary-clear-input {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  font-size: 18px;
+  cursor: pointer;
+  color: #999;
+  z-index: 100;
+  display: none;
+}
+
+#todoList input{
+    font-size: 1.3rem;
+    width: 100%;
+}
+
+#topPriorityInput{
+  font-size: 1.3rem;
+  width: 1.3rem;
+}
+
+#deadlineInput{
+    opacity: 0.8;
+
+}
+
+.done {
+    opacity: 0.3;
+}
+
+.toDoText {
+  font-size: 1rem;
+  color: #000000;
+  grid-column: span 3;
+}
+
+.votes{
+    color: #0070f3;
+}
+
+ul#todoList {
+    list-style-type: none;
+    padding: 0;
+    border: 1px #9f9f9f solid;
+    min-height: 50vh;
+}
+
+#backUpAndRestoreButtonsContainer{
+  text-align: right;
+}
+
+li {
+    /* No background color when not hovered */
+    border: none;
+  }
+  
+  li:hover {
+    /* Background color when hovered */
+   border: 1px rgba(0, 0, 0, 0.1) solid; /* This is just an example color, you can replace it with your preferred color */
+  }
+
+  div#detailsContainer {
+    width: 100%;
+    text-align: center;
+}
+  textarea.detailsTextarea {
+    width: 100%;
+    min-height: 5rem;
+}
+
+/* 1) Make sure both fields use the same font/line-height/padding */
+input[type="text"],
+textarea {
+  font-family: inherit;
+  /* or your preferred font */
+  font-size: 1rem;
+  /* same size on both */
+  line-height: 1.5;
+  /* consistent line-height */
+  padding: 0.5rem;
+  /* same padding */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #333;
+  /* same text color */
+  background-color: white;
+}
+
+/* 2) Force textarea to vertically center its text if you want it exactly like input */
+textarea {
+  resize: vertical;
+  /* or whatever you choose */
+  /* If you want the placeholder to sit in the vertical center of the textarea (not top): */
+  display: flex;
+  align-items: center;
+  /* vertical centering of placeholder/text */
+}
+
+/* 3) Style the placeholder text the same way */
+input::placeholder,
+textarea::placeholder {
+  color: #999;
+  /* choose the same shade */
+  opacity: 1;
+  /* some browsers default to opacity: .5 for textarea */
+  font-style: italic;
+  /* or normal—just match them */
+  font-size: 1rem;
+}
+
+/* 4) Vendor prefixes for broader support */
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder {
+  color: #999;
+}
+
+input::-moz-placeholder,
+textarea::-moz-placeholder {
+  color: #999;
+}
+
+input:-ms-input-placeholder,
+textarea:-ms-input-placeholder {
+  color: #999;
+}
+
+#categoryFilteringNotice{
+  display: inline-block;
+  margin-top: 1rem;
+}
+
+  /* CUSTOM MODAL */
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 80%; /* Adjust this if you want */
+    max-width: 500px; /* Adjust this if you want */
+}
+
+.modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.colorBox {
+  height: 1rem;
+  width: 1rem;
+}
+
+div#notificationWrap {
+  margin: 1rem;
+} 
+
+/* TOAST NOTIFICATIONS FOR SUBMIT ETC */
+.toast {
+  visibility: hidden;
+  max-width: 50%;
+  margin: auto;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.5s, visibility 0.5s;
+}
+
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+
+
+
+/* BUTTONS */
+.button-30 {
+  align-items: center;
+  appearance: none;
+  background-color: #FCFCFD;
+  border-radius: 4px;
+  border-width: 0;
+  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset;
+  box-sizing: border-box;
+  color: #36395A;
+  cursor: pointer;
+  display: inline-flex;
+  height: 48px;
+  justify-content: center;
+  line-height: 1;
+  list-style: none;
+  overflow: hidden;
+  padding-left: 16px;
+  padding-right: 16px;
+  position: relative;
+  text-align: left;
+  text-decoration: none;
+  transition: box-shadow .15s,transform .15s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  will-change: box-shadow,transform;
+  font-size: 18px;
+}
+
+.button-30:focus {
+  box-shadow: #D6D6E7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+}
+
+.button-30:hover {
+  box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+  transform: translateY(-2px);
+}
+
+.button-30:active {
+  box-shadow: #D6D6E7 0 3px 7px inset;
+  transform: translateY(2px);
+}
+
+/* CUSTOM CHECKBOX */
+
+.large-checkbox {
+  transform: scale(1.5);
+  /* Adjust this value to change the size of the checkbox */
+}
+
+#priorityCheckWrap {
+  align-items: center;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+#priorityCheckWrap label {
+  white-space: nowrap;
+  margin: 0.5rem;
+}
+
+
+/* CUSTOM COLOR DROPDOWN */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  margin: 1rem;
+
+}
+
+.dropdown,
+.deadLineWrap {
+  display: inline-flex; /* Use flexbox for alignment */
+  align-items: center; /* Vertically align items inside */
+  margin-right: 10px; /* Add spacing between groups */
+}
+
+label,
+span,
+input,
+select {
+  vertical-align: middle; /* Ensure consistent vertical alignment */
+}
+
+.close {
+  margin-left: 5px; /* Adjust spacing around the "x" */
+  color: red;
+  cursor: pointer;
+  font-size: 16px; /* Ensure it visually aligns */
+}
+
+
+
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  z-index: 1;
+}
+
+.dropdown-content div {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  cursor: pointer;
+
+}
+
+.dropdown-content div:hover {
+  background-color: #f1f1f1;
+}
+
+div#extraInfoButtonContainer {
+
+    display: flex;
+    align-items: center;
+    margin: 1rem;
+}
+
+.color-option {
+  height: 20px;
+}
+
+.dropbtn {
+  background-color: #4CAF50;
+  color: rgb(0, 0, 0);
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.dropbtn:hover,
+.dropbtn:focus {
+  background-color: #3e8e41;
+}
+
+/* little x to close stuff */
+span.close {
+font-size: 2rem;
+vertical-align: middle;
+color: red;
+cursor: pointer;
+}
+
+/* HAMBURGER MENU */
+
+#hamburgerMenuButton {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+#hamburgerMenu {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200px;
+  height: 100vh;
+  background: #f4f4f4;
+  padding: 20px;
+  transition: left 0.3s ease;
+}
+
+#hamburgerMenu.hamburgerMenuVisible {
+  left: 0;
+}
+
+.menu a {
+  display: block;
+  text-decoration: none;
+}
+
+.menu a:hover {
+
+  text-decoration: underline;
+}
+
+#closeMenuButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+}
+
+/* Styles for the checkmark */
+.menu .checkmark {
+  display: none; /* Hide by default */
+  margin-right: 5px; /* Space between the checkmark and the text */
+}
+
+.menu .active .checkmark {
+  display: inline; /* Show checkmark for active items */
+}
+
+
+
+/* MENU 2 */
+
+
+
+
+* {
+
+  box-sizing: border-box;
+}
+
+.top-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #00BAF0;
+  background: linear-gradient(to left, #f46b45, #eea849);
+  /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  color: #FFF;
+  height: 50px;
+  padding: 1em;
+}
+
+.menuWrap {
+  display: flex;
+  align-items: center;
+  left: 0;
+}
+
+#menu-toggle:checked ~ .menu {
+  top: 50px; /* Same value to ensure alignment */
+  transition: top 0.3s ease; /* Optional: add a smooth transition for visual effect */
+}
+
+.menu>li {
+  display: flex;
+  align-items: center;
+  margin: 0 1rem;
+  overflow: hidden;
+  padding: 0.5em 0;
+  width: 100%;
+  color: white;
+  background-color: #4268f2;
+ 
+}
+
+.menu li a {
+  color: #f1f1f1;
+}
+
+.menu-button-container {
+
+  display: flex;
+  height: 50px;
+  cursor: pointer;
+  flex-direction: column;
+  z-index: 100;
+  justify-content: center;
+  position: absolute;
+  left: 1vw;
+}
+
+#menu-toggle {
+  display: none;
+}
+
+.menu-button,
+.menu-button::before,
+.menu-button::after {
+  display: block;
+  background-color: #9fa9f1;
+  position: absolute;
+  height: 10px;
+  width: 50px;
+  transition: transform 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  border-radius: 3px;
+}
+
+.menu-button::before {
+  content: '';
+  margin-top: -13px;
+}
+
+.menu-button::after {
+  content: '';
+  margin-top: 13px;
+}
+
+#menu-toggle:checked+.menu-button-container .menu-button::before {
+  margin-top: 0px;
+  transform: rotate(405deg);
+}
+
+#menu-toggle:checked+.menu-button-container .menu-button {
+  background: rgba(255, 255, 255, 0);
+}
+
+#menu-toggle:checked+.menu-button-container .menu-button::after {
+  margin-top: 0px;
+  transform: rotate(-405deg);
+}
+
+.menu {
+  position: absolute;
+  top: 50px; /* Aligning below the hamburger button */
+  left: 0;
+  min-width: 30vw; /* Ensure a minimum width to fit all elements comfortably */
+  max-width: 90vw; /* Optional: ensure the menu doesn't take over the entire screen */
+  flex-direction: column;
+  padding: 1rem; /* Add padding to make the elements inside the menu look better */
+  z-index: 11;
+}
+
+
+ #menu-toggle~.menu li {
+   height: 0;
+   margin: 0;
+   padding: 0;
+   border: 0;
+   transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+ }
+
+ #menu-toggle:checked~.menu li {
+   border: 1px solid #333;
+   height: 3.5em;
+   padding: 0.5em;
+   transition: height 400ms cubic-bezier(0.23, 1, 0.32, 1);
+ }
+
+ 
+
+ .menu>li:not(:last-child) {
+   border-bottom: 1px solid #444;
+ }
+
+ .note  {
+      margin-left: 1rem;
+      opacity: 0.5;
+    }
+ 
+
+
+.info-button {
+      border-radius: 50%;        /* Make the button round */
+      width: 40px;               /* Set a fixed width */
+      height: 40px;              /* Set a fixed height */
+      text-align: center;        /* Center the "i" horizontally */
+      line-height: 30px;         /* Center the "i" vertically */
+      border: none;              /* Remove default borders */
+      background-color: #eee;   /* A light background color */
+      cursor: pointer;           /* Change cursor to hand pointer on hover */
+      margin: 0.5rem;
+      font-size: 1.2rem;
+  }
+  
+
+/* NEW FANCY BUTTON */
+
+.btn{
+display: inline-block;
+margin-bottom: 0.5rem;
+margin-top: 0.5rem;
+outline: 0;
+cursor: pointer;
+border: none;
+padding: 0 56px;
+height: 45px;
+line-height: 45px;
+border-radius: 7px;
+background-color: #0070f3;
+color: white;
+font-weight: 400;
+font-size: 16px;
+box-shadow: 0 4px 14px 0 rgb(0 118 255 / 39%);
+transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
+white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.btn:hover{
+    background: rgba(0,118,255,0.9);
+    box-shadow: 0 6px 20px rgb(0 118 255 / 23%);
+}
+
+.btn.addDetails{
+  background-color: lightslategray;
+  padding: 0 20px;
+  opacity: 0.8;
+}
+
+.dropbtn{
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  display: inline-block;
+  outline: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0 20px;
+  height: 45px;
+  line-height: 45px;
+  border-radius: 7px;
+  color: white;
+  font-weight: 400;
+  font-size: 16px;
+  box-shadow: 0 4px 14px 0 rgb(0 118 255 / 39%);
+  transition: background 0.2s ease,color 0.2s ease,box-shadow 0.2s ease;
+  white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .chooseColor{
+    color: black;
+  }
+
+/* Radiate waves/ripples on success */
+
+.wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  border: 10px solid rgba(146, 126, 255, 0.87); /* Adjust border color and width */
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wave.animate {
+  animation: waveAnimation 1.5s ease-out; /* 'infinite' for looping, remove for one-off */
+}
+
+@keyframes waveAnimation {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4); /* Adjust scale as needed */
+    opacity: 0;
+  }
+}
+
+ul#diaryList {
+  padding: 0;
+  margin: 0;
+}
+
+
+#diaryForm {
+position: relative;
+}
+
+.diaryItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border-radius: 8px;
+}
+
+.diary-date {
+  font-weight: bold;
+  min-width: 100px;
+}
+
+.diary-description {
+  flex-grow: 1;
+}
+
+.diary-category {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  margin-right: 10px;
+}
+
+#diaryCategory {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-right: 10px;
+}
+
+.diaryEntryButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.diary-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Adjust spacing between input and button */
+  margin: 0.5rem 0;
+}
+
+#diarySearch {
+  flex: 1;
+  /* Input takes remaining space */
+  width: 100%;
+  /* Ensure it fills its flex container */
+}
+
+#modeSelect {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1rem;
+  padding-top: 5rem;
+}
+
+/* Prevent closed hamburger menu from blocking clicks below it */
+#menu-toggle:not(:checked) ~ .menu {
+  pointer-events: none;     /* ignore clicks when closed */
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+#menu-toggle:checked ~ .menu {
+  pointer-events: auto;     /* clickable only when open */
+  opacity: 1;
+}
+
+#todoModeWrap {
+  padding: 1vw;
+}
+
+ul#worktimeList {
+  padding: 0;
+  margin: 0;
+}
+
+
+.worktime-table {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));  
+  gap: 10px;
+  /* padding: 10px; */
+  width: 100%;
+}
+.worktime-header {
+  font-weight: bold;
+  background-color: #f5f5f5;
+  padding: 0.5vw;
+  word-break: break-word;
+}
+
+.worktime-row {
+  display: contents;
+}
+
+.worktime-cell {
+  padding: 0.5vw;
+  border-bottom: 1px solid #ddd;
+  min-width: 0;
+    /* allow these grid items to shrink below their content’s “intrinsic” size */
+    word-wrap: break-word;
+    /* break long text rather than forcing the column wider */
+}
+
+.worktime-cell button {
+  /* Let the button fill at most the cell’s width, not exceed it */
+  max-width: 100%;
+
+  /* If you’d rather have them fill the cell, you could also do:
+     width: 100%;
+     box-sizing: border-box;
+  */
+
+  /* Optional: reduce default padding so they’re less “wide” */
+  padding: 4px 8px;
+
+  /* Optional: slightly smaller font so “Delete” / “Edit” never wrap */
+  font-size: 0.9rem;
+
+  /* Ensure the button text doesn’t create its own overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.worktime-cell.total {
+  font-weight: bold;
+  background-color: #f5f5f5;
+  border-top: 2px solid #ddd;
+}
+.worktime-filters {
+  margin-bottom: 20px;
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.worktime-filters button {
+  padding: 5px 15px;
+}
+
+.worktime-filters button.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.worktime-filters select.button-30 {
+  padding: 5px 15px;
+  cursor: pointer;
+}
+
+
+#worktimeForm input {
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+#worktimeForm input[type="datetime-local"] {
+  min-height: 40px;
+  line-height: 40px;
+}
+
+form#worktimeForm {
+display: flex;
+justify-content: center;
+align-items: baseline;
+gap: 0.5rem;
+background-color: #e2e2ff;
+padding: 0.5rem;
+}
+
+.diary-table {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  gap: 10px;
+ /*  padding: 10px; */
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.diary-header {
+  font-weight: bold;
+  background-color: #f5f5f5;
+  padding: 0.5vw;
+  word-break: break-word;
+}
+
+.diary-cell {
+  padding: 0.5vw;
+    border-bottom: 1px solid #ddd;
+    min-width: 0;
+    /* allow these grid items to shrink below their content’s “intrinsic” size */
+    word-wrap: break-word;
+    /* break long text rather than forcing the column wider */
+}
+
+.diary-cell button {
+  /* Let the button fill at most the cell’s width, not exceed it */
+  max-width: 100%;
+
+  /* If you’d rather have them fill the cell, you could also do:
+     width: 100%;
+     box-sizing: border-box;
+  */
+
+  /* Optional: reduce default padding so they’re less “wide” */
+  padding: 4px 8px;
+
+  /* Optional: slightly smaller font so “Delete” / “Edit” never wrap */
+  font-size: 0.9rem;
+
+  /* Ensure the button text doesn’t create its own overflow */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes slideOut {
+  from {
+      transform: translateX(0);
+      opacity: 1;
+  }
+  to {
+      transform: translateX(100%);
+      opacity: 0;
+  }
+}
+
+.slide-out {
+  animation: slideOut 0.5s ease-out forwards;
+}
+
+@keyframes scaleOut {
+  from {
+      transform: scaleX(1);
+      opacity: 1;
+  }
+  to {
+      transform: scaleX(0);
+      opacity: 0;
+  }
+}
+
+.scale-out {
+  animation: scaleOut 0.4s ease-in forwards;
+}
+
+.listItem {
+  transition: transform 0.3s ease-out;
+}
+
+.reorder-animation {
+  position: relative;
+  z-index: 1;
+}
+
+
+
+
+
+/* MOBILE */
+
+
+
+@media only screen and (max-width: 1100px) {
+    /* CSS rules for screens less than 1100px wide go here */
+
+    body{
+        padding: 0;
+        margin: 0;
+    }
+
+    h1#mainTitle {
+      font-size: 3.5rem;
+      letter-spacing: 0.05rem;
+  }
+
+  #modeSelect {
+  padding-top: 1rem;
+}
+
+    #menuRow{
+      grid-template-columns: 1fr;
+    }
+
+    .menu {
+      width: 95vw;
+    }
+    .listItem{
+         
+            row-gap: 2rem;
+            grid-auto-flow: row dense;
+            /* padding-left: 0.2rem; */
+
+        }
+    
+        .listItem > :nth-child(n+5) {
+            grid-column: span 2;
+            grid-row: 2;
+        }
+
+        /* individual spans for the button to take correct amount of space */
+        /* 5th element of the list */
+.listItem > :nth-child(5) {
+  grid-column: 1 / span 2;  /* spanning the first two columns */
+  grid-row: 2;
+}
+
+/* 6th element of the list */
+.listItem > :nth-child(6) {
+  grid-column: 3 / span 2;  /* spanning the next two columns */
+  grid-row: 2;
+}
+
+/* 7th element of the list */
+.listItem > :nth-child(7) {
+  grid-column: 5 / span 3;  /* spanning the next three columns */
+  grid-row: 2;
+}
+
+/* 8th element of the list */
+.listItem > :nth-child(8) {
+  grid-column: 8 / span 3;  /* spanning the next three columns */
+  grid-row: 2;
+}
+
+        .button-30{
+            margin-bottom: 2rem;
+        }
+
+        #todoForm {
+          grid-template-columns: 1fr;
+          align-items: center;
+          justify-items: center;
+          padding: 0;
+ 
+      }
+
+      .toDoText{
+        grid-column: span 7;
+      }
+
+      #todoList input{
+        grid-column: span 7;
+      }
+
+      #todoInput{
+        grid-column: span 2;
+        padding: 0.5rem;
+      }
+
+      .clear-input {
+    
+        right: 1rem;
+        top: 1rem;
+   
+      }
+
+    
+
+      #deadlineInput{
+        opacity: 1;
+        grid-column: span 2;
+
+    }
+
+
+ 
+
+    .button-30{
+      font-size: 14px;
+    }
+
+    .btn {
+      padding: 0 0.5rem;
+      font-size: 1rem;
+    }
+
+   
+    span.votes {
+      text-align: center;
+  }
+
+    #todoForm > :nth-child(n+6):nth-child(-n+10) {
+      justify-self: center;
+  }
+
+  .collapsible-content {
+    display: none;
+    /* any other styling you want for the content */
+    grid-template-columns: 1fr;
+    grid-column: span 2;
+
+      width: 100%;
+      margin: 0;
+      padding-top: 0;
+  }
+
+
+  div#extraInfoButtonContainer {
+    text-align: center;
+    margin-top: 0;
+      display: flex;
+      align-items: center;
+  
+  }
+
+  .deadLineWrap{
+    margin: 1rem;
+    text-align: center;
+  }
+
+  #priorityCheckWrap {
+    text-align: left;
+    margin: 0.5rem;
+  }
+
+  ul#diaryList {
+    margin: 0;
+    padding: 0;
+    font-size: 0.7rem;
+  }
+  
+  .diary-table {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    gap: 1px;
+    padding: 2px;
+    width: 100%;
+  }
+
+  ul#worktimeList {
+    margin: 0;
+    padding: 0;
+    font-size: 0.7rem;
+  }
+
+  .worktime-table {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto auto auto;
+    gap: 1px;
+    padding: 2px;
+    width: 100%;
+  }
+
+  .worktime-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.worktime-filters button, .worktime-filters select {
+  margin: 0.1rem;
+}
+
+.worktime-filters select {
+    grid-column: 1 / -1;  /* Makes the dropdown take full width */
+}
+
+span.deadline {
+  padding: 0 0.5rem;
+  align-self: flex-start;
+}
+
+span.votes {
+  align-self: flex-start;
+
+}
+
+/* Mobile larger than 500 for worktimeform */
+form#worktimeForm {
+  display: block;
+
+}
+
+input#workDescription {
+  min-width: 100%;
+}
+
+}
+
+@media screen and (max-width: 500px){
+  h1#mainTitle{
+    font-size: 3rem;
+    letter-spacing: -0.2rem;
+  }
+
+  .diaryEntryButtons {
+    display: flex;
+    justify-content: center;
+    gap: 0.2rem;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  form#worktimeForm {
+    display: block;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.2rem;
+    flex-direction: column;
+    align-items: center;
+    background-color: #e2e2ff;
+    padding: 0.5rem;
+  }
+
+  #worktimeForm input {
+    width: 100%;
+  }
+
+  h1#mainTitle {
+    margin-left: 3rem;
+  }
+
+}
+  /* End mobile */
+
+
+
+/* Diary sort indicator style */
+.diary-header[aria-sort] { font-weight: 600; }
+
+
+/* Ensure modal edit textareas auto-grow visibly */
+#detailsModal textarea {
+  overflow-y: hidden;
+  resize: none;
+  height: auto;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 3rem;
+}
+
+
+/* Strong override for modal edit fields: cancel global flex/text-area hacks */
+#detailsModal textarea {
+  display: block !important;
+  align-items: initial !important;
+  justify-content: initial !important;
+  line-height: 1.5;
+  width: 100%;
+  min-height: 4.5rem;
+  height: auto;
+  overflow-y: hidden;
+  resize: none;
+  box-sizing: border-box;
+}
+#detailsModal .value { display: block; }
+#detailsModal p { margin-bottom: 0.75rem; }
+
+
+/* Tiny stats under the main heading */
+.todo-stats { font-size: 0.9em; color: #666;    margin: 2px 0 6px 0; }
+
+
+/* Header title + stats layout */
+.titleBlock { display: flex; flex-direction: column; align-items: center; }
+#myHeader .menuWrap { position: absolute; left: 0.5rem; }
+
+/* Modal details label/value grid */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1rem;
+  row-gap: 0.5rem;
+  margin: 0.5rem 0 0;
+}
+.detailsGrid dt {
+  font-weight: 600;
+  color: #555;
+}
+.detailsGrid dd {
+  margin: 0;
+  color: #111;
+  word-break: break-word;
+}
+.detailsGrid code.color-hex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: #f1f1f1;
+}
+.color-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.1);
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+/* Modal details two-column table */
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.detailsTable th {
+  text-align: left;
+  vertical-align: top;
+  padding: 4px 12px 4px 0;
+  color: #555;
+  white-space: nowrap;
+  width: 35%;
+}
+.detailsTable td {
+  padding: 4px 0;
+  color: #111;
+  word-wrap: break-word;
+}
+.detailsTable code.color-hex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+  background: #f1f1f1;
+}
+.color-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.1);
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+
+
+/* Modal details alignment fixes */
+#detailsText { text-align: left; }
+.detailsTable td .value { display: inline-block; }
+
+/* Editing styles inside details modal */
+.detailsTable input[type="text"],
+.detailsTable input[type="datetime-local"],
+.detailsTable input[type="color"],
+.detailsTable textarea,
+.detailsTable select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+/* Push content below the fixed header safely */
+body { padding-top: var(--header-height, 80px); }
