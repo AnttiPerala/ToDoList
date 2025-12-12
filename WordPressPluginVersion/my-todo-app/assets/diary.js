@@ -1,11 +1,10 @@
-
-// Refactored diary.js
-
 // Sorting State
 let diarySort = { key: 'date', dir: 'desc' };
 
 function getSortedDiaryEntries(list) {
-    const arr = Array.from(list || window.diaryEntries);
+    // SYNC FIX: Filter out soft-deleted items
+    const arr = Array.from(list || window.diaryEntries).filter(e => !e.deleted);
+    
     const { key, dir } = diarySort;
     const mult = dir === 'desc' ? -1 : 1;
     return arr.sort((a,b) => {
@@ -13,31 +12,37 @@ function getSortedDiaryEntries(list) {
         if (key === 'date') { va = new Date(a.date).getTime(); vb = new Date(b.date).getTime(); }
         else if (key === 'category') { va = (a.category||'').toLowerCase(); vb = (b.category||'').toLowerCase(); }
         else { 
-            const sa = (a.description||'').replace(/<br\s*\/?>/gi,'\n').toLowerCase();
-            const sb = (b.description||'').replace(/<br\s*\/?>/gi,'\n').toLowerCase();
-            va = sa; vb = sb;
+            // Compare raw text
+            va = (a.description||'').toLowerCase(); 
+            vb = (b.description||'').toLowerCase();
         }
         if (va < vb) return -1*mult; if (va > vb) return 1*mult; return 0;
     });
 }
 
-function updateDiaryStorage() { localStorage.setItem('diaryEntries', JSON.stringify(window.diaryEntries)); }
-
 function addDiaryEntry(description, date, category) {
     const entry = {
         id: Date.now(),
-        description: description.replace(/\n/g, '<br>'),
+        description: description, // Store RAW text (XSS Safe)
         date: new Date(date).toISOString(),
-        category: category
+        category: category,
+        deleted: false,
+        lastModified: new Date().toISOString()
     };
     window.diaryEntries.push(entry);
-    updateDiaryStorage();
-    drawDiary();
-    if (typeof updateHeaderStats === 'function') updateHeaderStats();
+    window.notifyChange('diary');
+    
+    // Refresh UI filters
+    addCategoryFilter(); 
+    applyDiaryFilters(); 
 }
 
-window.drawDiary = function(entries = window.diaryEntries) {
-    const sorted = getSortedDiaryEntries(entries);
+// --- RENDERING ---
+
+window.drawDiary = function(entries) {
+    // If no specific filtered list is passed, use the full sorted global list
+    const listToDraw = entries || getSortedDiaryEntries(window.diaryEntries);
+    
     const diaryList = document.getElementById('diaryList');
     diaryList.innerHTML = '';
     
@@ -51,16 +56,43 @@ window.drawDiary = function(entries = window.diaryEntries) {
         <div class="diary-header">Delete</div>
     `;
 
-    sorted.forEach(entry => {
+    listToDraw.forEach(entry => {
         const date = new Date(entry.date);
-        table.innerHTML += `
-            <div class="diary-cell">${date.toLocaleDateString('fi-FI')}</div>
-            <div class="diary-cell">${entry.category}</div>
-            <div class="diary-cell">${entry.description}</div>
-            <div class="diary-cell"><button onclick="editDiaryEntry(${entry.id})" class="btn-edit">Edit</button></div>
-            <div class="diary-cell"><button onclick="deleteDiaryEntry(${entry.id})" class="btn-delete">Delete</button></div>
-        `;
+        
+        // Date
+        table.appendChild(window.createElementWithText('div', date.toLocaleDateString('fi-FI'), 'diary-cell'));
+        
+        // Category
+        table.appendChild(window.createElementWithText('div', entry.category, 'diary-cell'));
+        
+        // Description (XSS Safe + Newlines)
+        const descCell = document.createElement('div');
+        descCell.className = 'diary-cell';
+        descCell.style.whiteSpace = 'pre-wrap'; // CSS handles newlines
+        descCell.textContent = entry.description;
+        table.appendChild(descCell);
+        
+        // Edit
+        const editCell = document.createElement('div');
+        editCell.className = 'diary-cell';
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-edit';
+        editBtn.textContent = 'Edit';
+        editBtn.onclick = () => editDiaryEntry(entry.id);
+        editCell.appendChild(editBtn);
+        table.appendChild(editCell);
+
+        // Delete
+        const delCell = document.createElement('div');
+        delCell.className = 'diary-cell';
+        const delBtn = document.createElement('button');
+        delBtn.className = 'btn-delete';
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => deleteDiaryEntry(entry.id);
+        delCell.appendChild(delBtn);
+        table.appendChild(delCell);
     });
+    
     diaryList.appendChild(table);
     
     // Sort Headers
@@ -70,17 +102,18 @@ window.drawDiary = function(entries = window.diaryEntries) {
              const key = h.getAttribute('data-key');
              if (diarySort.key === key) diarySort.dir = (diarySort.dir === 'asc' ? 'desc' : 'asc');
              else { diarySort.key = key; diarySort.dir = (key === 'date' ? 'desc' : 'asc'); }
-             drawDiary();
+             applyDiaryFilters(); // Redraw with sort
         });
     });
 }
 
-// Logic
+// --- CRUD LOGIC ---
+
 let editingDiaryId = null;
 window.editDiaryEntry = function(id) {
     const entry = window.diaryEntries.find(item => item.id === id);
     if (entry) {
-        document.getElementById('diaryInput').value = entry.description.replace(/<br>/g, '\n');
+        document.getElementById('diaryInput').value = entry.description; // Raw text
         document.getElementById('diaryDate').value = new Date(entry.date).toISOString().split('T')[0];
         document.getElementById('diaryCategory').value = entry.category;
         
@@ -91,17 +124,23 @@ window.editDiaryEntry = function(id) {
 }
 
 window.deleteDiaryEntry = function(id) {
-    window.diaryEntries = window.diaryEntries.filter(item => item.id !== id);
-    updateDiaryStorage();
-    drawDiary();
+    const entry = window.diaryEntries.find(item => item.id === id);
+    if(entry && confirm("Delete entry?")) {
+        window.touchItem(entry);
+        entry.deleted = true; // Soft delete
+        window.notifyChange('diary');
+        applyDiaryFilters();
+    }
 }
 
-// Menu & Filters
+// --- FILTERS & SEARCH (Restored) ---
+
 function addCategoryFilter() {
     const existingFilter = document.querySelector('.diary-filter');
     if (existingFilter) existingFilter.remove();
 
     const defaultCategories = ["Life Event", "Purchase", "Item placement", "Data location change"];
+    // Get used categories from non-deleted entries
     const usedCategories = [...new Set(getSortedDiaryEntries(window.diaryEntries).map(entry => entry.category))];
     const allCategories = [...new Set([...defaultCategories, ...usedCategories])].filter(category => category);
         
@@ -112,7 +151,9 @@ function addCategoryFilter() {
         <select id="categoryFilter"><option value="all">All Categories</option>${allCategories.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
     `;
     
-    document.getElementById('diaryList').before(filterContainer);
+    const list = document.getElementById('diaryList');
+    if(list) list.before(filterContainer);
+    
     document.getElementById('categoryFilter').addEventListener('change', applyDiaryFilters);
 }
 
@@ -122,7 +163,9 @@ function addSearchFilter() {
     const searchContainer = document.createElement('div');
     searchContainer.className = 'diary-search';
     searchContainer.innerHTML = `<input type="text" id="diarySearch" placeholder="Search diary entries..."><button class="clear-search">×</button>`;
-    document.getElementById('diaryList').before(searchContainer);
+    
+    const list = document.getElementById('diaryList');
+    if(list) list.before(searchContainer);
     
     document.getElementById('diarySearch').addEventListener('input', applyDiaryFilters);
     document.querySelector('.clear-search').addEventListener('click', function() {
@@ -135,15 +178,23 @@ function applyDiaryFilters() {
     const searchTerm = document.getElementById('diarySearch')?.value.toLowerCase() || '';
     const selectedCategory = document.getElementById('categoryFilter')?.value || 'all';
     
-    const filteredEntries = window.diaryEntries.filter(entry => {
+    // 1. Get Base Sorted List (ignoring deleted)
+    let entries = getSortedDiaryEntries(window.diaryEntries);
+
+    // 2. Apply Filters
+    const filteredEntries = entries.filter(entry => {
         const matchesSearch = entry.description.toLowerCase().includes(searchTerm) ||
             new Date(entry.date).toLocaleDateString().includes(searchTerm) ||
-            entry.category.toLowerCase().includes(searchTerm);
+            (entry.category && entry.category.toLowerCase().includes(searchTerm));
         const matchesCategory = selectedCategory === 'all' || entry.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
+
     drawDiary(filteredEntries);
 }
+
+
+// --- MENU (Restored) ---
 
 function createDiaryMenu() {
     const menu = document.querySelector('.menu');
@@ -158,7 +209,7 @@ function createDiaryMenu() {
         <li><a href="#" id="restoreBtn">Restore</a></li>
         <li><input type="file" id="uploadDiaryInput" style="display: none" /></li>
         <li>
-            <a href="${wpAppData.login_url}">Login / Register</a> 
+            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">Login / Register</a> 
             <span class="note" style="margin-left:5px; font-size:0.8em; opacity:0.7;">(if you want cloud sync)</span>
         </li>
         `;
@@ -168,6 +219,8 @@ function createDiaryMenu() {
         document.getElementById('clearDiaryBtn').addEventListener('click', clearDiaryData);
         document.getElementById('backupBtn').addEventListener('click', handleBackup);
         document.getElementById('restoreBtn').addEventListener('click', handleRestore);
+        
+        // Specific Copy Handlers
         document.getElementById('copyLifeEventsBtn').addEventListener('click', () => copyEntriesByCategory('Life Event'));
         document.getElementById('copyPurchasesBtn').addEventListener('click', () => copyEntriesByCategory('Purchase'));
         document.getElementById('copyItemPlacementsBtn').addEventListener('click', () => copyEntriesByCategory('Item placement'));
@@ -199,11 +252,17 @@ function exportDiaryText() {
 
 function clearDiaryData() {
     if (confirm('Are you sure you want to delete all diary entries?')) {
-        window.diaryEntries = [];
-        updateDiaryStorage();
-        drawDiary();
+        // Soft Delete All
+        window.diaryEntries.forEach(e => {
+            window.touchItem(e);
+            e.deleted = true;
+        });
+        window.notifyChange('diary');
+        applyDiaryFilters();
     }
 }
+
+// --- FORM HANDLING ---
 
 const dForm = document.getElementById('diaryForm');
 if(dForm) {
@@ -218,14 +277,17 @@ if(dForm) {
           if(editingDiaryId) {
              let idx = window.diaryEntries.findIndex(e => e.id === editingDiaryId);
              if(idx > -1) {
-                 window.diaryEntries[idx].description = description.replace(/\n/g, '<br>');
+                 window.touchItem(window.diaryEntries[idx]);
+                 window.diaryEntries[idx].description = description;
                  window.diaryEntries[idx].date = new Date(date).toISOString();
                  window.diaryEntries[idx].category = category;
              }
              editingDiaryId = null;
              dForm.querySelector('button[type="submit"]').textContent = 'Add Entry';
-             updateDiaryStorage();
-             drawDiary();
+             window.notifyChange('diary');
+             // Re-apply filters to show update
+             addCategoryFilter(); 
+             applyDiaryFilters();
           } else {
              addDiaryEntry(description, date, category);
           }
@@ -237,9 +299,7 @@ if(dForm) {
 // Main Switcher
 if(window.diaryBtn) {
     window.diaryBtn.addEventListener("click", function () {
-        if (typeof window.refreshFromCloud === 'function') {
-            window.refreshFromCloud();
-        }
+        if(window.appSync) window.appSync.triggerSync();
         window.diaryBtn.classList.remove('inactive');
         window.todoBtn.classList.add('inactive');
         window.worktimeBtn.classList.add('inactive');
@@ -252,6 +312,6 @@ if(window.diaryBtn) {
         createDiaryMenu();
         addCategoryFilter();
         addSearchFilter();
-        drawDiary();
+        applyDiaryFilters();
     });
 }

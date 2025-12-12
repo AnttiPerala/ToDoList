@@ -1,12 +1,9 @@
-
-// --- GLOBAL DATA STORAGE (Connected to LocalStorage/Server) ---
-// Using window.* to allow other files to see these arrays
+// --- GLOBAL DATA STORAGE ---
 window.todos = JSON.parse(localStorage.getItem('todos')) || [];
 window.worktimes = JSON.parse(localStorage.getItem('worktimes')) || [];
 window.diaryEntries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
 
 // --- GLOBAL DOM ELEMENTS ---
-// Defined here to prevent re-declaration errors in other files
 window.todoBtn = document.getElementById("btnTodoMode");
 window.worktimeBtn = document.getElementById("btnWorktimeMode");
 window.diaryBtn = document.getElementById("btnDiaryMode");
@@ -14,79 +11,93 @@ window.todoContainer = document.getElementById("todoModeWrap");
 window.worktimeContainer = document.getElementById("worktimeModeWrap");
 window.diaryContainer = document.getElementById("diaryModeWrap");
 
-// --- DATA NORMALIZATION (Fix Dates on Load) ---
-window.todos = window.todos.map(todo => {
-    if (todo.deadline) todo.deadline = new Date(todo.deadline);
-    if (!('timeAdded' in todo) || !todo.timeAdded) {
-        const idNum = Number(todo.id);
-        todo.timeAdded = (!Number.isNaN(idNum) && idNum > 0) ? new Date(idNum).toISOString().split('.')[0] : "unknown";
-    }
-    if (!('timeDone' in todo)) todo.timeDone = todo.done ? new Date().toISOString().split('.')[0] : "";
-    return todo;
-});
+// --- DATA NORMALIZATION & MIGRATION ---
+function normalizeData(list) {
+    // FIX: Use 1970 as default for legacy items so server updates overwrite them
+    const legacyDate = new Date(0).toISOString(); 
+    
+    return list.map(item => {
+        if (!item.id) item.id = Date.now() + Math.random(); 
+        
+        // CRITICAL FIX: If missing timestamp, treat as very old
+        if (!item.lastModified) item.lastModified = legacyDate;
+        
+        if (typeof item.deleted === 'undefined') item.deleted = false;
+        
+        // Type fixing
+        if (item.deadline) item.deadline = new Date(item.deadline);
+        if (item.start) item.start = new Date(item.start);
+        if (item.end) item.end = new Date(item.end);
+        
+        return item;
+    });
+}
 
-window.worktimes = window.worktimes.map(worktime => ({
-    ...worktime,
-    start: new Date(worktime.start),
-    end: new Date(worktime.end)
-}));
+// Initial Normalization
+window.todos = normalizeData(window.todos);
+window.worktimes = normalizeData(window.worktimes);
+window.diaryEntries = normalizeData(window.diaryEntries);
+
+// --- STATE MANAGEMENT ---
+window.notifyChange = function(type) {
+    if (type === 'todos' || type === 'all') localStorage.setItem('todos', JSON.stringify(window.todos));
+    if (type === 'worktimes' || type === 'all') localStorage.setItem('worktimes', JSON.stringify(window.worktimes));
+    if (type === 'diary' || type === 'all') localStorage.setItem('diaryEntries', JSON.stringify(window.diaryEntries));
+
+    if (window.appSync && typeof window.appSync.triggerSync === 'function') {
+        window.appSync.triggerSync();
+    }
+    
+    if (typeof updateHeaderStats === 'function') updateHeaderStats();
+};
+
+window.touchItem = function(item) {
+    item.lastModified = new Date().toISOString();
+    return item;
+};
 
 // --- HELPERS ---
 
-// Helper function to update UI across all modules
 window.refreshAppUI = function() {
     if (typeof drawTodos === 'function') drawTodos();
     if (typeof drawWorktimes === 'function') {
         const pf = document.getElementById('projectFilter');
-        drawWorktimes('thisMonth', pf ? pf.value : 'All projects');
+        const activeBtn = document.querySelector('.worktime-filters button.active');
+        const period = activeBtn ? activeBtn.dataset.period : 'thisMonth';
+        drawWorktimes(period, pf ? pf.value : 'All projects');
     }
     if (typeof drawDiary === 'function') drawDiary();
     if (typeof updateHeaderStats === 'function') updateHeaderStats();
 };
 
-function hexToRgb(hex) {
-    let bigint = parseInt(hex.slice(1), 16);
-    let r = (bigint >> 16) & 255;
-    let g = (bigint >> 8) & 255;
-    let b = bigint & 255;
-    return [r, g, b];
-}
-
-function formatDateToDateTimeLocal(date) {
-    let parsedDate = new Date(date);
-    if (isNaN(parsedDate.getTime())) return "";
-    return parsedDate.toISOString().split('.')[0];
-}
+window.createElementWithText = function(tag, text, className) {
+    const el = document.createElement(tag);
+    el.textContent = text || '';
+    if (className) el.className = className;
+    return el;
+};
 
 function formatDateTimeForDisplay(isoString) {
     if (!isoString) return "";
     const dateObj = new Date(isoString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    if(isNaN(dateObj.getTime())) return "";
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
     return dateObj.toLocaleString(undefined, options);
 }
 
-function isToday(date) {
-    let parsedDate;
-    if (!date) return false;
-    if (typeof date === 'string') parsedDate = new Date(date);
-    else if (date instanceof Date) parsedDate = date;
-    else return false;
+// --- BACKUP / RESTORE ---
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    parsedDate.setHours(0, 0, 0, 0);
-    return parsedDate.getTime() === today.getTime();
-}
-
-// Global Backup/Restore (Modified to update Globals)
 function handleBackup() {
+    const cleanTodos = window.todos.filter(x => !x.deleted);
+    const cleanWork = window.worktimes.filter(x => !x.deleted);
+    const cleanDiary = window.diaryEntries.filter(x => !x.deleted);
+
     const dataToExport = {
-        todos: window.todos,
-        worktimes: window.worktimes,
-        diaryEntries: window.diaryEntries
+        todos: cleanTodos,
+        worktimes: cleanWork,
+        diaryEntries: cleanDiary
     };
-    const dataStr = JSON.stringify(dataToExport);
-    const blob = new Blob([dataStr], {type: 'application/json'});
+    const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {type: 'application/json'});
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -117,15 +128,12 @@ function handleFileUpload(e) {
     reader.onload = function(e) {
         try {
             let json = JSON.parse(e.target.result);
-            if (json.todos && json.worktimes && json.diaryEntries) {
-                window.todos = json.todos.map(t => { if(t.deadline) t.deadline = new Date(t.deadline); return t; });
-                window.worktimes = json.worktimes.map(w => ({...w, start: new Date(w.start), end: new Date(w.end)}));
-                window.diaryEntries = json.diaryEntries;
+            if (json.todos || json.worktimes || json.diaryEntries) {
+                if(json.todos) window.todos = normalizeData(json.todos);
+                if(json.worktimes) window.worktimes = normalizeData(json.worktimes);
+                if(json.diaryEntries) window.diaryEntries = normalizeData(json.diaryEntries);
 
-                localStorage.setItem('todos', JSON.stringify(window.todos));
-                localStorage.setItem('worktimes', JSON.stringify(window.worktimes));
-                localStorage.setItem('diaryEntries', JSON.stringify(window.diaryEntries));
-
+                window.notifyChange('all');
                 window.refreshAppUI();
                 alert("Data restored!");
             }
@@ -134,36 +142,35 @@ function handleFileUpload(e) {
     reader.readAsText(file);
 }
 
-// Update Header Stats
 window.updateHeaderStats = function() {
     const el = document.getElementById('todo-stats');
     if (!el) return;
+    
     const isVisible = (node) => {
         if (!node) return false;
         const cs = window.getComputedStyle(node);
-        if (cs.display === 'none' || cs.visibility === 'hidden' || cs.opacity === '0') return false;
-        return (node.offsetWidth + node.offsetHeight) > 0;
+        return cs.display !== 'none' && cs.visibility !== 'hidden';
     };
+
     if (isVisible(window.worktimeContainer)) {
-        const n = window.worktimes ? window.worktimes.length : 0;
+        const n = window.worktimes ? window.worktimes.filter(t => !t.deleted).length : 0;
         el.textContent = `total of ${n} worktimes recorded`;
         return;
     }
     if (isVisible(window.diaryContainer)) {
-        const n = window.diaryEntries ? window.diaryEntries.length : 0;
+        const n = window.diaryEntries ? window.diaryEntries.filter(t => !t.deleted).length : 0;
         el.textContent = `${n} diary entries written`;
         return;
     }
-    const total = window.todos ? window.todos.length : 0;
-    const completed = window.todos ? window.todos.filter(t => t && t.done).length : 0;
+    const activeTodos = window.todos ? window.todos.filter(t => !t.deleted) : [];
+    const total = activeTodos.length;
+    const completed = activeTodos.filter(t => t.done).length;
     el.textContent = `${Math.max(0, total - completed)} todos to do, ${completed} todos completed`;
 }
 
-function setupStatsObservers() {
-    window.addEventListener('storage', window.updateHeaderStats);
+window.addEventListener('load', () => {
     window.updateHeaderStats();
     if(document.getElementById('mainTitle')) {
         document.getElementById('mainTitle').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
-}
-window.addEventListener('load', setupStatsObservers);
+});

@@ -1,186 +1,160 @@
 (function() {
     const statusEl = document.getElementById('syncStatus');
-    const isLoggedIn = wpAppData.is_logged_in; // Passed from PHP
+    const isLoggedIn = typeof wpAppData !== 'undefined' && wpAppData.is_logged_in;
+    
+    let isDirty = false;
+    let syncTimer = null;
 
-    console.log('[SYNC] sync.js loaded. isLoggedIn =', isLoggedIn);
-
-    function showStatus(msg) {
-        if (statusEl) statusEl.textContent = msg;
-        console.log('[SYNC][STATUS]', msg);
+    // --- UTILS ---
+    function showStatus(msg, color) {
+        if (!statusEl) return;
+        statusEl.textContent = msg;
+        if(color) statusEl.style.color = color;
+        else statusEl.style.color = ''; 
     }
 
-    // --- SETUP STATUS BUTTON UI ---
     if (statusEl) {
-        // 1. Tooltip Hover Text
-        statusEl.title = "If you don't have an account data, data is saved to your browsers local storage. Create an account by clicking here if you want cloud sync";
-        
-        // 2. Click behavior
+        statusEl.title = isLoggedIn ? "Syncing with Cloud" : "Saved Locally (Click to Login)";
         statusEl.style.cursor = 'pointer';
         statusEl.addEventListener('click', () => {
-            console.log('[SYNC] syncStatus clicked, redirecting to login_url:', wpAppData.login_url);
-            window.location.href = wpAppData.login_url;
+            if (!isLoggedIn && wpAppData.login_url) window.location.href = wpAppData.login_url;
+            else pullData(); 
         });
-
-        // 3. Initial text
-        if (!isLoggedIn) {
-            statusEl.textContent = "Saved Locally (Not logged in)";
-            statusEl.style.backgroundColor = "rgba(255, 200, 200, 0.8)"; // slight red tint to indicate no sync
-            console.log('[SYNC] Not logged in, using local-only mode.');
-        }
+        if(!isLoggedIn) showStatus("Saved Locally", "gray");
     }
 
-    // --- LOCAL SNAPSHOT + GUARD FLAGS ---
-    // We track last stored JSON strings so we can see when something *actually* changes.
-    const watchedKeys = ['todos', 'worktimes', 'diaryEntries'];
+    // --- DEBUG MERGE LOGIC ---
+    function mergeArrays(localArray, serverArray, typeName) {
+        console.groupCollapsed(`[SYNC] Merging ${typeName} (${serverArray.length} server items vs ${localArray.length} local)`);
+        
+        const map = new Map();
+        
+        // 1. Load Local
+        localArray.forEach(item => map.set(item.id, item));
 
-    let lastSnapshots = {
-        todos: localStorage.getItem('todos') || '[]',
-        worktimes: localStorage.getItem('worktimes') || '[]',
-        diaryEntries: localStorage.getItem('diaryEntries') || '[]'
-    };
+        // 2. Compare Server
+        let updates = 0;
+        let conflicts = 0;
+        let localWins = 0;
 
-    let isApplyingServerData = false;
+        serverArray.forEach(serverItem => {
+            const localItem = map.get(serverItem.id);
+            
+            if (!localItem) {
+                // New from server
+                map.set(serverItem.id, serverItem);
+                updates++;
+                console.log(`[SYNC] New Item from Server: ${serverItem.id}`);
+            } else {
+                // Conflict Resolution
+                const serverTimeStr = serverItem.lastModified || "1970-01-01T00:00:00.000Z";
+                const localTimeStr = localItem.lastModified || "1970-01-01T00:00:00.000Z";
+                
+                const serverTime = new Date(serverTimeStr).getTime();
+                const localTime = new Date(localTimeStr).getTime();
+                const timeDiff = serverTime - localTime;
 
-    function logSnapshot(label) {
-        try {
-            console.log('[SYNC][SNAPSHOT]', label, {
-                todosLen: (lastSnapshots.todos || '').length,
-                worktimesLen: (lastSnapshots.worktimes || '').length,
-                diaryEntriesLen: (lastSnapshots.diaryEntries || '').length
-            });
-        } catch (e) {
-            console.warn('[SYNC][SNAPSHOT] log error', e);
-        }
-    }
+                // Log the conflict details
+                // Only log if they are semantically different (e.g. Done status changed)
+                const isSemanticallyDifferent = JSON.stringify(serverItem) !== JSON.stringify(localItem);
 
-    function updateSnapshotsFromLocalStorage() {
-        watchedKeys.forEach(key => {
-            try {
-                lastSnapshots[key] = localStorage.getItem(key) || '[]';
-            } catch (e) {
-                console.warn('[SYNC] Failed to read localStorage for key', key, e);
+                if (serverTime > localTime) {
+                    // Server Wins
+                    map.set(serverItem.id, serverItem);
+                    updates++;
+                    console.log(`[SYNC][WIN:SERVER] ID: ${serverItem.id} | Server (${serverTimeStr}) is newer than Local (${localTimeStr}). Diff: ${timeDiff/1000}s`);
+                } else if (serverTime < localTime) {
+                    // Local Wins
+                    localWins++;
+                    isDirty = true; // We have data the server doesn't have
+                    if(isSemanticallyDifferent) {
+                        console.warn(`[SYNC][WIN:LOCAL] ID: ${serverItem.id} | Local (${localTimeStr}) is newer than Server (${serverTimeStr}). Keeping Local. Diff: ${Math.abs(timeDiff/1000)}s`);
+                    }
+                } else {
+                    // Equal timestamps
+                    if(isSemanticallyDifferent) {
+                        // Timestamps equal but data different? Prefer server to force consistency
+                        console.warn(`[SYNC][TIE] ID: ${serverItem.id} | Timestamps identical but content differs. Preferring Server.`);
+                        map.set(serverItem.id, serverItem);
+                        updates++;
+                    }
+                }
             }
         });
-        logSnapshot('updated from localStorage');
+
+        console.log(`[SYNC] Merge Complete: ${updates} accepted from server, ${localWins} kept from local.`);
+        console.groupEnd();
+        return Array.from(map.values());
     }
 
-    logSnapshot('initial');
+    // --- SYNC FUNCTIONS ---
 
-    // --- PULL Data from Server ---
-    function pullData(reason) {
-        if (!reason) reason = 'unspecified';
-        console.log('[SYNC] pullData() called. reason =', reason, 'isLoggedIn =', isLoggedIn);
-
-        if (!isLoggedIn) {
-            console.log('[SYNC] Not logged in, skipping server pull. Just refreshing UI from localStorage.');
-            if (typeof window.refreshAppUI === 'function') {
-                window.refreshAppUI();
-            }
-            return;
-        }
-
+    function pullData() {
+        if (!isLoggedIn) return;
         showStatus('Syncing...');
 
-        fetch(wpAppData.root + 'todo-app/v1/sync', {
+        // Anti-cache param
+        const url = wpAppData.root + 'todo-app/v1/sync?t=' + Date.now();
+
+        fetch(url, {
             method: 'GET',
-            headers: { 'X-WP-Nonce': wpAppData.nonce }
+            headers: { 
+                'X-WP-Nonce': wpAppData.nonce,
+                'Cache-Control': 'no-store'
+            }
         })
-        .then(response => {
-            console.log('[SYNC] pullData() fetch completed. HTTP status =', response.status);
-            return response.json();
+        .then(res => {
+            console.log(`[SYNC] Pull HTTP Status: ${res.status}`);
+            return res.json();
         })
         .then(data => {
-            console.log('[SYNC] pullData() received data from server:', {
-                todosCount: data.todos ? data.todos.length : 0,
-                worktimesCount: data.worktimes ? data.worktimes.length : 0,
-                diaryEntriesCount: data.diaryEntries ? data.diaryEntries.length : 0
-            });
+            let changed = false;
 
-            // Replace in-memory arrays
-            if (data.todos) window.todos = data.todos;
-            if (data.worktimes) window.worktimes = data.worktimes;
-            if (data.diaryEntries) window.diaryEntries = data.diaryEntries;
-
-            // Fix Dates
-            if (window.todos) {
-                window.todos.forEach(t => {
-                    if (t.deadline) t.deadline = new Date(t.deadline);
-                });
+            if (data.todos) {
+                window.todos = mergeArrays(window.todos, data.todos, "Todos");
+                changed = true;
             }
-            if (window.worktimes) {
-                window.worktimes.forEach(w => {
-                    w.start = new Date(w.start);
-                    w.end = new Date(w.end);
-                });
+            if (data.worktimes) {
+                window.worktimes = mergeArrays(window.worktimes, data.worktimes, "Worktimes");
+                changed = true;
+            }
+            if (data.diaryEntries) {
+                window.diaryEntries = mergeArrays(window.diaryEntries, data.diaryEntries, "Diary");
+                changed = true;
             }
 
-            console.log('[SYNC] Applying server data to localStorage (guard isApplyingServerData = true).');
-            isApplyingServerData = true;
-            try {
-                localStorage.setItem('todos', JSON.stringify(window.todos || []));
-                localStorage.setItem('worktimes', JSON.stringify(window.worktimes || []));
-                localStorage.setItem('diaryEntries', JSON.stringify(window.diaryEntries || []));
-            } finally {
-                isApplyingServerData = false;
-                console.log('[SYNC] Finished applying server data (isApplyingServerData reset to false).');
-            }
+            if (changed) {
+                // Re-hydrate dates
+                window.todos.forEach(t => { if(t.deadline) t.deadline = new Date(t.deadline); });
+                window.worktimes.forEach(w => { w.start = new Date(w.start); w.end = new Date(w.end); });
 
-            updateSnapshotsFromLocalStorage();
-
-            if (typeof window.refreshAppUI === 'function') {
-                console.log('[SYNC] Calling window.refreshAppUI() after pullData().');
+                // Save to LS
+                localStorage.setItem('todos', JSON.stringify(window.todos));
+                localStorage.setItem('worktimes', JSON.stringify(window.worktimes));
+                localStorage.setItem('diaryEntries', JSON.stringify(window.diaryEntries));
+                
                 window.refreshAppUI();
+                showStatus('Synced');
             }
-            showStatus('Synced to Cloud');
         })
         .catch(err => {
-            console.error('[SYNC] pullData() error:', err);
-            showStatus('Sync Error (Offline)');
+            console.error('[SYNC] Pull Failed:', err);
+            showStatus('Offline', 'red');
         });
     }
 
-    // Expose for todo.js/worktime.js/diary.js
-    window.refreshFromCloud = function(reason) {
-        console.log('[SYNC] window.refreshFromCloud() called. reason =', reason || 'manual');
-        try {
-            pullData(reason || 'refreshFromCloud');
-        } catch (e) {
-            console.error('[SYNC] refreshFromCloud error:', e);
-        }
-    };
+    function pushData() {
+        if (!isLoggedIn) return;
+        if (!isDirty) return;
 
-    // --- PUSH Data on Change ---
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    const pushData = debounce(() => {
-        console.log('[SYNC] pushData() debounced function executing. isLoggedIn =', isLoggedIn);
-
-        // If not logged in, localStorage is already updated,
-        // we just show a helpful status.
-        if (!isLoggedIn) {
-            showStatus('Saved Locally');
-            return;
-        }
+        showStatus('Saving...');
+        console.log('[SYNC] Pushing data to server...');
 
         const payload = {
-            todos: window.todos || [],
-            worktimes: window.worktimes || [],
-            diaryEntries: window.diaryEntries || []
+            todos: window.todos,
+            worktimes: window.worktimes,
+            diaryEntries: window.diaryEntries
         };
-
-        console.log('[SYNC] pushData() sending payload to server:', {
-            todosCount: payload.todos.length,
-            worktimesCount: payload.worktimes.length,
-            diaryEntriesCount: payload.diaryEntries.length
-        });
-
-        showStatus('Saving to Cloud...');
 
         fetch(wpAppData.root + 'todo-app/v1/sync', {
             method: 'POST',
@@ -190,89 +164,54 @@
             },
             body: JSON.stringify(payload)
         })
-        .then(response => {
-            console.log('[SYNC] pushData() fetch completed. HTTP status =', response.status);
-            return response.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            console.log('[SYNC] pushData() server response JSON:', data);
+            console.log('[SYNC] Push successful. Server Response:', data);
+            isDirty = false;
             showStatus('Saved to Cloud');
-            updateSnapshotsFromLocalStorage();
         })
         .catch(err => {
-            console.error('[SYNC] pushData() error:', err);
-            showStatus('Save Failed');
+            console.error('[SYNC] Push Error:', err);
+            showStatus('Save Failed (Retrying)', 'orange');
         });
-    }, 2000);
+    }
 
-    // --- Intercept localStorage.setItem to trigger Sync/UI update ---
-    const originalSetItem = localStorage.setItem.bind(localStorage);
-
-    localStorage.setItem = function(key, value) {
-        // Log ALL setItem calls first
-        try {
-            console.log('[SYNC][LS] localStorage.setItem called:', {
-                key,
-                valuePreview: (typeof value === 'string' ? value.slice(0, 80) : String(value).slice(0, 80)),
-                isApplyingServerData
-            });
-            // If you want full stack traces for weird writes, temporarily uncomment:
-            // console.trace('[SYNC][LS] Trace for setItem key', key);
-        } catch (e) {
-            console.warn('[SYNC][LS] logging error', e);
+    // --- API ---
+    window.appSync = {
+        triggerSync: function() {
+            isDirty = true;
+            showStatus('Unsaved Changes...', '#888');
+            console.log('[SYNC] Local change detected. Scheduling push...');
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(pushData, 2000);
         }
-
-        originalSetItem.apply(this, arguments);
-
-        // Ignore writes that come from applying server data (pullData)
-        if (isApplyingServerData) {
-            console.log('[SYNC][LS] Ignoring setItem for key', key, 'because isApplyingServerData = true.');
-            return;
-        }
-
-        if (!watchedKeys.includes(key)) {
-            // Not one of the synced keys
-            return;
-        }
-
-        const newVal = String(value);
-        const prevVal = lastSnapshots[key];
-
-        console.log('[SYNC][LS] Watched key set:', {
-            key,
-            prevLen: prevVal ? prevVal.length : 0,
-            newLen: newVal.length,
-            changed: prevVal !== newVal
-        });
-
-        if (prevVal === newVal) {
-            console.log('[SYNC][LS] Value did not change for key', key, '- NOT triggering pushData().');
-            return;
-        }
-
-        // Record new snapshot and trigger push
-        lastSnapshots[key] = newVal;
-        console.log('[SYNC][LS] Value changed for key', key, '- scheduling pushData().');
-        pushData();
     };
 
-    // --- Auto-pull when tab becomes visible again ---
-    document.addEventListener('visibilitychange', function() {
-        console.log('[SYNC][PAGE] visibilitychange:', document.visibilityState);
+    // --- INIT ---
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('[SYNC] Initializing...');
+        pullData();
+    });
+    
+    document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            pullData('visibilitychange');
+            console.log('[SYNC] Tab visible, pulling...');
+            pullData();
+        }
+    });
+    
+    window.addEventListener('focus', () => {
+         console.log('[SYNC] Window focused, pulling...');
+         pullData();
+    });
+
+    // Beacon for close
+    window.addEventListener('beforeunload', () => {
+        if (isLoggedIn && isDirty) {
+            const payload = { todos: window.todos, worktimes: window.worktimes, diaryEntries: window.diaryEntries };
+            const blob = new Blob([JSON.stringify(payload)], {type: 'application/json'});
+            navigator.sendBeacon(wpAppData.root + 'todo-app/v1/sync', blob);
         }
     });
 
-    // --- Auto-pull when window gains focus (desktop) ---
-    window.addEventListener('focus', function() {
-        console.log('[SYNC][PAGE] window focus event fired.');
-        pullData('window-focus');
-    });
-
-    // Initial pull on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('[SYNC][PAGE] DOMContentLoaded, calling pullData().');
-        pullData('DOMContentLoaded');
-    });
 })();
