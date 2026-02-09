@@ -1,16 +1,20 @@
 
-function applyPreferredSorting() {
+// Expose as the implementation that todo.js expects:
+window.applyPreferredSortingImpl = function applyPreferredSortingImpl() {
     const sortingMethod = localStorage.getItem('preferredSorting') || 'points';
-    switch(sortingMethod) {
-        case 'points': sortByPoints(); break;
+
+    switch (sortingMethod) {
+        case 'points':   sortByPoints(); break;
         case 'alphabet': sortAlphabetically(); break;
-        case 'color': sortByColor(); break;
+        case 'color':    sortByColor(); break;
         case 'deadline': sortByDeadline(); break;
         case 'timeAdded': sortByTimeAdded(); break;
-        case 'timeDone': sortByTimeDone(); break;
-        default: sortByPoints(); break;
+        case 'timeDone':  sortByTimeDone(); break;
+        default:         sortByPoints(); break;
     }
-}
+};
+
+
 function sortByPoints() {
     window.todos.sort((a, b) => {
         if (a.done && !b.done) return 1; if (b.done && !a.done) return -1;
