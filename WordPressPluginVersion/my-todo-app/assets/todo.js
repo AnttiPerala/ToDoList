@@ -513,17 +513,22 @@ document.addEventListener('click', function(event) {
 // Options Toggle
 document.querySelector('.collapsible-btn')?.addEventListener('click', function() {
     const content = document.querySelector('.collapsible-content');
+    if (!content) return;
     content.style.display = (content.style.display === 'none' || content.style.display === '') ? 'grid' : 'none';
 });
 
-// Additional Details toggle
-document.querySelector('.addDetails')?.addEventListener('click', () => {
-    if (!document.querySelector('.detailsTextarea')){ 
-        let textarea = document.createElement('textarea');
-        textarea.name = "todoDetails"; 
-        textarea.placeholder = "Enter additional details...";
+// Additional Details toggle (delegate so it always works)
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.addDetails');
+    if (!btn) return;
+    const container = document.getElementById('detailsContainer');
+    if (!container) return;
+    if (!container.querySelector('.detailsTextarea')) {
+        const textarea = document.createElement('textarea');
+        textarea.name = 'todoDetails';
+        textarea.placeholder = 'Enter additional details...';
         textarea.classList.add('detailsTextarea');
-        document.getElementById('detailsContainer').appendChild(textarea); 
+        container.appendChild(textarea);
     }
 });
 

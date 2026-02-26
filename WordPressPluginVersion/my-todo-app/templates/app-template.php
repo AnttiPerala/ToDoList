@@ -61,16 +61,16 @@
           <div class="dropdown">
             <label for="categorySelect">Category:</label>
             <select id="categorySelect">
-              <option value="none">None</option>
-              <option value="personal">Personal</option>
-              <option value="work">Work</option>
-              <option value="software">Software</option>
-              <option value="school">School</option>
-              <option value="groceries">Groceries</option>
-              <option value="household">Household</option>
-              <option value="entertainment">Entertainment</option>
-              <option value="children">Children</option>
-              <option value="fitness">Fitness</option>
+              <option value="none">⬜ None</option>
+              <option value="personal">👤 Personal</option>
+              <option value="work">💼 Work</option>
+              <option value="software">💻 Software</option>
+              <option value="school">🎓 School</option>
+              <option value="groceries">🛒 Groceries</option>
+              <option value="household">🏠 Household</option>
+              <option value="entertainment">🎬 Entertainment</option>
+              <option value="children">🧸 Children</option>
+              <option value="fitness">💪 Fitness</option>
             </select>
             <span class='close'>&#215;</span>
           </div>
@@ -83,7 +83,7 @@
             <div id="notificationWrap">
               <label for="notificationToggle"> Enable notifications</label>
               <input type="checkbox" id="notificationToggle" name="notificationToggle" />
-              <button id="testNotification" type="button">Test Notification</button>
+              <button id="testNotification" type="button" class="btn addDetails">Test Notification</button>
             </div>
           </div>
 
