@@ -5,7 +5,7 @@ width: 100%;
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #F4EDEC;
-    width: 100%;
+
 }
 
 
@@ -314,7 +314,7 @@ textarea:-ms-input-placeholder {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #fff;
-    padding: 20px;
+    padding: 40px;
     border-radius: 5px;
     width: 80%; /* Adjust this if you want */
     max-width: 500px; /* Adjust this if you want */
@@ -408,6 +408,16 @@ div#notificationWrap {
 .button-30:active {
   box-shadow: #D6D6E7 0 3px 7px inset;
   transform: translateY(2px);
+}
+
+/* Smaller variant for details modal buttons */
+.details-priority-actions .button-30,
+#saveDetailsBtn.button-30 {
+  height: 32px;
+  font-size: 14px;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-shadow: rgba(45, 35, 66, 0.3) 0 1px 3px, rgba(45, 35, 66, 0.2) 0 4px 8px -2px, #D6D6E7 0 -2px 0 inset;
 }
 
 /* CUSTOM CHECKBOX */
@@ -885,6 +895,18 @@ position: relative;
   gap: 2rem;
   margin-bottom: 1rem;
   padding-top: 5rem;
+}
+
+#modeSelect .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mode-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 /* Prevent closed hamburger menu from blocking clicks below it */
@@ -1367,18 +1389,7 @@ input#workDescription {
 .diary-header[aria-sort] { font-weight: 600; }
 
 
-/* Ensure modal edit textareas auto-grow visibly */
-#detailsModal textarea {
-  overflow-y: hidden;
-  resize: none;
-  height: auto;
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 3rem;
-}
-
-
-/* Strong override for modal edit fields: cancel global flex/text-area hacks */
+/* Modal edit textareas: auto-grow and cancel global flex/textarea hacks */
 #detailsModal textarea {
   display: block !important;
   align-items: initial !important;
@@ -1442,6 +1453,7 @@ input#workDescription {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
+  margin-bottom: 40px;
 }
 .detailsTable th {
   text-align: left;

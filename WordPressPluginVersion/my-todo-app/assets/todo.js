@@ -203,8 +203,14 @@ function toggleDone(id) {
     let t = window.todos.find(x => x.id === id);
     if(t) {
         window.touchItem(t);
+        const nowIso = new Date().toISOString();
         t.done = !t.done;
-        t.timeDone = t.done ? new Date().toISOString() : "";
+        if (t.done) {
+            t.timeDone = nowIso;
+        } else {
+            t.timeDone = "";
+            t.timeUndone = nowIso;
+        }
         window.notifyChange('todos');
         
         // Animation then redraw
@@ -247,6 +253,33 @@ function modifyVotes(id, delta) {
         applyPreferredSorting();
         drawTodos();
     }
+}
+
+function setPriorityInCategory(id, mode) {
+    const t = window.todos.find(x => x.id === id);
+    if (!t) return;
+    const cat = t.category || 'none';
+    const sameCat = window.todos.filter(x => !x.deleted && (x.category || 'none') === cat);
+    if (!sameCat.length) return;
+
+    const votes = sameCat.map(x => x.votes);
+    const max = Math.max(...votes);
+    const min = Math.min(...votes);
+    const avg = Math.round(votes.reduce((a, b) => a + b, 0) / votes.length) || 0;
+
+    let newVotes = t.votes;
+    if (mode === 'top') newVotes = max + 1;
+    else if (mode === 'mid') newVotes = avg;
+    else if (mode === 'bottom') newVotes = min - 1;
+
+    if (newVotes === t.votes) return;
+
+    window.touchItem(t);
+    t.votes = newVotes;
+    window.notifyChange('todos');
+    applyPreferredSorting();
+    drawTodos();
+    showDetails(id);
 }
 
 function editTodo(id) {
@@ -332,6 +365,8 @@ function showDetails(id) {
       <tr class="detailsMainText"><th>Text</th><td><span class="value"></span></td></tr>
       <tr class="detailsCategory"><th>Category</th><td><span class="value"></span></td></tr>
       <tr class="detailsVotes"><th>Votes</th><td><span class="value"></span></td></tr>
+      <tr class="detailsAdded"><th>Added</th><td><span class="value"></span></td></tr>
+      <tr class="detailsLastUndone"><th>Last revived</th><td><span class="value"></span></td></tr>
       <tr class="detailsDetails"><th>Details</th><td><span class="value"></span></td></tr>
       <tr class="detailsBgColor"><th>Color</th><td><span class="value"><code class="color-hex"></code></span></td></tr>
     </tbody></table>`;
@@ -342,8 +377,34 @@ function showDetails(id) {
     detailsText.querySelector('.detailsMainText .value').textContent = t.text;
     detailsText.querySelector('.detailsCategory .value').textContent = t.category || 'None';
     detailsText.querySelector('.detailsVotes .value').textContent = t.votes;
+    detailsText.querySelector('.detailsAdded .value').textContent = t.timeAdded ? formatDateTimeForDisplay(t.timeAdded) : 'Unknown';
+    detailsText.querySelector('.detailsLastUndone .value').textContent = t.timeUndone ? formatDateTimeForDisplay(t.timeUndone) : 'Never';
     detailsText.querySelector('.detailsDetails .value').textContent = t.details || 'None';
     detailsText.querySelector('.detailsBgColor .color-hex').textContent = t.bgColor || '';
+
+    const catLabel = t.category || 'None';
+    const actions = document.createElement('div');
+    actions.className = 'details-priority-actions';
+
+    const makeBtn = (label, mode) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'button-30';
+        b.textContent = label;
+        b.addEventListener('click', () => setPriorityInCategory(id, mode));
+        return b;
+    };
+
+    actions.appendChild(makeBtn(`▲ Make top in category: ${catLabel}`, 'top'));
+    actions.appendChild(makeBtn(`➜ Make mid in category: ${catLabel}`, 'mid'));
+    actions.appendChild(makeBtn(`▼ Make bottom in category: ${catLabel}`, 'bottom'));
+
+    actions.style.marginTop = '0.75rem';
+    actions.style.display = 'flex';
+    actions.style.flexWrap = 'wrap';
+    actions.style.gap = '0.5rem';
+
+    detailsText.appendChild(actions);
     
     modal.setAttribute('data-todo-id', id);
     modal.style.display = 'block';
@@ -372,7 +433,7 @@ if(saveDetailsBtn) {
             window.notifyChange('todos');
             drawTodos();
             showDetails(id);
-            saveDetailsBtn.textContent = "Edit Details";
+            saveDetailsBtn.textContent = "✎ Edit details";
             isEditing = false;
         } else {
             // Edit logic: replace simple spans with inputs
@@ -393,7 +454,7 @@ if(saveDetailsBtn) {
                      span.innerHTML = `<input type="number" value="${current}">`;
                 }
             });
-            saveDetailsBtn.textContent = "Save Changes";
+            saveDetailsBtn.textContent = "💾 Save changes";
             isEditing = true;
         }
     });

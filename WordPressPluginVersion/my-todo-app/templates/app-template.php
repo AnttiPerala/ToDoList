@@ -33,9 +33,18 @@
   </header>
 
   <div id="modeSelect">
-    <button id="btnTodoMode" class="btn" type="submit">To Do</button>
-    <button id="btnWorktimeMode" class="btn inactive" type="submit">Worktime</button>
-    <button id="btnDiaryMode" class="btn inactive" type="submit">Diary</button>
+    <button id="btnTodoMode" class="btn" type="submit">
+      <img src="<?php echo esc_url( plugins_url( 'assets/img/iconTodo.svg', dirname( __DIR__ ) . '/my-todo-app.php' ) ); ?>" alt="" class="mode-icon" />
+      <span>To Do</span>
+    </button>
+    <button id="btnWorktimeMode" class="btn inactive" type="submit">
+      <img src="<?php echo esc_url( plugins_url( 'assets/img/iconWorktime.svg', dirname( __DIR__ ) . '/my-todo-app.php' ) ); ?>" alt="" class="mode-icon" />
+      <span>Worktime</span>
+    </button>
+    <button id="btnDiaryMode" class="btn inactive" type="submit">
+      <img src="<?php echo esc_url( plugins_url( 'assets/img/iconDiary.svg', dirname( __DIR__ ) . '/my-todo-app.php' ) ); ?>" alt="" class="mode-icon" />
+      <span>Diary</span>
+    </button>
   </div>
 
   <div id="todoModeWrap">
@@ -128,7 +137,7 @@
         <span class="modal-close">&times;</span>
         <h2>Todo Details</h2>
         <p id="detailsText"></p>
-        <button id="saveDetailsBtn">Edit Details</button>
+        <button id="saveDetailsBtn" class="button-30">✎ Edit details</button>
       </div>
     </div>
 
