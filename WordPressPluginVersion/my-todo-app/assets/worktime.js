@@ -188,7 +188,24 @@ window.drawWorktimes = function(period = 'all', selectedProject = 'All projects'
     const hours = Math.floor(totalMinutes / 60);
     const min = totalMinutes % 60;
     const top = document.getElementById('worktimeTotalsTop'); 
-    if(top) top.innerHTML = `<span>Total:</span> <span>${totalMinutes} min</span> <span class="muted">(${hours}h${min? ' ' + min + 'min' : ''})</span>`;
+    if (top) {
+        top.innerHTML = `<span>Total:</span> <span>${totalMinutes} min</span> <span class="muted">(${hours}h${min? ' ' + min + 'min' : ''})</span>`;
+
+        const focusProjectRaw = window.worktimeProjectFocus;
+        const focusProject = (typeof focusProjectRaw === 'string' ? focusProjectRaw.trim() : '') || null;
+        if (focusProject) {
+            const thisMonth = wt_hm(wt_minutesForProjectThisMonth(focusProject));
+            const thisYear = wt_hm(wt_minutesForProjectThisYear(focusProject));
+            const allTimes = wt_hm(wt_minutesForProjectAllTime(focusProject));
+
+            const statsLine = document.createElement('div');
+            statsLine.className = 'muted';
+            statsLine.style.marginTop = '2px';
+            statsLine.style.fontSize = '0.9em';
+            statsLine.textContent = `Total hours for project ${focusProject} this month: ${thisMonth}  This year: ${thisYear}  All times: ${allTimes}`;
+            top.appendChild(statsLine);
+        }
+    }
 
     // Footer Row in Table
     table.appendChild(window.createElementWithText('div', 'Total:', 'worktime-cell total'));
@@ -347,6 +364,8 @@ if(worktimeForm) {
         } else {
             window.worktimes.push(entry);
         }
+
+        window.worktimeProjectFocus = (project || 'No project');
 
         window.notifyChange('worktimes');
         
@@ -564,6 +583,28 @@ function wt_minutesForProjectThisMonth(project){
             .filter(w => !w.deleted)
             .filter(w => (w.project || 'No project') === project)
             .filter(w => { const d = new Date(w.start); return d.getFullYear() === y && d.getMonth() === m; })
+            .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+    } catch(_) { return 0; }
+}
+
+function wt_minutesForProjectThisYear(project){
+    try {
+        if (!Array.isArray(window.worktimes)) return 0;
+        const now = new Date(); const y = now.getFullYear();
+        return window.worktimes
+            .filter(w => !w.deleted)
+            .filter(w => (w.project || 'No project') === project)
+            .filter(w => { const d = new Date(w.start); return d.getFullYear() === y; })
+            .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+    } catch(_) { return 0; }
+}
+
+function wt_minutesForProjectAllTime(project){
+    try {
+        if (!Array.isArray(window.worktimes)) return 0;
+        return window.worktimes
+            .filter(w => !w.deleted)
+            .filter(w => (w.project || 'No project') === project)
             .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
     } catch(_) { return 0; }
 }

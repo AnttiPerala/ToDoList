@@ -300,6 +300,7 @@ if(dForm) {
 if(window.diaryBtn) {
     window.diaryBtn.addEventListener("click", function () {
         if(window.appSync) window.appSync.triggerSync();
+        window.worktimeProjectFocus = null;
         window.diaryBtn.classList.remove('inactive');
         window.todoBtn.classList.add('inactive');
         window.worktimeBtn.classList.add('inactive');

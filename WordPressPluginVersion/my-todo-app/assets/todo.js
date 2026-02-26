@@ -560,6 +560,7 @@ drawTodos(); // Draw on load
 if(window.todoBtn) {
     window.todoBtn.addEventListener("click", function () {
         if(window.appSync) window.appSync.triggerSync(); 
+        window.worktimeProjectFocus = null;
         window.worktimeContainer.style.display = "none";
         window.diaryContainer.style.display = "none";
         window.todoContainer.style.display = "block";
