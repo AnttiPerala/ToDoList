@@ -4,7 +4,7 @@ width: 100%;
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: gainsboro;
+    background-color: #F4EDEC;
     width: 100%;
 }
 
@@ -16,7 +16,7 @@ body {
   left: 0;
   right: 0;  
   z-index: 100;
-  background-color: gainsboro;
+  background-color: #F4EDEC;
   text-align: center;
   display: flex;
   align-items: center;

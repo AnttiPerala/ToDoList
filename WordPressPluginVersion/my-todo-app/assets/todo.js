@@ -141,6 +141,20 @@ window.drawTodos = function() {
         todoText.textContent = todo.text;
         todoText.addEventListener('dblclick', (e) => { e.preventDefault(); editTodo(todo.id); });
 
+        // 1b. DETAILS PREVIEW (first 30 chars, subtle)
+        let detailsPreview = document.createElement('span');
+        detailsPreview.classList.add('todo-details-preview');
+        if (todo.details && todo.details.toLowerCase() !== 'none') {
+            const previewText = todo.details.length > 30 ? todo.details.substring(0, 30) + '…' : todo.details;
+            detailsPreview.textContent = previewText;
+        } else {
+            detailsPreview.textContent = '';
+        }
+        detailsPreview.style.display = 'block';
+        detailsPreview.style.fontSize = '0.9em';
+        detailsPreview.style.opacity = '0.7';
+        todoText.appendChild(detailsPreview);
+
         // 2. DEADLINE
         let deadlineDisplay = document.createElement('span');
         deadlineDisplay.classList.add('deadline');
@@ -451,6 +465,7 @@ function createTodoMenu() {
         <li><a href="#" id="sortTimeDoneBtn">Sort by Time Done</a></li>
         <li><a href="#" id="recalculatePointsBtn">Recalculate Points</a></li>
         <li><a href="#" id="clearLocalStorageBtn">Delete all to do items</a></li>
+        <li><a href="#" id="makeAllWhiteBtn">Make all items white</a></li>
         <li><a href="#" id="backupBtn">Backup App</a></li>
         <li><a href="#" id="restoreBtn">Restore</a></li>
         <li><input type="file" id="uploadInput" style="display: none" /></li>
@@ -486,6 +501,21 @@ function createTodoMenu() {
             window.todos.forEach(todo => { todo.votes = voteCounter; voteCounter--; });
             drawTodos();
         });
+
+        const makeAllWhiteBtn = document.getElementById('makeAllWhiteBtn');
+        if (makeAllWhiteBtn) {
+            makeAllWhiteBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                window.todos.forEach(todo => {
+                    if (todo.bgColor !== '#FFFFFF') {
+                        window.touchItem(todo);
+                        todo.bgColor = '#FFFFFF';
+                    }
+                });
+                window.notifyChange('todos');
+                drawTodos();
+            });
+        }
 
         document.getElementById('backupBtn').addEventListener('click', handleBackup);
         document.getElementById('restoreBtn').addEventListener('click', handleRestore);
