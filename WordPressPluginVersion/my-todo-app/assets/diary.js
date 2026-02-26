@@ -266,6 +266,16 @@ function clearDiaryData() {
 
 const dForm = document.getElementById('diaryForm');
 if(dForm) {
+    // Default date to today
+    const diaryDateInput = document.getElementById('diaryDate');
+    if (diaryDateInput && !diaryDateInput.value) {
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        const d = String(today.getDate()).padStart(2, '0');
+        diaryDateInput.value = `${y}-${m}-${d}`;
+    }
+
     dForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const textarea = document.getElementById('diaryInput');
@@ -309,6 +319,16 @@ if(window.diaryBtn) {
         window.worktimeContainer.style.display = "none";
         document.getElementById('mainTitle').textContent = 'Diary';
         if (typeof updateHeaderStats === 'function') updateHeaderStats();
+
+        // Ensure date defaults to today when switching into diary mode (if empty)
+        const diaryDateInput = document.getElementById('diaryDate');
+        if (diaryDateInput && !diaryDateInput.value) {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            diaryDateInput.value = `${y}-${m}-${d}`;
+        }
         
         createDiaryMenu();
         addCategoryFilter();

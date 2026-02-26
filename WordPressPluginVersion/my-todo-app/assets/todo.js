@@ -203,6 +203,7 @@ function toggleDone(id) {
     let t = window.todos.find(x => x.id === id);
     if(t) {
         window.touchItem(t);
+        const wasDone = t.done;
         const nowIso = new Date().toISOString();
         t.done = !t.done;
         if (t.done) {
@@ -215,12 +216,25 @@ function toggleDone(id) {
         
         // Animation then redraw
         const el = document.getElementById(id);
-        if(el) {
-            el.classList.add('slide-out');
-            setTimeout(() => {
-                applyPreferredSorting();
+        if (el) {
+            if (!wasDone && t.done) {
+                // Newly completed: slide out
+                el.classList.add('slide-out');
+                setTimeout(() => {
+                    applyPreferredSorting();
+                    drawTodos();
+                }, 400);
+            } else if (wasDone && !t.done) {
+                // Revived from done: subtle pulse highlight
+                el.classList.add('revive');
+                setTimeout(() => {
+                    el.classList.remove('revive');
+                    applyPreferredSorting();
+                    drawTodos();
+                }, 400);
+            } else {
                 drawTodos();
-            }, 400);
+            }
         } else {
             drawTodos();
         }

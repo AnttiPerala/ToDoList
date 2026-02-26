@@ -1124,6 +1124,25 @@ form#worktimeForm {
   animation: scaleOut 0.4s ease-in forwards;
 }
 
+.revive {
+  animation: revivePulse 0.45s ease-out;
+}
+
+@keyframes revivePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(110, 231, 183, 0.9);
+  }
+  60% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 10px rgba(110, 231, 183, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
 .listItem {
   transition: transform 0.3s ease-out;
 }
