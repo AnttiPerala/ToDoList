@@ -173,4 +173,12 @@ window.addEventListener('load', () => {
     if(document.getElementById('mainTitle')) {
         document.getElementById('mainTitle').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
+
+    // Auto-close hamburger menu after selecting an item
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('ul.menu a');
+        if (!link) return;
+        const toggle = document.getElementById('menu-toggle');
+        if (toggle) toggle.checked = false;
+    });
 });

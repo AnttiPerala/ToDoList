@@ -42,7 +42,7 @@
     <div id="menuRow">
       <form id="todoForm">
         <div class="input-wrapper" style="width:100%; position:relative;">
-            <textarea id="todoInput" placeholder="Add a new task"></textarea>
+            <textarea id="todoInput" placeholder="Add a new task (or filter existing)"></textarea>
             <button type="button" class="clear-input">×</button>
         </div>
 
