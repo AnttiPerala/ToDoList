@@ -518,20 +518,20 @@ document.querySelector('.addDetails')?.addEventListener('click', () => {
 function createTodoMenu() {
     const menu = document.querySelector('.menu');
     menu.innerHTML = `
-        <li><a href="#" id="sortPointsBtn">Sort by Points</a></li>
-        <li><a href="#" id="sortAlphaBtn">Sort Alphabetically</a></li>
-        <li><a href="#" id="sortColorBtn">Sort by Color</a></li>
-        <li><a href="#" id="sortDeadlineBtn">Sort by Deadline</a></li>
-        <li><a href="#" id="sortTimeAddedBtn">Sort by Time Added</a></li>
-        <li><a href="#" id="sortTimeDoneBtn">Sort by Time Done</a></li>
-        <li><a href="#" id="recalculatePointsBtn">Recalculate Points</a></li>
-        <li><a href="#" id="clearLocalStorageBtn">Delete all to do items</a></li>
-        <li><a href="#" id="makeAllWhiteBtn">Make all items white</a></li>
-        <li><a href="#" id="backupBtn">Backup App</a></li>
-        <li><a href="#" id="restoreBtn">Restore</a></li>
+        <li><a href="#" id="sortPointsBtn">⭐ Sort by Points</a></li>
+        <li><a href="#" id="sortAlphaBtn">🔤 Sort Alphabetically</a></li>
+        <li><a href="#" id="sortColorBtn">🎨 Sort by Color</a></li>
+        <li><a href="#" id="sortDeadlineBtn">⏰ Sort by Deadline</a></li>
+        <li><a href="#" id="sortTimeAddedBtn">🕒 Sort by Time Added</a></li>
+        <li><a href="#" id="sortTimeDoneBtn">✅ Sort by Time Done</a></li>
+        <li><a href="#" id="recalculatePointsBtn">🔁 Recalculate Points</a></li>
+        <li><a href="#" id="clearLocalStorageBtn">🗑️ Delete all to do items</a></li>
+        <li><a href="#" id="makeAllWhiteBtn">⬜ Make all items white</a></li>
+        <li><a href="#" id="backupBtn">💾 Backup App</a></li>
+        <li><a href="#" id="restoreBtn">♻️ Restore</a></li>
         <li><input type="file" id="uploadInput" style="display: none" /></li>
         <li>
-            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">Login / Register</a> 
+            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">🔐 Login / Register</a> 
             <span class="note" style="margin-left:5px; font-size:0.8em; opacity:0.7;">(if you want cloud sync)</span>
         </li>
     `;

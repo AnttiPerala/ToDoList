@@ -199,17 +199,17 @@ function applyDiaryFilters() {
 function createDiaryMenu() {
     const menu = document.querySelector('.menu');
     menu.innerHTML = `
-        <li><a href="#" id="exportDiaryBtn">Export as TXT</a></li>
-        <li><a href="#" id="clearDiaryBtn">Delete all diary entries</a></li>
-        <li><a href="#" id="copyLifeEventsBtn">Copy Life Events to Clipboard</a></li>
-        <li><a href="#" id="copyPurchasesBtn">Copy Purchases to Clipboard</a></li>
-        <li><a href="#" id="copyItemPlacementsBtn">Copy Item Placements to Clipboard</a></li>
-        <li><a href="#" id="copyDataLocationsBtn">Copy Data Locations to Clipboard</a></li>
-        <li><a href="#" id="backupBtn">Backup App</a></li>
-        <li><a href="#" id="restoreBtn">Restore</a></li>
+        <li><a href="#" id="exportDiaryBtn">📃 Export as TXT</a></li>
+        <li><a href="#" id="clearDiaryBtn">🗑️ Delete all diary entries</a></li>
+        <li><a href="#" id="copyLifeEventsBtn">📌 Copy Life Events to Clipboard</a></li>
+        <li><a href="#" id="copyPurchasesBtn">🛒 Copy Purchases to Clipboard</a></li>
+        <li><a href="#" id="copyItemPlacementsBtn">📍 Copy Item Placements to Clipboard</a></li>
+        <li><a href="#" id="copyDataLocationsBtn">💾 Copy Data Locations to Clipboard</a></li>
+        <li><a href="#" id="backupBtn">💾 Backup App</a></li>
+        <li><a href="#" id="restoreBtn">♻️ Restore</a></li>
         <li><input type="file" id="uploadDiaryInput" style="display: none" /></li>
         <li>
-            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">Login / Register</a> 
+            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">🔐 Login / Register</a> 
             <span class="note" style="margin-left:5px; font-size:0.8em; opacity:0.7;">(if you want cloud sync)</span>
         </li>
         `;

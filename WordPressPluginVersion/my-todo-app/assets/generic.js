@@ -174,6 +174,16 @@ window.addEventListener('load', () => {
         document.getElementById('mainTitle').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
     }
 
+    // Avoid text caret appearing under hamburger button
+    const menuBtnContainer = document.querySelector('.menu-button-container');
+    if (menuBtnContainer) {
+        menuBtnContainer.addEventListener('click', () => {
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+        });
+    }
+
     // Auto-close hamburger menu after selecting an item
     document.addEventListener('click', (e) => {
         const link = e.target.closest('ul.menu a');

@@ -631,7 +631,6 @@ cursor: pointer;
 }
 
 .menu-button-container {
-
   display: flex;
   height: 50px;
   cursor: pointer;
@@ -640,6 +639,7 @@ cursor: pointer;
   justify-content: center;
   position: absolute;
   left: 1vw;
+  user-select: none;
 }
 
 #menu-toggle {
@@ -909,6 +909,12 @@ position: relative;
   display: block;
 }
 
+/* Dim icons on non-active mode buttons to match text color */
+button.btn.inactive .mode-icon {
+  filter: grayscale(1) brightness(0.6);
+  opacity: 0.9;
+}
+
 /* Prevent closed hamburger menu from blocking clicks below it */
 #menu-toggle:not(:checked) ~ .menu {
   pointer-events: none;     /* ignore clicks when closed */
@@ -1025,12 +1031,21 @@ ul#worktimeList {
 }
 
 form#worktimeForm {
-display: flex;
-justify-content: center;
-align-items: baseline;
-gap: 0.5rem;
-background-color: #e2e2ff;
-padding: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.5rem;
+  background-color: #e2e2ff;
+  padding: 0.5rem;
+}
+
+/* Desktop: make work description input wider than others */
+#workDescription {
+  flex: 2 1 0;
+}
+
+#worktimeForm input:not(#workDescription) {
+  flex: 1 1 0;
 }
 
 .diary-table {

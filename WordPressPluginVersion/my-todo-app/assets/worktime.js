@@ -439,15 +439,15 @@ function initializeWorktime() {
 function createWorktimeMenu() {
     const menu = document.querySelector('.menu');
     menu.innerHTML = `
-        <li><a href="#" id="exportWorktimeCsvBtn">Export CSV</a></li>
-        <li><a href="#" id="exportWorktimeTextBtn">Export Text</a></li>
-        <li><a href="#" id="exportWorktimeSystemBtn">Export for Worktime System</a></li>
-        <li><a href="#" id="clearWorktimeBtn">Delete all worktime items</a></li>
-        <li><a href="#" id="backupBtn">Backup App</a></li>
-        <li><a href="#" id="restoreBtn">Restore</a></li>
+        <li><a href="#" id="exportWorktimeCsvBtn">📄 Export CSV</a></li>
+        <li><a href="#" id="exportWorktimeTextBtn">📃 Export Text</a></li>
+        <li><a href="#" id="exportWorktimeSystemBtn">📤 Export for Worktime System</a></li>
+        <li><a href="#" id="clearWorktimeBtn">🗑️ Delete all worktime items</a></li>
+        <li><a href="#" id="backupBtn">💾 Backup App</a></li>
+        <li><a href="#" id="restoreBtn">♻️ Restore</a></li>
         <li><input type="file" id="uploadWorktimeInput" style="display: none" /></li>
         <li>
-            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">Login / Register</a> 
+            <a href="${typeof wpAppData !== 'undefined' ? wpAppData.login_url : '#'}">🔐 Login / Register</a> 
             <span class="note" style="margin-left:5px; font-size:0.8em; opacity:0.7;">(if you want cloud sync)</span>
         </li>
         `;
