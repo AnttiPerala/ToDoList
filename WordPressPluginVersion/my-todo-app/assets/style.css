@@ -460,6 +460,7 @@ span,
 input,
 select {
   vertical-align: middle; /* Ensure consistent vertical alignment */
+  margin-left: 0.5rem;
 }
 
 .close {
