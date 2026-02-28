@@ -1226,6 +1226,9 @@ form#worktimeForm {
         .button-30{
             margin-bottom: 2rem;
         }
+        #detailsModal .button-30 {
+            margin-bottom: 0.5rem;
+        }
 
         #todoForm {
           grid-template-columns: 1fr;
@@ -1413,6 +1416,46 @@ input#workDescription {
 
   h1#mainTitle {
     margin-left: 3rem;
+  }
+
+  /* Todo details modal: almost full screen, reduced spacing on mobile */
+  #detailsModal .modal-content {
+    top: 0.5rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: auto;
+    height: auto;
+    max-width: none;
+    transform: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    overflow-y: auto;
+  }
+  #detailsModal .detailsTable {
+    margin-bottom: 1rem;
+  }
+  #detailsModal .detailsTable th,
+  #detailsModal .detailsTable td {
+    padding: 2px 6px 2px 0;
+  }
+  #detailsModal .detailsTable th {
+    width: 30%;
+  }
+  #detailsModal p {
+    margin-bottom: 0.25rem;
+  }
+  #detailsModal .details-priority-actions {
+    margin-top: 0.35rem !important;
+    gap: 0.15rem !important;
+  }
+  #detailsModal #saveDetailsBtn {
+    margin-top: 0.25rem;
+  }
+  #detailsModal .details-priority-actions .button-30,
+  #detailsModal #saveDetailsBtn.button-30 {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
 }

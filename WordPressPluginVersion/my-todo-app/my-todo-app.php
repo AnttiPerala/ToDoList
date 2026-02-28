@@ -64,7 +64,7 @@ add_action( 'wp_enqueue_scripts', function() {
         $deps = array('jquery'); 
         
         // 1. Generic (Global) - We localize data here so it exists before Todo/Worktime load
-        wp_enqueue_script( 'mta-generic', plugins_url( 'assets/generic.js', __FILE__ ), $deps, '2.3', true );
+        wp_enqueue_script( 'mta-generic', plugins_url( 'assets/generic.js', __FILE__ ), $deps, filemtime( plugin_dir_path( __FILE__ ) . 'assets/generic.js' ), true );
         
         wp_localize_script( 'mta-generic', 'wpAppData', array(
             'root' => esc_url_raw( rest_url() ),
@@ -74,16 +74,16 @@ add_action( 'wp_enqueue_scripts', function() {
         ));
 
         // 2. Helpers
-        wp_enqueue_script( 'mta-sorting', plugins_url( 'assets/todoSorting.js', __FILE__ ), array('mta-generic'), '2.3', true );
-        wp_enqueue_script( 'mta-export', plugins_url( 'assets/exportWorktimeToSystem.js', __FILE__ ), array('mta-generic'), '2.3', true );
+        wp_enqueue_script( 'mta-sorting', plugins_url( 'assets/todoSorting.js', __FILE__ ), array('mta-generic'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/todoSorting.js' ), true );
+        wp_enqueue_script( 'mta-export', plugins_url( 'assets/exportWorktimeToSystem.js', __FILE__ ), array('mta-generic'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/exportWorktimeToSystem.js' ), true );
         
         // 3. Modules
-        wp_enqueue_script( 'mta-todo', plugins_url( 'assets/todo.js', __FILE__ ), array('mta-generic', 'mta-sorting'), '2.3', true );
-        wp_enqueue_script( 'mta-worktime', plugins_url( 'assets/worktime.js', __FILE__ ), array('mta-generic', 'mta-export'), '2.3', true );
-        wp_enqueue_script( 'mta-diary', plugins_url( 'assets/diary.js', __FILE__ ), array('mta-generic'), '2.3', true );
+        wp_enqueue_script( 'mta-todo', plugins_url( 'assets/todo.js', __FILE__ ), array('mta-generic', 'mta-sorting'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/todo.js' ), true );
+        wp_enqueue_script( 'mta-worktime', plugins_url( 'assets/worktime.js', __FILE__ ), array('mta-generic', 'mta-export'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/worktime.js' ), true );
+        wp_enqueue_script( 'mta-diary', plugins_url( 'assets/diary.js', __FILE__ ), array('mta-generic'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/diary.js' ), true );
 
         // 4. Sync Logic
-        wp_enqueue_script( 'mta-sync', plugins_url( 'assets/sync.js', __FILE__ ), array('mta-todo', 'mta-worktime', 'mta-diary'), '2.3', true );
+        wp_enqueue_script( 'mta-sync', plugins_url( 'assets/sync.js', __FILE__ ), array('mta-todo', 'mta-worktime', 'mta-diary'), filemtime( plugin_dir_path( __FILE__ ) . 'assets/sync.js' ), true );
     }
 });
 
