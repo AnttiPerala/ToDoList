@@ -59,7 +59,7 @@ add_filter( 'template_include', function( $template ) {
 add_action( 'wp_enqueue_scripts', function() {
     if ( is_page() && get_page_template_slug() == 'app-template.php' ) {
         
-        wp_enqueue_style( 'mta-style', plugins_url( 'assets/style.css', __FILE__ ), array(), '2.3' );
+        wp_enqueue_style( 'mta-style', plugins_url( 'assets/style.css', __FILE__ ), array(), filemtime( plugin_dir_path( __FILE__ ) . 'assets/style.css' ) );
 
         $deps = array('jquery'); 
         
