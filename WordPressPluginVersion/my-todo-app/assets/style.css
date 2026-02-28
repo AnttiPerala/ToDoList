@@ -883,6 +883,11 @@ position: relative;
   margin: 0.5rem 0;
 }
 
+#diaryTimeFilter {
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
 #diarySearch {
   flex: 1;
   /* Input takes remaining space */

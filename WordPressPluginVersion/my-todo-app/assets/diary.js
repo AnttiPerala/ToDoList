@@ -135,6 +135,77 @@ window.deleteDiaryEntry = function(id) {
 
 // --- FILTERS & SEARCH (Restored) ---
 
+function getTimeRangeBounds(value) {
+    if (!value || value === 'all') return null;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let start, end;
+    switch (value) {
+        case 'today':
+            start = new Date(today); end = new Date(today); end.setHours(23, 59, 59, 999); break;
+        case 'yesterday':
+            start = new Date(today); start.setDate(start.getDate() - 1);
+            end = new Date(start); end.setHours(23, 59, 59, 999); break;
+        case 'thisWeek': {
+            const dow = now.getDay();
+            const mondayOffset = dow === 0 ? -6 : 1 - dow;
+            start = new Date(today); start.setDate(start.getDate() + mondayOffset);
+            end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999); break;
+        }
+        case 'lastWeek': {
+            const dow = now.getDay();
+            const mondayOffset = dow === 0 ? -6 : 1 - dow;
+            const thisMonday = new Date(today); thisMonday.setDate(thisMonday.getDate() + mondayOffset);
+            start = new Date(thisMonday); start.setDate(start.getDate() - 7);
+            end = new Date(start); end.setDate(end.getDate() + 6); end.setHours(23, 59, 59, 999); break;
+        }
+        case 'thisMonth':
+            start = new Date(now.getFullYear(), now.getMonth(), 1);
+            end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999); break;
+        case 'lastMonth':
+            start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999); break;
+        case 'last6Months':
+            start = new Date(now); start.setMonth(start.getMonth() - 6); start.setHours(0, 0, 0, 0);
+            end = new Date(now); break;
+        case 'last12Months':
+            start = new Date(now); start.setMonth(start.getMonth() - 12); start.setHours(0, 0, 0, 0);
+            end = new Date(now); break;
+        case 'lastYear':
+            start = new Date(now.getFullYear() - 1, 0, 1);
+            end = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999); break;
+        case 'lastTwoYears':
+            start = new Date(now); start.setFullYear(start.getFullYear() - 2); start.setHours(0, 0, 0, 0);
+            end = new Date(now); break;
+        default: return null;
+    }
+    return { start, end };
+}
+
+function filterEntriesByTimeRange(entries, timeValue) {
+    const range = getTimeRangeBounds(timeValue);
+    if (!range) return entries;
+    return entries.filter(e => {
+        const d = new Date(e.date).getTime();
+        return d >= range.start.getTime() && d <= range.end.getTime();
+    });
+}
+
+function getFilteredDiaryEntriesForExport() {
+    const searchTerm = document.getElementById('diarySearch')?.value.toLowerCase() || '';
+    const selectedCategory = document.getElementById('categoryFilter')?.value || 'all';
+    const timeValue = document.getElementById('diaryTimeFilter')?.value || 'all';
+    let entries = getSortedDiaryEntries(window.diaryEntries);
+    entries = filterEntriesByTimeRange(entries, timeValue);
+    return entries.filter(entry => {
+        const matchesSearch = entry.description.toLowerCase().includes(searchTerm) ||
+            new Date(entry.date).toLocaleDateString().includes(searchTerm) ||
+            (entry.category && entry.category.toLowerCase().includes(searchTerm));
+        const matchesCategory = selectedCategory === 'all' || entry.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+}
+
 function addCategoryFilter() {
     const existingFilter = document.querySelector('.diary-filter');
     if (existingFilter) existingFilter.remove();
@@ -162,12 +233,29 @@ function addSearchFilter() {
     if (existingSearch) existingSearch.remove();
     const searchContainer = document.createElement('div');
     searchContainer.className = 'diary-search';
-    searchContainer.innerHTML = `<input type="text" id="diarySearch" placeholder="Search diary entries..."><button class="clear-search">×</button>`;
+    searchContainer.innerHTML = `
+        <input type="text" id="diarySearch" placeholder="Search diary entries...">
+        <select id="diaryTimeFilter" title="Filter by time range">
+            <option value="all">All times</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="thisWeek">This week</option>
+            <option value="lastWeek">Last week</option>
+            <option value="thisMonth">This month</option>
+            <option value="lastMonth">Last month</option>
+            <option value="last6Months">Last 6 months</option>
+            <option value="last12Months">Last 12 months</option>
+            <option value="lastYear">Last year</option>
+            <option value="lastTwoYears">Last two years</option>
+        </select>
+        <button class="clear-search">×</button>
+    `;
     
     const list = document.getElementById('diaryList');
     if(list) list.before(searchContainer);
     
     document.getElementById('diarySearch').addEventListener('input', applyDiaryFilters);
+    document.getElementById('diaryTimeFilter').addEventListener('change', applyDiaryFilters);
     document.querySelector('.clear-search').addEventListener('click', function() {
         document.getElementById('diarySearch').value = '';
         applyDiaryFilters();
@@ -175,21 +263,7 @@ function addSearchFilter() {
 }
 
 function applyDiaryFilters() {
-    const searchTerm = document.getElementById('diarySearch')?.value.toLowerCase() || '';
-    const selectedCategory = document.getElementById('categoryFilter')?.value || 'all';
-    
-    // 1. Get Base Sorted List (ignoring deleted)
-    let entries = getSortedDiaryEntries(window.diaryEntries);
-
-    // 2. Apply Filters
-    const filteredEntries = entries.filter(entry => {
-        const matchesSearch = entry.description.toLowerCase().includes(searchTerm) ||
-            new Date(entry.date).toLocaleDateString().includes(searchTerm) ||
-            (entry.category && entry.category.toLowerCase().includes(searchTerm));
-        const matchesCategory = selectedCategory === 'all' || entry.category === selectedCategory;
-        return matchesSearch && matchesCategory;
-    });
-
+    const filteredEntries = getFilteredDiaryEntriesForExport();
     drawDiary(filteredEntries);
 }
 
@@ -229,7 +303,7 @@ function createDiaryMenu() {
 }
 
 function copyEntriesByCategory(category) {
-    const entries = getSortedDiaryEntries(window.diaryEntries)
+    const entries = getFilteredDiaryEntriesForExport()
         .filter(entry => entry.category === category)
         .map(entry => {
             const date = new Date(entry.date);
@@ -241,7 +315,7 @@ function copyEntriesByCategory(category) {
 }
 
 function exportDiaryText() {
-    const textContent = getSortedDiaryEntries(window.diaryEntries).map(entry => {
+    const textContent = getFilteredDiaryEntriesForExport().map(entry => {
         const date = new Date(entry.date);
         return `Date: ${date.toLocaleDateString()}\nCategory: ${entry.category}\nEntry: ${entry.description}\n---------------`;
     }).join('\n');
