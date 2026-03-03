@@ -167,9 +167,9 @@ button.submitTodo.button-30 {
   position: absolute;
   right: 0.5rem;
   top: 0.5rem;
-  font-size: 18px;
+  font-size: 22px;
   cursor: pointer;
-  color: #999;
+  color: #ff3333;
   z-index: 100;
   display: none;
 }

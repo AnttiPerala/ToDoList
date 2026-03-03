@@ -171,7 +171,52 @@ window.updateHeaderStats = function() {
 window.addEventListener('load', () => {
     window.updateHeaderStats();
     if(document.getElementById('mainTitle')) {
-        document.getElementById('mainTitle').addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        document.getElementById('mainTitle').addEventListener('click', () => {
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Helper to see which view is active
+            const isVisible = (node) => {
+                if (!node) return false;
+                const cs = window.getComputedStyle(node);
+                return cs.display !== 'none' && cs.visibility !== 'hidden';
+            };
+
+            // Clear filters depending on current view
+            if (isVisible(window.todoContainer)) {
+                // Todo: clear text filter and category filter
+                const todoInput = document.getElementById('todoInput');
+                if (todoInput) todoInput.value = '';
+                const clearBtn = document.querySelector('.clear-input');
+                if (clearBtn) clearBtn.style.display = 'none';
+                const catSel = document.getElementById('categorySelect');
+                if (catSel) catSel.value = 'none';
+                const notice = document.getElementById('categoryFilteringNotice');
+                if (notice) notice.innerHTML = '';
+                if (typeof drawTodos === 'function') drawTodos();
+            } else if (isVisible(window.worktimeContainer)) {
+                // Worktime: reset project filter and period to "This Month"
+                const filterWrap = document.querySelector('.worktime-filters');
+                if (filterWrap) {
+                    filterWrap.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                    const thisMonthBtn = filterWrap.querySelector('button[data-period="thisMonth"]');
+                    if (thisMonthBtn) thisMonthBtn.classList.add('active');
+                }
+                const pf = document.getElementById('projectFilter');
+                if (pf) pf.value = 'All projects';
+                if (typeof drawWorktimes === 'function') {
+                    const proj = pf ? pf.value : 'All projects';
+                    drawWorktimes('thisMonth', proj);
+                }
+            } else if (isVisible(window.diaryContainer)) {
+                // Diary: clear search and category filters
+                const search = document.getElementById('diarySearch');
+                if (search) search.value = '';
+                const cat = document.getElementById('categoryFilter');
+                if (cat) cat.value = 'all';
+                if (typeof applyDiaryFilters === 'function') applyDiaryFilters();
+            }
+        });
     }
 
     // Avoid text caret appearing under hamburger button
