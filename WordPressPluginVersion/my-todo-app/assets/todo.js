@@ -461,7 +461,16 @@ if(saveDetailsBtn) {
                     const sel = span.querySelector('select');
                     if(sel) sel.value = (t.category || 'none');
                 } else if(row.classList.contains('detailsMainText') || row.classList.contains('detailsDetails')) {
-                     span.innerHTML = `<textarea>${current === 'None' ? '' : current}</textarea>`;
+                    span.innerHTML = `<textarea>${current === 'None' ? '' : current}</textarea>`;
+                    const ta = span.querySelector('textarea');
+                    if (ta) {
+                        ta.style.height = 'auto';
+                        ta.style.height = ta.scrollHeight + 'px';
+                        ta.addEventListener('input', function() {
+                            this.style.height = 'auto';
+                            this.style.height = this.scrollHeight + 'px';
+                        });
+                    }
                 } else if(row.classList.contains('detailsBgColor')) {
                      span.innerHTML = `<input type="color" value="${t.bgColor || '#FFFFFF'}">`;
                 } else if(row.classList.contains('detailsVotes')) {
