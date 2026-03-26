@@ -500,6 +500,30 @@ div#extraInfoButtonContainer {
     margin: 1rem;
 }
 
+/* Worktime form highlight when entering edit mode */
+#worktimeForm.worktime-edit-highlight {
+  animation: worktimeEditPulse 1.1s ease-out 1;
+}
+
+@keyframes worktimeEditPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.0);
+    transform: translateY(0);
+  }
+  20% {
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.4);
+    transform: translateY(1px);
+  }
+  60% {
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.25);
+    transform: translateY(0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.0);
+    transform: translateY(0);
+  }
+}
+
 .color-option {
   height: 20px;
 }
@@ -1472,18 +1496,17 @@ input#workDescription {
 .diary-header[aria-sort] { font-weight: 600; }
 
 
-/* Modal edit textareas: auto-grow, scrollable, user-resizable */
+/* Modal edit textareas: auto-grow and cancel global flex/textarea hacks */
 #detailsModal textarea {
   display: block !important;
   align-items: initial !important;
   justify-content: initial !important;
   line-height: 1.5;
   width: 100%;
-  min-height: 6rem;
-  max-height: 60vh;
+  min-height: 4.5rem;
   height: auto;
-  overflow-y: auto;
-  resize: vertical;
+  overflow-y: hidden;
+  resize: none;
   box-sizing: border-box;
 }
 #detailsModal .value { display: block; }
@@ -1587,3 +1610,127 @@ input#workDescription {
 
 /* Push content below the fixed header safely */
 body { padding-top: var(--header-height, 80px); }
+
+/* Worktime project settings modal */
+.project-settings-modal {
+  display: none;
+  position: fixed;
+  z-index: 12000;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.project-settings-content {
+  background: #fff;
+  color: #111;
+  width: min(1120px, 98vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.project-settings-modal label,
+.project-settings-modal span,
+.project-settings-modal input,
+.project-settings-modal select {
+  margin-left: 0;
+  vertical-align: middle;
+}
+
+.project-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.project-settings-row {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.85rem;
+  margin-bottom: 0.85rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.project-settings-name {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.project-settings-hours {
+  font-size: 0.92rem;
+}
+
+.project-settings-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.project-settings-actions .rename-input {
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.project-settings-actions .button-30 {
+  flex: 0 0 auto;
+}
+
+.project-settings-row.archived {
+  opacity: 0.6;
+}
+
+.project-settings-row.archived .project-settings-name::after {
+  content: ' (archived)';
+  font-weight: 500;
+  color: #666;
+}
+
+.project-target-box {
+  display: grid;
+  grid-template-columns: 110px minmax(130px, 1fr) 70px minmax(170px, 1fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(112px, auto) minmax(112px, auto);
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.project-target-box label {
+  font-weight: 600;
+  color: #444;
+}
+
+.project-target-box .target-hours,
+.project-target-box .target-period,
+.project-target-box .target-start,
+.project-target-box .target-end {
+  width: 100%;
+}
+
+.project-target-box .button-30 {
+  min-width: 112px;
+  white-space: nowrap;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+@media (max-width: 980px) {
+  .project-settings-actions {
+    flex-wrap: wrap;
+  }
+
+  .project-target-box {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .project-target-box label {
+    grid-column: 1 / -1;
+    margin-top: 0.2rem;
+  }
+}

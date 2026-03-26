@@ -69,6 +69,107 @@ function getProjectsFromLastTwoYears() {
     return projects;
 }
 
+const WT_PROJECT_TARGETS_KEY = 'worktimeProjectTargets';
+const WT_PROJECT_ARCHIVE_KEY = 'worktimeArchivedProjects';
+
+function wt_projectNorm(name) {
+    return (name || '').trim().toLowerCase();
+}
+
+function wt_getAllProjectNames() {
+    const fromEntries = (window.worktimes || [])
+        .filter(entry => !entry.deleted)
+        .map(entry => (entry.project || '').trim())
+        .filter(Boolean);
+    const archived = Object.keys(wt_loadArchivedProjects());
+    // archived is stored normalized; keep original names from entries for display
+    return [...new Set(fromEntries)].sort((a, b) => a.localeCompare(b));
+}
+
+function wt_loadArchivedProjects() {
+    try {
+        const raw = localStorage.getItem(WT_PROJECT_ARCHIVE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function wt_saveArchivedProjects(map) {
+    localStorage.setItem(WT_PROJECT_ARCHIVE_KEY, JSON.stringify(map || {}));
+}
+
+function wt_isArchivedProject(name) {
+    const norm = wt_projectNorm(name);
+    if (!norm) return false;
+    const archived = wt_loadArchivedProjects();
+    return Boolean(archived[norm]);
+}
+
+function wt_loadProjectTargets() {
+    try {
+        const raw = localStorage.getItem(WT_PROJECT_TARGETS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function wt_saveProjectTargets(targets) {
+    localStorage.setItem(WT_PROJECT_TARGETS_KEY, JSON.stringify(targets || {}));
+}
+
+function wt_getPresetRange(periodType, customStart, customEnd) {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    let start;
+    let end;
+
+    if (periodType === 'thisYear') {
+        start = new Date(y, 0, 1, 0, 0, 0, 0);
+        end = new Date(y, 11, 31, 23, 59, 59, 999);
+    } else if (periodType === 'springSemester') {
+        start = new Date(y, 0, 1, 0, 0, 0, 0);
+        end = new Date(y, 5, 30, 23, 59, 59, 999);
+    } else if (periodType === 'autumnSemester') {
+        start = new Date(y, 7, 1, 0, 0, 0, 0);
+        end = new Date(y, 11, 31, 23, 59, 59, 999);
+    } else if (periodType === 'thisMonth') {
+        start = new Date(y, m, 1, 0, 0, 0, 0);
+        end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+    } else if (periodType === 'thisWeek') {
+        const day = now.getDay(); // 0 Sunday
+        const mondayDiff = (day + 6) % 7;
+        start = new Date(now);
+        start.setDate(now.getDate() - mondayDiff);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+    } else {
+        if (!customStart || !customEnd) return null;
+        start = new Date(customStart + 'T00:00:00');
+        end = new Date(customEnd + 'T23:59:59.999');
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return null;
+    }
+    return { start, end };
+}
+
+function wt_minutesForProjectInRange(project, startDate, endDate) {
+    const projNorm = wt_projectNorm(project || 'No project');
+    return (window.worktimes || [])
+        .filter(w => !w.deleted)
+        .filter(w => wt_projectNorm(w.project || 'No project') === projNorm)
+        .filter(w => {
+            const d = new Date(w.start);
+            return d >= startDate && d <= endDate;
+        })
+        .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
+}
+
 function filterWorktimesByPeriod(period, selectedProject = 'All projects') {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -229,9 +330,11 @@ function updateProjectList() {
     select.id = 'projectSelect';
     select.className = 'button-30';
     
-    const projects = getProjectsFromLastTwoYears().filter(p => p !== 'All projects');
+    const projects = getProjectsFromLastTwoYears()
+        .filter(p => p !== 'All projects')
+        .filter(p => !wt_isArchivedProject(p));
     
-    select.innerHTML = `<option value="">Select Project</option>${projects.map(project => `<option value="${project}">${project}</option>`).join('')}<option value="custom">+ Add New Project</option>`;
+    select.innerHTML = `<option value="">Select Project</option>${projects.map(project => `<option value="${project}">${project}</option>`).join('')}<option value="custom">+ Add New Project</option><option value="manageProjects">⚙ Manage Projects</option>`;
     
     const customInput = document.createElement('input');
     customInput.type = 'text';
@@ -244,6 +347,9 @@ function updateProjectList() {
             select.style.display = 'none';
             customInput.style.display = 'block';
             customInput.focus();
+        } else if (e.target.value === 'manageProjects') {
+            select.value = '';
+            openProjectSettingsModal();
         } else {
             customInput.value = e.target.value;
         }
@@ -267,9 +373,242 @@ function updateProjectList() {
     if (existingDatalist) existingDatalist.remove();
 }
 
+function refreshProjectSelectorsAndList() {
+    updateProjectList();
+    const pf = document.getElementById('projectFilter');
+    if (pf) {
+        pf.innerHTML = getProjectsFromLastTwoYears().map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+    const activePeriod = document.querySelector('.worktime-filters button.active')?.dataset.period || 'thisMonth';
+    drawWorktimes(activePeriod, pf ? pf.value : 'All projects');
+}
+
+function ensureProjectSettingsModal() {
+    let modal = document.getElementById('projectSettingsModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'projectSettingsModal';
+    modal.className = 'project-settings-modal';
+    modal.innerHTML = `
+      <div class="project-settings-content">
+        <div class="project-settings-header">
+          <h3>Manage Projects</h3>
+          <button type="button" class="button-30" id="closeProjectSettingsBtn">Close</button>
+        </div>
+        <div id="projectSettingsBody"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+    modal.querySelector('#closeProjectSettingsBtn').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    return modal;
+}
+
+function renderProjectSettingsBody() {
+    const modal = ensureProjectSettingsModal();
+    const body = modal.querySelector('#projectSettingsBody');
+    const targets = wt_loadProjectTargets();
+    const archived = wt_loadArchivedProjects();
+    const projects = wt_getAllProjectNames().sort((a, b) => {
+        const aArchived = Boolean(archived[wt_projectNorm(a)]);
+        const bArchived = Boolean(archived[wt_projectNorm(b)]);
+        if (aArchived !== bArchived) return aArchived ? 1 : -1; // archived to bottom
+        return a.localeCompare(b); // alphabetical inside each group
+    });
+
+    if (!projects.length) {
+        body.innerHTML = `<p class="muted">No projects found yet.</p>`;
+        return;
+    }
+
+    body.innerHTML = projects.map(project => {
+        const thisMonth = wt_hm(wt_minutesForProjectThisMonth(project));
+        const thisYear = wt_hm(wt_minutesForProjectThisYear(project));
+        const allTimes = wt_hm(wt_minutesForProjectAllTime(project));
+        const target = targets[project] || {};
+        const isArchived = Boolean(archived[wt_projectNorm(project)]);
+        return `
+          <div class="project-settings-row ${isArchived ? 'archived' : ''}" data-project="${project.replace(/"/g, '&quot;')}">
+            <div class="project-settings-name">${project}</div>
+            <div class="project-settings-hours muted">Hours -> This month: ${thisMonth} | This year: ${thisYear} | All times: ${allTimes}</div>
+            <div class="project-settings-actions">
+              <input type="text" class="button-30 rename-input" placeholder="Rename project" value="${project.replace(/"/g, '&quot;')}">
+              <button type="button" class="button-30 rename-project-btn">Rename</button>
+              <button type="button" class="button-30 archive-project-btn">${isArchived ? 'Revive' : 'Archive'}</button>
+              <button type="button" class="button-30 delete-project-btn">Delete Project</button>
+            </div>
+            <div class="project-target-box">
+              <label>Target hours</label>
+              <input type="number" min="0" step="0.5" class="button-30 target-hours" value="${target.hours ?? ''}" placeholder="Optional">
+              <label>Period</label>
+              <select class="button-30 target-period">
+                <option value="thisYear" ${target.periodType === 'thisYear' ? 'selected' : ''}>This year</option>
+                <option value="springSemester" ${target.periodType === 'springSemester' ? 'selected' : ''}>Spring semester</option>
+                <option value="autumnSemester" ${target.periodType === 'autumnSemester' ? 'selected' : ''}>Autumn semester</option>
+                <option value="thisMonth" ${target.periodType === 'thisMonth' ? 'selected' : ''}>This month</option>
+                <option value="thisWeek" ${target.periodType === 'thisWeek' ? 'selected' : ''}>This week</option>
+                <option value="custom" ${target.periodType === 'custom' ? 'selected' : ''}>Custom dates</option>
+              </select>
+              <input type="date" class="button-30 target-start" value="${target.startDate || ''}">
+              <input type="date" class="button-30 target-end" value="${target.endDate || ''}">
+              <button type="button" class="button-30 save-target-btn">Save target</button>
+              <button type="button" class="button-30 clear-target-btn">Clear target</button>
+            </div>
+          </div>
+        `;
+    }).join('');
+
+    body.querySelectorAll('.project-settings-row').forEach(row => {
+        const oldProject = row.getAttribute('data-project');
+        const renameInput = row.querySelector('.rename-input');
+        const renameBtn = row.querySelector('.rename-project-btn');
+        const archiveBtn = row.querySelector('.archive-project-btn');
+        const deleteBtn = row.querySelector('.delete-project-btn');
+        const periodSel = row.querySelector('.target-period');
+        const startInput = row.querySelector('.target-start');
+        const endInput = row.querySelector('.target-end');
+        const hoursInput = row.querySelector('.target-hours');
+        const saveTargetBtn = row.querySelector('.save-target-btn');
+        const clearTargetBtn = row.querySelector('.clear-target-btn');
+
+        const syncCustomDateDisabled = () => {
+            const isCustom = periodSel.value === 'custom';
+            startInput.disabled = !isCustom;
+            endInput.disabled = !isCustom;
+            startInput.style.display = isCustom ? '' : 'none';
+            endInput.style.display = isCustom ? '' : 'none';
+        };
+        syncCustomDateDisabled();
+        periodSel.addEventListener('change', syncCustomDateDisabled);
+
+        renameBtn.addEventListener('click', () => {
+            const newProject = (renameInput.value || '').trim();
+            if (!newProject) return alert('Please enter a new name');
+            if (wt_projectNorm(newProject) === wt_projectNorm(oldProject)) return;
+            const clash = wt_getAllProjectNames().find(p => wt_projectNorm(p) === wt_projectNorm(newProject));
+            if (clash) return alert('A project with this name already exists.');
+
+            window.worktimes.forEach(w => {
+                if (!w.deleted && wt_projectNorm(w.project) === wt_projectNorm(oldProject)) {
+                    window.touchItem(w);
+                    w.project = newProject;
+                }
+            });
+
+            const targets = wt_loadProjectTargets();
+            if (targets[oldProject]) {
+                targets[newProject] = targets[oldProject];
+                delete targets[oldProject];
+                wt_saveProjectTargets(targets);
+            }
+
+            const archived = wt_loadArchivedProjects();
+            const oldNorm = wt_projectNorm(oldProject);
+            const newNorm = wt_projectNorm(newProject);
+            if (archived[oldNorm]) {
+                delete archived[oldNorm];
+                archived[newNorm] = true;
+                wt_saveArchivedProjects(archived);
+            }
+
+            window.notifyChange('worktimes');
+            refreshProjectSelectorsAndList();
+            renderProjectSettingsBody();
+        });
+
+        archiveBtn.addEventListener('click', () => {
+            const archived = wt_loadArchivedProjects();
+            const norm = wt_projectNorm(oldProject);
+            if (!norm) return;
+            if (archived[norm]) {
+                delete archived[norm];
+            } else {
+                archived[norm] = true;
+            }
+            wt_saveArchivedProjects(archived);
+            refreshProjectSelectorsAndList();
+            renderProjectSettingsBody();
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            if (!confirm(`Delete project "${oldProject}" from entries? Entries will be kept as "No project".`)) return;
+            window.worktimes.forEach(w => {
+                if (!w.deleted && wt_projectNorm(w.project) === wt_projectNorm(oldProject)) {
+                    window.touchItem(w);
+                    w.project = '';
+                }
+            });
+            const targets = wt_loadProjectTargets();
+            delete targets[oldProject];
+            wt_saveProjectTargets(targets);
+            const archived = wt_loadArchivedProjects();
+            delete archived[wt_projectNorm(oldProject)];
+            wt_saveArchivedProjects(archived);
+            window.notifyChange('worktimes');
+            refreshProjectSelectorsAndList();
+            renderProjectSettingsBody();
+        });
+
+        saveTargetBtn.addEventListener('click', () => {
+            const hours = Number(hoursInput.value);
+            if (hoursInput.value === '' || Number.isNaN(hours) || hours < 0) {
+                return alert('Please enter a valid target hours value (0 or more).');
+            }
+            const periodType = periodSel.value;
+            const range = wt_getPresetRange(periodType, startInput.value, endInput.value);
+            if (!range) return alert('Please provide a valid start/end date for custom period.');
+
+            const targets = wt_loadProjectTargets();
+            targets[oldProject] = {
+                hours,
+                periodType,
+                startDate: periodType === 'custom' ? startInput.value : '',
+                endDate: periodType === 'custom' ? endInput.value : ''
+            };
+            wt_saveProjectTargets(targets);
+            alert(`Saved target for "${oldProject}".`);
+        });
+
+        clearTargetBtn.addEventListener('click', () => {
+            const targets = wt_loadProjectTargets();
+            delete targets[oldProject];
+            wt_saveProjectTargets(targets);
+            hoursInput.value = '';
+            periodSel.value = 'thisYear';
+            startInput.value = '';
+            endInput.value = '';
+            syncCustomDateDisabled();
+        });
+    });
+}
+
+function openProjectSettingsModal() {
+    const modal = ensureProjectSettingsModal();
+    renderProjectSettingsBody();
+    modal.style.display = 'flex';
+}
+
 // --- CRUD LOGIC ---
 
 let editingId = null;
+
+function highlightWorktimeForm() {
+    const form = document.getElementById('worktimeForm');
+    if (!form) return;
+    form.classList.remove('worktime-edit-highlight');
+    // Force reflow so animation can restart
+    void form.offsetWidth;
+    form.classList.add('worktime-edit-highlight');
+    setTimeout(() => {
+        form.classList.remove('worktime-edit-highlight');
+    }, 1200);
+}
+
 window.editWorktime = function(id) {
     const entry = window.worktimes.find(item => item.id === id);
     if (entry) {
@@ -307,6 +646,10 @@ window.editWorktime = function(id) {
         const submitButton = document.getElementById('worktimeForm').querySelector('button[type="submit"]');
         submitButton.textContent = 'Update Worktime';
         editingId = id;
+
+        // Bring the form into view and highlight it so the user notices edit mode
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        highlightWorktimeForm();
     }
 }
 
@@ -330,7 +673,8 @@ if(worktimeForm) {
         const description = document.getElementById('workDescription').value;
         const projectInput = document.getElementById('projectInput');
         const projectSelect = document.getElementById('projectSelect');
-        const project = projectInput.value || projectSelect.value;
+        const rawProject = projectInput.value || projectSelect.value;
+        const project = (rawProject || '').trim();
         const start = new Date(document.getElementById('workStart').value);
         let end;
         
@@ -365,7 +709,7 @@ if(worktimeForm) {
             window.worktimes.push(entry);
         }
 
-        window.worktimeProjectFocus = (project || 'No project');
+        window.worktimeProjectFocus = project || 'No project';
 
         window.notifyChange('worktimes');
         
@@ -578,10 +922,11 @@ function wt_wireDuration(){
 function wt_minutesForProjectThisMonth(project){
     try {
         if (!Array.isArray(window.worktimes)) return 0;
+        const projNorm = (project || 'No project').trim().toLowerCase();
         const now = new Date(); const y = now.getFullYear(); const m = now.getMonth();
         return window.worktimes
             .filter(w => !w.deleted)
-            .filter(w => (w.project || 'No project') === project)
+            .filter(w => ((w.project || 'No project').trim().toLowerCase()) === projNorm)
             .filter(w => { const d = new Date(w.start); return d.getFullYear() === y && d.getMonth() === m; })
             .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
     } catch(_) { return 0; }
@@ -590,10 +935,11 @@ function wt_minutesForProjectThisMonth(project){
 function wt_minutesForProjectThisYear(project){
     try {
         if (!Array.isArray(window.worktimes)) return 0;
+        const projNorm = (project || 'No project').trim().toLowerCase();
         const now = new Date(); const y = now.getFullYear();
         return window.worktimes
             .filter(w => !w.deleted)
-            .filter(w => (w.project || 'No project') === project)
+            .filter(w => ((w.project || 'No project').trim().toLowerCase()) === projNorm)
             .filter(w => { const d = new Date(w.start); return d.getFullYear() === y; })
             .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
     } catch(_) { return 0; }
@@ -602,9 +948,10 @@ function wt_minutesForProjectThisYear(project){
 function wt_minutesForProjectAllTime(project){
     try {
         if (!Array.isArray(window.worktimes)) return 0;
+        const projNorm = (project || 'No project').trim().toLowerCase();
         return window.worktimes
             .filter(w => !w.deleted)
-            .filter(w => (w.project || 'No project') === project)
+            .filter(w => ((w.project || 'No project').trim().toLowerCase()) === projNorm)
             .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
     } catch(_) { return 0; }
 }

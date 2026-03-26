@@ -211,6 +211,7 @@ function toggleDone(id) {
         } else {
             t.timeDone = "";
             t.timeUndone = nowIso;
+            t.reviveCount = (t.reviveCount || 0) + 1;
         }
         window.notifyChange('todos');
         
@@ -381,6 +382,7 @@ function showDetails(id) {
       <tr class="detailsVotes"><th>Votes</th><td><span class="value"></span></td></tr>
       <tr class="detailsAdded"><th>Added</th><td><span class="value"></span></td></tr>
       <tr class="detailsLastUndone"><th>Last revived</th><td><span class="value"></span></td></tr>
+      <tr class="detailsRevives"><th>Times revived</th><td><span class="value"></span></td></tr>
       <tr class="detailsDetails"><th>Details</th><td><span class="value"></span></td></tr>
       <tr class="detailsBgColor"><th>Color</th><td><span class="value"><code class="color-hex"></code></span></td></tr>
     </tbody></table>`;
@@ -393,6 +395,7 @@ function showDetails(id) {
     detailsText.querySelector('.detailsVotes .value').textContent = t.votes;
     detailsText.querySelector('.detailsAdded .value').textContent = t.timeAdded ? formatDateTimeForDisplay(t.timeAdded) : 'Unknown';
     detailsText.querySelector('.detailsLastUndone .value').textContent = t.timeUndone ? formatDateTimeForDisplay(t.timeUndone) : 'Never';
+    detailsText.querySelector('.detailsRevives .value').textContent = t.reviveCount || 0;
     detailsText.querySelector('.detailsDetails .value').textContent = t.details || 'None';
     detailsText.querySelector('.detailsBgColor .color-hex').textContent = t.bgColor || '';
 
@@ -461,16 +464,7 @@ if(saveDetailsBtn) {
                     const sel = span.querySelector('select');
                     if(sel) sel.value = (t.category || 'none');
                 } else if(row.classList.contains('detailsMainText') || row.classList.contains('detailsDetails')) {
-                    span.innerHTML = `<textarea>${current === 'None' ? '' : current}</textarea>`;
-                    const ta = span.querySelector('textarea');
-                    if (ta) {
-                        ta.style.height = 'auto';
-                        ta.style.height = ta.scrollHeight + 'px';
-                        ta.addEventListener('input', function() {
-                            this.style.height = 'auto';
-                            this.style.height = this.scrollHeight + 'px';
-                        });
-                    }
+                     span.innerHTML = `<textarea>${current === 'None' ? '' : current}</textarea>`;
                 } else if(row.classList.contains('detailsBgColor')) {
                      span.innerHTML = `<input type="color" value="${t.bgColor || '#FFFFFF'}">`;
                 } else if(row.classList.contains('detailsVotes')) {
@@ -552,6 +546,7 @@ function createTodoMenu() {
         <li><a href="#" id="sortDeadlineBtn">⏰ Sort by Deadline</a></li>
         <li><a href="#" id="sortTimeAddedBtn">🕒 Sort by Time Added</a></li>
         <li><a href="#" id="sortTimeDoneBtn">✅ Sort by Time Done</a></li>
+        <li><a href="#" id="sortMostRevivedBtn">🧟 Sort by Most Revived</a></li>
         <li><a href="#" id="recalculatePointsBtn">🔁 Recalculate Points</a></li>
         <li><a href="#" id="clearLocalStorageBtn">🗑️ Delete all to do items</a></li>
         <li><a href="#" id="makeAllWhiteBtn">⬜ Make all items white</a></li>
@@ -583,6 +578,7 @@ function createTodoMenu() {
         bindSort('sortDeadlineBtn', 'deadline');
         bindSort('sortTimeAddedBtn', 'timeAdded');
         bindSort('sortTimeDoneBtn', 'timeDone');
+        bindSort('sortMostRevivedBtn', 'mostRevived');
 
         // Actions
         document.getElementById('recalculatePointsBtn').addEventListener('click', () => {
@@ -633,7 +629,8 @@ function highlightActiveSortingOption() {
         'color': 'sortColorBtn',
         'deadline': 'sortDeadlineBtn',
         'timeAdded': 'sortTimeAddedBtn',
-        'timeDone': 'sortTimeDoneBtn'
+        'timeDone': 'sortTimeDoneBtn',
+        'mostRevived': 'sortMostRevivedBtn'
     };
     const id = map[sortingMethod];
     if (id && document.getElementById(id)) {
