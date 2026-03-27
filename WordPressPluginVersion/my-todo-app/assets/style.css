@@ -969,6 +969,23 @@ ul#worktimeList {
   margin: 0;
 }
 
+/* Worktime totals: align multi-line info under the same column */
+#worktimeTotalsTop .worktime-totals-row {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  column-gap: 0.5rem;
+  align-items: baseline;
+}
+#worktimeTotalsTop .worktime-totals-row + .worktime-totals-row {
+  margin-top: 2px;
+}
+#worktimeTotalsTop .worktime-totals-label {
+  font-weight: 600;
+}
+#worktimeTotalsTop .worktime-totals-extra {
+  white-space: nowrap;
+}
+
 
 .worktime-table {
   display: grid;

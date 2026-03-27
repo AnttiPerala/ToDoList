@@ -170,6 +170,49 @@ function wt_minutesForProjectInRange(project, startDate, endDate) {
         .reduce((acc, w) => acc + Math.max(0, Math.round((new Date(w.end) - new Date(w.start)) / 60000)), 0);
 }
 
+function wt_isTargetSetForProject(target) {
+    if (!target || typeof target !== 'object') return false;
+    if (target.hours === '' || target.hours === null || typeof target.hours === 'undefined') return false;
+    if (Number.isNaN(Number(target.hours))) return false;
+    if (!target.periodType) return false;
+    return true;
+}
+
+function wt_targetMinutesForRange(target, desiredRange) {
+    if (!wt_isTargetSetForProject(target) || !desiredRange) return null;
+    const baseRange = wt_getPresetRange(target.periodType, target.startDate, target.endDate);
+    if (!baseRange) return null;
+
+    const totalMs = baseRange.end.getTime() - baseRange.start.getTime();
+    if (!isFinite(totalMs) || totalMs <= 0) return null;
+
+    const overlapStartMs = Math.max(baseRange.start.getTime(), desiredRange.start.getTime());
+    const overlapEndMs = Math.min(baseRange.end.getTime(), desiredRange.end.getTime());
+    const overlapMs = overlapEndMs - overlapStartMs;
+    if (!isFinite(overlapMs) || overlapMs <= 0) return 0;
+
+    const baseMinutes = Math.max(0, Math.round(Number(target.hours) * 60));
+    const ratio = overlapMs / totalMs;
+    return Math.max(0, Math.round(baseMinutes * ratio));
+}
+
+function wt_signedHm(mins) {
+    const m = Math.round(Number(mins) || 0);
+    const abs = Math.abs(m);
+    const h = Math.floor(abs / 60);
+    const r = abs % 60;
+    const core = (h + 'h' + (r ? ' ' + r + 'min' : ''));
+    return (m < 0 ? '-' : '+') + core;
+}
+
+function wt_deltaWords(mins) {
+    const m = Math.round(Number(mins) || 0);
+    if (m === 0) return 'on target';
+    const abs = Math.abs(m);
+    if (m < 0) return `behind target by ${wt_hm(abs)}`;
+    return `over target by ${wt_hm(abs)}`;
+}
+
 function filterWorktimesByPeriod(period, selectedProject = 'All projects') {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -290,7 +333,40 @@ window.drawWorktimes = function(period = 'all', selectedProject = 'All projects'
     const min = totalMinutes % 60;
     const top = document.getElementById('worktimeTotalsTop'); 
     if (top) {
-        top.innerHTML = `<span>Total:</span> <span>${totalMinutes} min</span> <span class="muted">(${hours}h${min? ' ' + min + 'min' : ''})</span>`;
+        top.innerHTML = '';
+
+        const appendTotalsRow = (label, value, extraMuted) => {
+            const row = document.createElement('div');
+            row.className = 'worktime-totals-row';
+
+            const labelEl = document.createElement('span');
+            labelEl.className = 'worktime-totals-label';
+            labelEl.textContent = label || '';
+
+            const valueEl = document.createElement('span');
+            valueEl.className = 'worktime-totals-value';
+            valueEl.textContent = value || '';
+
+            row.appendChild(labelEl);
+            row.appendChild(valueEl);
+
+            if (extraMuted) {
+                const extraEl = document.createElement('span');
+                extraEl.className = 'worktime-totals-extra muted';
+                extraEl.textContent = extraMuted;
+                row.appendChild(extraEl);
+            } else {
+                const extraEl = document.createElement('span');
+                extraEl.className = 'worktime-totals-extra';
+                extraEl.textContent = '';
+                row.appendChild(extraEl);
+            }
+
+            top.appendChild(row);
+            return row;
+        };
+
+        appendTotalsRow('Total:', `${totalMinutes} min`, `(${hours}h${min ? ' ' + min + 'min' : ''})`);
 
         const focusProjectRaw = window.worktimeProjectFocus;
         const focusProject = (typeof focusProjectRaw === 'string' ? focusProjectRaw.trim() : '') || null;
@@ -299,12 +375,74 @@ window.drawWorktimes = function(period = 'all', selectedProject = 'All projects'
             const thisYear = wt_hm(wt_minutesForProjectThisYear(focusProject));
             const allTimes = wt_hm(wt_minutesForProjectAllTime(focusProject));
 
-            const statsLine = document.createElement('div');
-            statsLine.className = 'muted';
-            statsLine.style.marginTop = '2px';
-            statsLine.style.fontSize = '0.9em';
-            statsLine.textContent = `Total hours for project ${focusProject} this month: ${thisMonth}  This year: ${thisYear}  All times: ${allTimes}`;
-            top.appendChild(statsLine);
+            const statsText = `Total hours for project ${focusProject} this month: ${thisMonth}  This year: ${thisYear}  All times: ${allTimes}`;
+            const statsRow = appendTotalsRow('', statsText, '');
+            statsRow.classList.add('muted');
+            statsRow.style.fontSize = '0.9em';
+
+            // Target hours + behind/over (only if a target has been set for the project)
+            const targets = wt_loadProjectTargets();
+            const target = targets[focusProject];
+            if (wt_isTargetSetForProject(target)) {
+                const ranges = {
+                    thisWeek: wt_getPresetRange('thisWeek'),
+                    thisMonth: wt_getPresetRange('thisMonth'),
+                    thisYear: wt_getPresetRange('thisYear'),
+                };
+
+                const semesterUsed = target.periodType === 'springSemester' || target.periodType === 'autumnSemester';
+                if (semesterUsed) {
+                    ranges.thisSemester = wt_getPresetRange(target.periodType);
+                }
+
+                const actualMins = {
+                    thisWeek: wt_minutesForProjectInRange(focusProject, ranges.thisWeek.start, ranges.thisWeek.end),
+                    thisMonth: wt_minutesForProjectInRange(focusProject, ranges.thisMonth.start, ranges.thisMonth.end),
+                    thisYear: wt_minutesForProjectInRange(focusProject, ranges.thisYear.start, ranges.thisYear.end),
+                };
+                if (semesterUsed && ranges.thisSemester) {
+                    actualMins.thisSemester = wt_minutesForProjectInRange(focusProject, ranges.thisSemester.start, ranges.thisSemester.end);
+                }
+
+                const targetMins = {
+                    thisWeek: wt_targetMinutesForRange(target, ranges.thisWeek),
+                    thisMonth: wt_targetMinutesForRange(target, ranges.thisMonth),
+                    thisYear: wt_targetMinutesForRange(target, ranges.thisYear),
+                };
+                if (semesterUsed && ranges.thisSemester) {
+                    targetMins.thisSemester = wt_targetMinutesForRange(target, ranges.thisSemester);
+                }
+
+                const targetLine = document.createElement('div');
+                const partsTarget = [
+                    `Target this week: ${wt_hm(targetMins.thisWeek ?? 0)}`,
+                    `This month: ${wt_hm(targetMins.thisMonth ?? 0)}`
+                ];
+                if (semesterUsed) partsTarget.push(`This semester: ${wt_hm(targetMins.thisSemester ?? 0)}`);
+                partsTarget.push(`This year: ${wt_hm(targetMins.thisYear ?? 0)}`);
+                const targetRow = appendTotalsRow('', partsTarget.join('  '), '');
+                targetRow.classList.add('muted');
+                targetRow.style.fontSize = '0.9em';
+
+                const deltaLine = document.createElement('div');
+
+                const deltaWeek = (actualMins.thisWeek ?? 0) - (targetMins.thisWeek ?? 0);
+                const deltaMonth = (actualMins.thisMonth ?? 0) - (targetMins.thisMonth ?? 0);
+                const deltaYear = (actualMins.thisYear ?? 0) - (targetMins.thisYear ?? 0);
+
+                const partsDelta = [
+                    `This week you are ${wt_deltaWords(deltaWeek)}`,
+                    `This month you are ${wt_deltaWords(deltaMonth)}`
+                ];
+                if (semesterUsed) {
+                    const deltaSem = (actualMins.thisSemester ?? 0) - (targetMins.thisSemester ?? 0);
+                    partsDelta.push(`This semester you are ${wt_deltaWords(deltaSem)}`);
+                }
+                partsDelta.push(`This year you are ${wt_deltaWords(deltaYear)}`);
+                const deltaRow = appendTotalsRow('', partsDelta.join('  '), '');
+                deltaRow.classList.add('muted');
+                deltaRow.style.fontSize = '0.9em';
+            }
         }
     }
 
