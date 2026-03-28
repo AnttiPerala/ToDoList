@@ -52,7 +52,7 @@
       <form id="todoForm">
         <div class="input-wrapper" style="width:100%; position:relative;">
             <textarea id="todoInput" placeholder="Add a new task (or filter existing)"></textarea>
-            <button type="button" class="clear-input">×</button>
+            <button type="button" class="clear-input" aria-label="Clear text">×</button>
         </div>
 
         <button class="collapsible-btn" type="button">Options</button>
@@ -60,18 +60,7 @@
         <div class="collapsible-content">
           <div class="dropdown">
             <label for="categorySelect">Category:</label>
-            <select id="categorySelect">
-              <option value="none">⬜ None</option>
-              <option value="personal">👤 Personal</option>
-              <option value="work">💼 Work</option>
-              <option value="software">💻 Software</option>
-              <option value="school">🎓 School</option>
-              <option value="groceries">🛒 Groceries</option>
-              <option value="household">🏠 Household</option>
-              <option value="entertainment">🎬 Entertainment</option>
-              <option value="children">🧸 Children</option>
-              <option value="fitness">💪 Fitness</option>
-            </select>
+            <select id="categorySelect" aria-label="Category filter and default for new tasks"></select>
             <span class='close'>&#215;</span>
           </div>
 

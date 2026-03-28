@@ -15,6 +15,293 @@ function applyPreferredSorting() {
     }
 }
 
+// --- CATEGORY CONFIG (dropdown + manage modal) ---
+const TC_SETTINGS_KEY = 'todoCategorySettings';
+const TC_DEFAULT_CATEGORIES = [
+    { value: 'none', label: '⬜ None' },
+    { value: 'personal', label: '👤 Personal' },
+    { value: 'work', label: '💼 Work' },
+    { value: 'software', label: '💻 Software' },
+    { value: 'school', label: '🎓 School' },
+    { value: 'groceries', label: '🛒 Groceries' },
+    { value: 'household', label: '🏠 Household' },
+    { value: 'entertainment', label: '🎬 Entertainment' },
+    { value: 'children', label: '🧸 Children' },
+    { value: 'fitness', label: '💪 Fitness' }
+];
+
+function tc_loadSettings() {
+    try {
+        const raw = localStorage.getItem(TC_SETTINGS_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return {
+            hiddenDefaults: Array.isArray(parsed.hiddenDefaults) ? parsed.hiddenDefaults : [],
+            custom: Array.isArray(parsed.custom) ? parsed.custom : [],
+            popularityOrder: Boolean(parsed.popularityOrder)
+        };
+    } catch (_) {
+        return { hiddenDefaults: [], custom: [], popularityOrder: false };
+    }
+}
+
+function tc_saveSettings(s) {
+    localStorage.setItem(TC_SETTINGS_KEY, JSON.stringify(s));
+}
+
+function tc_slugify(name) {
+    let s = (name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (!s) s = 'category';
+    return s;
+}
+
+function tc_activeTodoCountForCategory(catValue) {
+    return (window.todos || []).filter(t => {
+        if (t.deleted || t.done) return false;
+        const c = t.category == null || t.category === '' ? 'none' : t.category;
+        return c === catValue;
+    }).length;
+}
+
+function tc_knownValueSet(settings) {
+    const set = new Set(['none']);
+    TC_DEFAULT_CATEGORIES.forEach(c => {
+        if (c.value !== 'none' && !settings.hiddenDefaults.includes(c.value)) set.add(c.value);
+    });
+    (settings.custom || []).forEach(c => set.add(c.value));
+    return set;
+}
+
+function tc_mergedCategoryList(settings) {
+    const hidden = new Set(settings.hiddenDefaults || []);
+    const out = [];
+    const seen = new Set();
+    TC_DEFAULT_CATEGORIES.forEach(c => {
+        if (c.value === 'none') {
+            out.push({ ...c });
+            seen.add('none');
+        } else if (!hidden.has(c.value)) {
+            out.push({ ...c });
+            seen.add(c.value);
+        }
+    });
+    (settings.custom || []).forEach(c => {
+        if (c && c.value && !seen.has(c.value)) {
+            out.push({ value: c.value, label: c.label || c.value });
+            seen.add(c.value);
+        }
+    });
+    (window.todos || []).filter(t => !t.deleted).forEach(t => {
+        const v = t.category == null || t.category === '' ? 'none' : t.category;
+        if (!seen.has(v)) {
+            seen.add(v);
+            out.push({ value: v, label: v });
+        }
+    });
+    return out;
+}
+
+function tc_sortCategoriesForDropdown(list, settings) {
+    const noneItem = list.find(c => c.value === 'none');
+    const rest = list.filter(c => c.value !== 'none');
+    if (settings.popularityOrder) {
+        rest.sort((a, b) => {
+            const ca = tc_activeTodoCountForCategory(a.value);
+            const cb = tc_activeTodoCountForCategory(b.value);
+            if (cb !== ca) return cb - ca;
+            return (a.label || '').localeCompare(b.label || '', undefined, { sensitivity: 'base' });
+        });
+    } else {
+        const orderMap = new Map(TC_DEFAULT_CATEGORIES.map((c, i) => [c.value, i]));
+        rest.sort((a, b) => {
+            const ia = orderMap.has(a.value) ? orderMap.get(a.value) : 999;
+            const ib = orderMap.has(b.value) ? orderMap.get(b.value) : 999;
+            if (ia !== ib) return ia - ib;
+            return (a.label || '').localeCompare(b.label || '', undefined, { sensitivity: 'base' });
+        });
+    }
+    return noneItem ? [noneItem, ...rest] : rest;
+}
+
+function tc_getLabelForValue(value) {
+    const v = value == null || value === '' ? 'none' : value;
+    const settings = tc_loadSettings();
+    const list = tc_mergedCategoryList(settings);
+    const found = list.find(c => c.value === v);
+    return found ? found.label : v;
+}
+
+/**
+ * @param {HTMLSelectElement} selectEl
+ * @param {string} selectedValue
+ * @param {{ includeManage?: boolean }} opts
+ */
+function tc_populateSelect(selectEl, selectedValue, opts) {
+    const o = opts || {};
+    const includeManage = o.includeManage !== false;
+    const settings = tc_loadSettings();
+    let list = tc_mergedCategoryList(settings);
+    list = tc_sortCategoriesForDropdown(list, settings);
+
+    selectEl.innerHTML = '';
+    list.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.value;
+        opt.textContent = c.label;
+        selectEl.appendChild(opt);
+    });
+    if (includeManage) {
+        const manage = document.createElement('option');
+        manage.value = '__manage__';
+        manage.textContent = '⚙ Manage…';
+        manage.className = 'category-manage-option';
+        selectEl.appendChild(manage);
+    }
+    const valid = [...selectEl.options].filter(op => op.value !== '__manage__').map(op => op.value);
+    let want = selectedValue === '__manage__' || !selectedValue ? 'none' : selectedValue;
+    if (!valid.includes(want)) want = 'none';
+    selectEl.value = want;
+}
+
+function tc_initCategoryDropdown() {
+    const sel = document.getElementById('categorySelect');
+    if (!sel) return;
+    const prev = sel.value || sel.dataset.prevValue || 'none';
+    tc_populateSelect(sel, prev, { includeManage: true });
+    sel.dataset.prevValue = sel.value;
+}
+
+function tc_removeCategoryFromTodos(catValue) {
+    (window.todos || []).forEach(t => {
+        const c = t.category == null || t.category === '' ? 'none' : t.category;
+        if (c === catValue) {
+            window.touchItem(t);
+            t.category = null;
+        }
+    });
+}
+
+function tc_ensureCategoryModal() {
+    let modal = document.getElementById('categoryManageModal');
+    if (modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'categoryManageModal';
+    modal.className = 'category-manage-modal';
+    modal.innerHTML = `
+      <div class="category-manage-content">
+        <div class="category-manage-header">
+          <h3>Manage categories</h3>
+          <button type="button" class="button-30" id="categoryManageCloseBtn">Close</button>
+        </div>
+        <label class="category-manage-popularity">
+          <input type="checkbox" id="categoryPopularityOrder" />
+          <span>Show in order of popularity</span>
+        </label>
+        <p class="muted category-manage-hint">Popularity is the number of active (not done) tasks per category.</p>
+        <div id="categoryManageList" class="category-manage-list"></div>
+        <div class="category-manage-add">
+          <input type="text" id="categoryManageNewName" class="button-30" placeholder="New category name" maxlength="80" />
+          <button type="button" class="button-30" id="categoryManageAddBtn">Add category</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    modal.querySelector('#categoryManageCloseBtn').addEventListener('click', () => { modal.style.display = 'none'; });
+    const newNameInput = modal.querySelector('#categoryManageNewName');
+    if (newNameInput && !newNameInput.__tcEnterWired) {
+        newNameInput.__tcEnterWired = true;
+        newNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const btn = document.getElementById('categoryManageAddBtn');
+                if (btn) btn.click();
+            }
+        });
+    }
+    return modal;
+}
+
+function tc_renderCategoryManageList() {
+    const settings = tc_loadSettings();
+    const listEl = document.getElementById('categoryManageList');
+    const pop = document.getElementById('categoryPopularityOrder');
+    if (!listEl || !pop) return;
+    pop.checked = settings.popularityOrder;
+
+    const merged = tc_mergedCategoryList(settings);
+    listEl.innerHTML = '';
+    merged.forEach(c => {
+        const row = document.createElement('div');
+        row.className = 'category-manage-row';
+        const count = tc_activeTodoCountForCategory(c.value);
+        const name = document.createElement('span');
+        name.className = 'category-manage-name';
+        name.textContent = c.label;
+        const meta = document.createElement('span');
+        meta.className = 'muted category-manage-meta';
+        meta.textContent = `${count} active`;
+        row.appendChild(name);
+        row.appendChild(meta);
+        if (c.value !== 'none') {
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'button-30 category-manage-delete';
+            del.textContent = 'Delete';
+            del.addEventListener('click', () => {
+                if (!confirm(`Remove category "${c.label}"? Tasks will become uncategorized (None).`)) return;
+                const next = tc_loadSettings();
+                if (TC_DEFAULT_CATEGORIES.some(d => d.value === c.value)) {
+                    if (!next.hiddenDefaults.includes(c.value)) next.hiddenDefaults.push(c.value);
+                } else {
+                    next.custom = (next.custom || []).filter(x => x.value !== c.value);
+                }
+                tc_saveSettings(next);
+                tc_removeCategoryFromTodos(c.value);
+                window.notifyChange('todos');
+                tc_initCategoryDropdown();
+                drawTodos();
+                tc_renderCategoryManageList();
+            });
+            row.appendChild(del);
+        }
+        listEl.appendChild(row);
+    });
+}
+
+function tc_openCategoryManageModal() {
+    const modal = tc_ensureCategoryModal();
+    const pop = document.getElementById('categoryPopularityOrder');
+    tc_renderCategoryManageList();
+    pop.onchange = () => {
+        const s = tc_loadSettings();
+        s.popularityOrder = pop.checked;
+        tc_saveSettings(s);
+        tc_initCategoryDropdown();
+    };
+    const addBtn = document.getElementById('categoryManageAddBtn');
+    const newInput = document.getElementById('categoryManageNewName');
+    addBtn.onclick = () => {
+        const raw = (newInput.value || '').trim();
+        if (!raw) return alert('Enter a category name.');
+        let base = tc_slugify(raw);
+        const s = tc_loadSettings();
+        let val = base;
+        let n = 2;
+        const taken = tc_knownValueSet(s);
+        while (taken.has(val) || val === 'none') {
+            val = `${base}_${n++}`;
+        }
+        const label = raw.length > 60 ? raw.slice(0, 60) + '…' : raw;
+        s.custom = s.custom || [];
+        s.custom.push({ value: val, label: label });
+        tc_saveSettings(s);
+        newInput.value = '';
+        tc_initCategoryDropdown();
+        tc_renderCategoryManageList();
+    };
+    modal.style.display = 'flex';
+}
+
 // Color logic
 let selectedColor = null;
 
@@ -26,7 +313,7 @@ const clearButton = document.querySelector('.clear-input');
 // Filter listeners
 if (input) {
     input.addEventListener('input', () => {
-        if (clearButton) clearButton.style.display = input.value ? 'block' : 'none';
+        if (clearButton) clearButton.style.display = input.value ? 'inline-flex' : 'none';
         drawTodos(); // Live redraw for filtering
     });
 }
@@ -48,7 +335,9 @@ if(form) form.addEventListener('submit', (e) => {
     const topPriorityCheck = document.getElementById('topPriorityCheck');
     const midPriorityCheck = document.getElementById('midPriorityCheck');
     const deadlineInput = document.getElementById('deadlineInput');
-    const categoryValue = document.getElementById('categorySelect').value;
+    let rawCat = document.getElementById('categorySelect').value;
+    if (rawCat === '__manage__') rawCat = 'none';
+    const categoryValue = rawCat === 'none' ? null : rawCat;
     const detailsTextarea = document.querySelector('.detailsTextarea');
 
     // Calc votes
@@ -110,10 +399,10 @@ window.drawTodos = function() {
     // Filter Logic
     let displayList = window.todos.filter(t => !t.deleted);
 
-    if (categoryFilter !== 'none') {
+    if (categoryFilter !== 'none' && categoryFilter !== '__manage__') {
         displayList = displayList.filter(t => t.category === categoryFilter);
         const notice = document.getElementById("categoryFilteringNotice");
-        if(notice) notice.innerHTML = "<span class='close'>&#215;</span> Showing: " + categoryFilter;
+        if(notice) notice.innerHTML = "<span class='close'>&#215;</span> Showing: " + tc_getLabelForValue(categoryFilter);
     } else {
         const notice = document.getElementById("categoryFilteringNotice");
         if(notice) notice.innerHTML = "";
@@ -391,7 +680,7 @@ function showDetails(id) {
     
     // Populate textContent (XSS Safe)
     detailsText.querySelector('.detailsMainText .value').textContent = t.text;
-    detailsText.querySelector('.detailsCategory .value').textContent = t.category || 'None';
+    detailsText.querySelector('.detailsCategory .value').textContent = tc_getLabelForValue(t.category);
     detailsText.querySelector('.detailsVotes .value').textContent = t.votes;
     detailsText.querySelector('.detailsAdded .value').textContent = t.timeAdded ? formatDateTimeForDisplay(t.timeAdded) : 'Unknown';
     detailsText.querySelector('.detailsLastUndone .value').textContent = t.timeUndone ? formatDateTimeForDisplay(t.timeUndone) : 'Never';
@@ -399,7 +688,7 @@ function showDetails(id) {
     detailsText.querySelector('.detailsDetails .value').textContent = t.details || 'None';
     detailsText.querySelector('.detailsBgColor .color-hex').textContent = t.bgColor || '';
 
-    const catLabel = t.category || 'None';
+    const catLabel = tc_getLabelForValue(t.category);
     const actions = document.createElement('div');
     actions.className = 'details-priority-actions';
 
@@ -422,6 +711,22 @@ function showDetails(id) {
     actions.style.gap = '0.5rem';
 
     detailsText.appendChild(actions);
+
+    if (t.done) {
+        const reviveRow = document.createElement('div');
+        reviveRow.className = 'details-revive-actions';
+        reviveRow.style.marginTop = '0.5rem';
+        const reviveBtn = document.createElement('button');
+        reviveBtn.type = 'button';
+        reviveBtn.className = 'button-30';
+        reviveBtn.textContent = '↩ Revive (mark not done)';
+        reviveBtn.addEventListener('click', () => {
+            toggleDone(id);
+            showDetails(id);
+        });
+        reviveRow.appendChild(reviveBtn);
+        detailsText.appendChild(reviveRow);
+    }
     
     modal.setAttribute('data-todo-id', id);
     modal.style.display = 'block';
@@ -460,9 +765,10 @@ if(saveDetailsBtn) {
                 let current = span.textContent;
                 
                 if(row.classList.contains('detailsCategory')) {
-                    span.innerHTML = `<select><option value="none">None</option><option value="personal">Personal</option><option value="work">Work</option><option value="school">School</option><option value="groceries">Groceries</option><option value="household">Household</option><option value="software">Software</option><option value="entertainment">Entertainment</option><option value="children">Children</option><option value="fitness">Fitness</option></select>`; 
-                    const sel = span.querySelector('select');
-                    if(sel) sel.value = (t.category || 'none');
+                    span.innerHTML = '';
+                    const sel = document.createElement('select');
+                    tc_populateSelect(sel, t.category || 'none', { includeManage: false });
+                    span.appendChild(sel);
                 } else if(row.classList.contains('detailsMainText') || row.classList.contains('detailsDetails')) {
                      span.innerHTML = `<textarea>${current === 'None' ? '' : current}</textarea>`;
                 } else if(row.classList.contains('detailsBgColor')) {
@@ -503,8 +809,16 @@ colorOptions.forEach(option => {
 });
 
 // Category Filter
-document.getElementById('categorySelect')?.addEventListener('change', function() { 
-    drawTodos(); 
+document.getElementById('categorySelect')?.addEventListener('change', function() {
+    if (this.value === '__manage__') {
+        const prev = this.dataset.prevValue || 'none';
+        tc_openCategoryManageModal();
+        tc_populateSelect(this, prev, { includeManage: true });
+        this.dataset.prevValue = this.value;
+        return;
+    }
+    this.dataset.prevValue = this.value;
+    drawTodos();
 });
 document.addEventListener('click', function(event) {
     if (event.target.classList.contains('close')) {
@@ -639,6 +953,7 @@ function highlightActiveSortingOption() {
 }
 
 // Initialize
+tc_initCategoryDropdown();
 createTodoMenu();
 applyPreferredSorting();
 drawTodos(); // Draw on load
@@ -655,6 +970,7 @@ if(window.todoBtn) {
         window.diaryBtn.classList.add('inactive');
         document.getElementById('mainTitle').textContent = 'To Do List';
         if (typeof updateHeaderStats === 'function') updateHeaderStats();
+        tc_initCategoryDropdown();
         drawTodos();
         createTodoMenu();
     });
